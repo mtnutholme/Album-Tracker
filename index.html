@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob:;">
     <title>Album Tracker</title>
     <style>
         * {
@@ -1993,15 +1994,26 @@
 
         // Navigation
         function showSection(sectionId, event) {
+            console.log('showSection called with:', sectionId);
+            
             // Update active button
-            document.querySelectorAll('.nav button').forEach(btn => btn.classList.remove('active'));
+            const navButtons = document.querySelectorAll('.nav button');
+            console.log('Found nav buttons:', navButtons.length);
+            navButtons.forEach(btn => btn.classList.remove('active'));
             if (event && event.target) {
                 event.target.classList.add('active');
             }
 
             // Show section
-            document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
-            document.getElementById(sectionId).classList.add('active');
+            const sections = document.querySelectorAll('.section');
+            console.log('Found sections:', sections.length);
+            sections.forEach(section => section.classList.remove('active'));
+            
+            const targetSection = document.getElementById(sectionId);
+            console.log('Target section:', targetSection);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
 
             // Load section-specific content
             if (sectionId === 'browse') {
@@ -3349,13 +3361,13 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Load initial section
             loadBrowseSection();
-        });
-
-        // Close modal on outside click
-        document.getElementById('albumModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeModal();
-            }
+            
+            // Close modal on outside click
+            document.getElementById('albumModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal();
+                }
+            });
         });
     </script>
 
