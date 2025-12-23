@@ -1409,8 +1409,11 @@
                 // IMPORTANT: Replace this with your own Azure App Registration Client ID
                 // Instructions: https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app
                 
-                // Your Azure App Registration Client ID
-                this.clientId = 'b0664681-03da-44d2-9bb0-e923dcc041a7';
+                // Your Azure App Registration Client ID (needs consumer support enabled)
+                // this.clientId = 'b0664681-03da-44d2-9bb0-e923dcc041a7';
+                
+                // Microsoft Graph Explorer Client ID (works immediately with personal accounts)
+                this.clientId = 'de8bc8b5-d9f9-48b1-a8ad-b748da725064';
                 this.redirectUri = window.location.origin + window.location.pathname;
                 this.scopes = ['Files.ReadWrite', 'offline_access'];
                 this.fileName = 'album-tracker-data.json';
