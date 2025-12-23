@@ -2346,62 +2346,13 @@
 
         // Pick Random Album (from vinyl button)
         function pickRandomAlbum() {
-            // Directly show random album without navigating to the page
-            const album = db.getRandomUnscoredAlbum();
-            
-            if (!album) {
-                alert('🎉 All albums have been rated! You\'ve completed your collection.');
-                return;
-            }
-
-            const genres = db.parseMultiValue(album.genre, true);
-            const styles = db.parseMultiValue(album.style);
-            const sources = db.parseMultiValue(album.reason);
-
-            const modal = document.createElement('div');
-            modal.className = 'modal';
-            modal.style.display = 'flex';
-            modal.innerHTML = `
-                <div class="modal-content" style="max-width: 600px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                    <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
-                    <div style="text-align: center; padding: 20px;">
-                        <h2 style="margin-bottom: 20px; color: white;">🎵 Your Random Album</h2>
-                        ${album.artworkUrl ? `<img src="${album.artworkUrl}" alt="${album.albumName}" style="width: 300px; height: 300px; object-fit: cover; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(0,0,0,0.3);">` : ''}
-                        <h3 style="font-size: 1.8em; margin: 10px 0; color: white;">${album.albumName}</h3>
-                        <p style="font-size: 1.2em; margin: 5px 0; opacity: 0.9;">${album.artist}</p>
-                        ${album.year ? `<p style="font-size: 1em; margin: 5px 0; opacity: 0.8;">${album.year}</p>` : ''}
-                        ${genres.length > 0 ? `<p style="font-size: 0.9em; margin: 15px 0; opacity: 0.8;">${genres.join(', ')}</p>` : ''}
-                        <button onclick="rateAlbumFromModal(${album.id}, this.closest('.modal'))" style="margin-top: 20px; padding: 12px 30px; font-size: 1.1em; background: white; color: #667eea; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
-                            Rate This Album
-                        </button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-
-            // Close modal when clicking outside
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.remove();
-                }
-            });
-        }
-
-        // Rate album from modal
-        function rateAlbumFromModal(albumId, modal) {
-            modal.remove();
-            showSection('browse');
-            // Wait for section to load, then scroll to album
+            // Navigate to random section and automatically select an album
+            showSection('random');
+            // Wait for section to be visible, then trigger album selection
             setTimeout(() => {
-                const albumCard = document.querySelector(`[data-album-id="${albumId}"]`);
-                if (albumCard) {
-                    albumCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    albumCard.style.animation = 'highlight 2s';
-                }
+                selectRandomAlbum();
             }, 100);
         }
-        
-
 
         // Random Album Selection
         function selectRandomAlbum() {
