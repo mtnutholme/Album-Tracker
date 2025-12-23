@@ -1458,7 +1458,7 @@
                 }
 
                 try {
-                    const response = await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
+                    const response = await fetch('https://login.microsoftonline.com/consumers/oauth2/v2.0/token', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded',
@@ -1502,7 +1502,9 @@
                     return;
                 }
 
-                const authUrl = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?` +
+                // Use 'consumers' instead of 'common' to force personal Microsoft accounts only
+                // This prevents trying to authenticate against work/school tenants
+                const authUrl = `https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize?` +
                     `client_id=${this.clientId}` +
                     `&response_type=code` +
                     `&redirect_uri=${encodeURIComponent(this.redirectUri)}` +
@@ -1522,7 +1524,7 @@
                         this.updateUI('syncing', 'Connecting to OneDrive...');
                         
                         // Exchange code for token
-                        const response = await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
+                        const response = await fetch('https://login.microsoftonline.com/consumers/oauth2/v2.0/token', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/x-www-form-urlencoded',
