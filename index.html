@@ -1372,16 +1372,50 @@
             }
 
             // Parse semicolon-separated fields
-            parseMultiValue(value) {
+            parseMultiValue(value, isGenre = false) {
                 if (!value) return [];
+                
+                // For genres, handle both semicolons and commas, but preserve "Folk, World, & Country"
+                if (isGenre) {
+                    // First, protect "Folk, World, & Country" by temporarily replacing it
+                    const protectedValue = value.replace(/Folk,\s*World,\s*&\s*Country/gi, '___FOLK_WORLD_COUNTRY___');
+                    
+                    // Split by both semicolons and commas
+                    const parts = protectedValue.split(/[;,]/).map(v => v.trim()).filter(v => v);
+                    
+                    // Restore the protected genre
+                    return parts.map(part => part.replace(/___FOLK_WORLD_COUNTRY___/g, 'Folk, World, & Country'));
+                }
+                
+                // For non-genres (sources, styles), use semicolon only
                 return value.split(';').map(v => v.trim()).filter(v => v);
+            }
+
+            // Parse artist names - handles multiple artists intelligently
+            // Artists can contain commas (e.g., "Earth, Wind & Fire")
+            // So we only split on " & ", " and ", or semicolons
+            parseArtists(value) {
+                if (!value) return [value]; // Return original if empty
+                
+                // Split by semicolons first (explicit separator)
+                const parts = value.split(';').map(v => v.trim()).filter(v => v);
+                
+                // Then split each part by " & " or " and " (but not commas)
+                const artists = [];
+                parts.forEach(part => {
+                    // Split by " & " or " and " (case insensitive)
+                    const subParts = part.split(/\s+(?:&|and)\s+/i).map(v => v.trim()).filter(v => v);
+                    artists.push(...subParts);
+                });
+                
+                return artists.length > 0 ? artists : [value];
             }
 
             // Get all unique genres
             getAllGenres() {
                 const genres = new Set();
                 this.albums.forEach(album => {
-                    this.parseMultiValue(album.genre).forEach(g => genres.add(g));
+                    this.parseMultiValue(album.genre, true).forEach(g => genres.add(g));
                 });
                 return Array.from(genres).sort();
             }
@@ -1411,7 +1445,7 @@
                 return this.albums.filter(album => {
                     // Genre filter
                     if (filters.genre) {
-                        const genres = this.parseMultiValue(album.genre);
+                        const genres = this.parseMultiValue(album.genre, true);
                         if (!genres.includes(filters.genre)) return false;
                     }
 
@@ -1539,7 +1573,7 @@
                 const genreScores = {};
                 this.albums.forEach(album => {
                     if (album.score !== null && album.score !== undefined && album.score !== '') {
-                        const genres = this.parseMultiValue(album.genre);
+                        const genres = this.parseMultiValue(album.genre, true);
                         genres.forEach(genre => {
                             if (!genreScores[genre]) {
                                 genreScores[genre] = [];
@@ -1589,7 +1623,7 @@
             getGenreCounts() {
                 const genreCounts = {};
                 this.albums.forEach(album => {
-                    const genres = this.parseMultiValue(album.genre);
+                    const genres = this.parseMultiValue(album.genre, true);
                     genres.forEach(genre => {
                         if (!genreCounts[genre]) {
                             genreCounts[genre] = 0;
@@ -1738,7 +1772,7 @@
 
                 // Show helpful instructions
                 const proceed = confirm(
-                    '🔐 Important:\n\n' +
+                    'Important:\n\n' +
                     '1. You\'ll be redirected to Microsoft login\n' +
                     '2. After login, you\'ll be sent to http://localhost\n' +
                     '3. IMPORTANT: After redirect, manually open this site again\n' +
@@ -2312,68 +2346,11 @@
 
         // Pick Random Album (from vinyl button)
         function pickRandomAlbum() {
-            // Get a random unscored album
-            const album = db.getRandomUnscoredAlbum();
-            
-            if (!album) {
-                alert('🎉 All albums have been rated! Add more albums to continue discovering.');
-                return;
-            }
-            
-            // Display the album directly in a modal
-            const modal = document.createElement('div');
-            modal.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0,0,0,0.8);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 10000;
-                animation: fadeIn 0.3s;
-            `;
-            
-            modal.innerHTML = `
-                <div style="background: white; border-radius: 20px; padding: 40px; max-width: 600px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); position: relative;">
-                    <button onclick="this.closest('[style*=fixed]').remove()" style="position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; color: #999; line-height: 1;">&times;</button>
-                    <h2 style="text-align: center; margin-bottom: 30px; color: #667eea;">🎵 Your Random Album</h2>
-                    <div style="text-align: center;">
-                        ${album.artwork ? `<img src="${album.artwork}" alt="${album.album}" style="max-width: 300px; width: 100%; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">` : ''}
-                        <h3 style="margin: 20px 0 10px; color: #333;">${album.album}</h3>
-                        <p style="color: #666; font-size: 1.1em; margin-bottom: 10px;">${album.artist}</p>
-                        ${album.year ? `<p style="color: #999; margin-bottom: 20px;">${album.year}</p>` : ''}
-                        ${album.genre ? `<p style="color: #667eea; margin-bottom: 20px;"><strong>Genre:</strong> ${album.genre}</p>` : ''}
-                        <div style="margin-top: 30px;">
-                            <button onclick="rateAlbumFromModal(${album.id}, this.closest('[style*=fixed]'))" class="btn btn-success" style="padding: 12px 30px; font-size: 1.1em;">Rate This Album</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(modal);
-            
-            // Close on background click
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.remove();
-                }
-            });
+            // Navigate to the random album section
+            showSection('random');
         }
         
-        function rateAlbumFromModal(albumId, modal) {
-            modal.remove();
-            showSection('browse');
-            setTimeout(() => {
-                const albumCard = document.querySelector(`[data-album-id="${albumId}"]`);
-                if (albumCard) {
-                    albumCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    albumCard.style.animation = 'highlight 2s';
-                }
-            }, 100);
-        }
+
 
         // Random Album Selection
         function selectRandomAlbum() {
@@ -2390,7 +2367,7 @@
                 return;
             }
 
-            const genres = db.parseMultiValue(album.genre);
+            const genres = db.parseMultiValue(album.genre, true);
             const styles = db.parseMultiValue(album.style);
             const sources = db.parseMultiValue(album.reason);
 
@@ -2868,7 +2845,7 @@
             const album = db.getAlbum(albumId);
             if (!album) return;
 
-            const genres = db.parseMultiValue(album.genre);
+            const genres = db.parseMultiValue(album.genre, true);
             const styles = db.parseMultiValue(album.style);
             const sources = db.parseMultiValue(album.reason);
 
@@ -3628,7 +3605,7 @@
 
         function showGenreDrilldown(genre) {
             const albums = db.getAllAlbums().filter(a => {
-                const genres = db.parseMultiValue(a.genre);
+                const genres = db.parseMultiValue(a.genre, true);
                 return genres.includes(genre);
             });
             showDrilldownModal(`Albums in ${genre}`, albums);
