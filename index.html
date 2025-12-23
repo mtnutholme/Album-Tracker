@@ -54,11 +54,48 @@
             z-index: 1000;
             cursor: pointer;
             transition: all 0.3s;
+            overflow: hidden;
+        }
+
+        .sync-status.compact {
+            padding: 10px 15px;
+            border-radius: 20px;
+        }
+
+        .sync-status.compact .sync-details {
+            max-width: 0;
+            opacity: 0;
+            transition: all 0.3s;
+        }
+
+        .sync-status.compact:hover {
+            padding: 10px 20px;
+        }
+
+        .sync-status.compact:hover .sync-details {
+            max-width: 200px;
+            opacity: 1;
+            margin-left: 10px;
         }
 
         .sync-status:hover {
             box-shadow: 0 6px 20px rgba(0,0,0,0.2);
             transform: translateY(-2px);
+        }
+
+        .sync-details {
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s;
+        }
+
+        .sync-main-text {
+            font-weight: 600;
+        }
+
+        .sync-sub-text {
+            font-size: 0.75em;
+            color: #666;
         }
 
         .sync-indicator {
@@ -158,6 +195,78 @@
         .nav button.active {
             background: #764ba2;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        /* Vinyl Record Button */
+        .vinyl-button {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+            transition: transform 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .vinyl-button:hover {
+            transform: scale(1.1) rotate(15deg);
+        }
+
+        .vinyl-record {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4), inset 0 2px 5px rgba(255,255,255,0.1);
+            animation: spin 3s linear infinite paused;
+        }
+
+        .vinyl-button:hover .vinyl-record {
+            animation-play-state: running;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .vinyl-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 0 2px #1a1a1a, 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .vinyl-groove {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 45px;
+            height: 45px;
+            border: 2px solid rgba(255,255,255,0.05);
+            border-radius: 50%;
+        }
+
+        .vinyl-groove::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 35px;
+            height: 35px;
+            border: 1px solid rgba(255,255,255,0.03);
+            border-radius: 50%;
         }
 
         .content {
@@ -730,18 +839,26 @@
             <p>Track, Rate, and Discover Your Music Journey</p>
         </div>
 
+        <!-- Random Album Button (Vinyl Record Style) -->
+        <div style="position: absolute; top: 20px; left: 20px; z-index: 100;">
+            <button onclick="showSection('random', event)" class="vinyl-button" title="Random Album">
+                <div class="vinyl-record">
+                    <div class="vinyl-center"></div>
+                    <div class="vinyl-groove"></div>
+                </div>
+                <span style="display: block; margin-top: 8px; font-size: 0.85em;">Random</span>
+            </button>
+        </div>
+
         <div class="nav">
-            <button onclick="showSection('random', event)" class="active">Random Album</button>
-            <button onclick="showSection('browse', event)">Browse Albums</button>
-            <button onclick="showSection('add', event)">Add Album</button>
-            <button onclick="showSection('import', event)">Import Data</button>
+            <button onclick="showSection('browse', event)" class="active">Browse Albums</button>
+            <button onclick="showSection('import', event)">Import/Export Data</button>
             <button onclick="showSection('stats', event)">Statistics</button>
-            <button onclick="exportData()">Export Data</button>
         </div>
 
         <div class="content">
             <!-- Random Album Section -->
-            <div id="random" class="section active">
+            <div id="random" class="section">
                 <div class="random-album-card">
                     <h2 style="text-align: center;">Discover Your Next Album</h2>
                     <div style="text-align: center; margin: 20px 0;">
@@ -754,7 +871,7 @@
             </div>
 
             <!-- Browse Albums Section -->
-            <div id="browse" class="section">
+            <div id="browse" class="section active">
                 <h2>Browse Albums</h2>
                 
                 <!-- Multi-select Controls -->
@@ -812,25 +929,69 @@
                         <div class="form-group">
                             <label>Sort By</label>
                             <select id="sortBy" onchange="applyFilters()">
-                                <option value="name">Album Name</option>
-                                <option value="artist">Artist</option>
-                                <option value="score">Score</option>
-                                <option value="date">Date Listened</option>
-                                <option value="year">Year</option>
+                                <option value="name-asc">Album Name (A-Z)</option>
+                                <option value="name-desc">Album Name (Z-A)</option>
+                                <option value="artist-asc">Artist (A-Z)</option>
+                                <option value="artist-desc">Artist (Z-A)</option>
+                                <option value="score-desc">Score (High-Low)</option>
+                                <option value="score-asc">Score (Low-High)</option>
+                                <option value="date-desc">Date Listened (Newest)</option>
+                                <option value="date-asc">Date Listened (Oldest)</option>
                             </select>
                         </div>
                     </div>
-                    <div style="margin-top: 15px; display: flex; gap: 10px;">
+                    <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
                         <button class="btn btn-secondary" onclick="clearFilters()">Clear Filters</button>
                         <button class="btn" onclick="toggleMultiSelectMode()">
                             <span id="multiSelectModeBtn">📋 Multi-Select</span>
                         </button>
+                        <button class="btn btn-success" onclick="showAddAlbumForm()" style="margin-left: auto;">
+                            ➕ Add Album
+                        </button>
                     </div>
                 </div>
+
+                <!-- Add Album Form (Initially Hidden) -->
+                <div id="addAlbumFormContainer" style="display: none; margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 12px; border: 2px solid #667eea;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="margin: 0;">Add New Album</h3>
+                        <button class="btn btn-secondary" onclick="hideAddAlbumForm()">✕ Cancel</button>
+                    </div>
+                    <form id="addAlbumFormInline" onsubmit="addAlbumInline(event)">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                            <div class="form-group">
+                                <label>Album Name *</label>
+                                <input type="text" id="albumNameInline" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Artist *</label>
+                                <input type="text" id="artistInline" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Year *</label>
+                                <input type="number" id="yearInline" min="1900" max="2100" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Album Artwork URL *</label>
+                                <input type="url" id="artworkUrlInline" required placeholder="https://...">
+                            </div>
+                            <div class="form-group">
+                                <label>Genre</label>
+                                <input type="text" id="genreInline" placeholder="Rock; Alternative">
+                            </div>
+                            <div class="form-group">
+                                <label>Score (0-10)</label>
+                                <input type="number" id="scoreInline" min="0" max="10" step="0.1">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn" style="margin-top: 15px;">Add Album</button>
+                    </form>
+                </div>
+
                 <div id="albumGrid" class="album-grid"></div>
             </div>
 
-            <!-- Add Album Section -->
+            <!-- Add Album Section (Hidden - replaced by inline form) -->
             <div id="add" class="section">
                 <h2>Add New Album</h2>
                 <form id="addAlbumForm" onsubmit="addAlbum(event)">
@@ -890,19 +1051,42 @@
                 </form>
             </div>
 
-            <!-- Import Data Section -->
+            <!-- Import/Export Data Section -->
             <div id="import" class="section">
-                <h2>Import Album Data</h2>
-                <div class="alert alert-info">
-                    <strong>Supported Format:</strong> Excel files (.xlsx, .xls) with columns: ID, Album Name, Artist, Year, Reason, Album Artwork URL, Discogs URL, Artist ID, Genre, Style, Score, Date Listened, Notes
+                <h2>Import/Export Album Data</h2>
+                
+                <!-- Export Section -->
+                <div style="margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 12px;">
+                    <h3 style="margin-bottom: 15px;">📤 Export Data</h3>
+                    <p style="color: #666; margin-bottom: 15px;">Download your album collection as an Excel file</p>
+                    <button class="btn btn-success" onclick="exportData()" style="font-size: 1.1em; padding: 12px 30px;">
+                        📥 Export to Excel
+                    </button>
                 </div>
-                <div class="file-upload" onclick="document.getElementById('fileInput').click()">
-                    <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="importExcel(event)">
-                    <p style="font-size: 3em; margin-bottom: 10px;">📁</p>
-                    <p style="font-size: 1.2em; color: #667eea; font-weight: 600;">Click to upload Excel file</p>
-                    <p style="color: #6c757d; margin-top: 10px;">Existing albums will be updated with new data</p>
+
+                <!-- Import Section -->
+                <div style="margin-bottom: 30px;">
+                    <h3 style="margin-bottom: 15px;">📥 Import Data</h3>
+                    <div class="alert alert-info">
+                        <strong>Supported Format:</strong> Excel files (.xlsx, .xls) with columns: ID, Album Name, Artist, Year, Reason, Album Artwork URL, Discogs URL, Artist ID, Genre, Style, Score, Date Listened, Notes
+                    </div>
+                    <div class="file-upload" onclick="document.getElementById('fileInput').click()">
+                        <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="importExcel(event)">
+                        <p style="font-size: 3em; margin-bottom: 10px;">📁</p>
+                        <p style="font-size: 1.2em; color: #667eea; font-weight: 600;">Click to upload Excel file</p>
+                        <p style="color: #6c757d; margin-top: 10px;">Existing albums will be updated with new data</p>
+                    </div>
+                    <div id="importStatus"></div>
                 </div>
-                <div id="importStatus"></div>
+
+                <!-- Template Download -->
+                <div style="padding: 20px; background: #f8f9fa; border-radius: 12px;">
+                    <h3 style="margin-bottom: 15px;">📋 Import Template</h3>
+                    <p style="color: #666; margin-bottom: 15px;">Download a template with the correct column headers to get started</p>
+                    <button class="btn btn-secondary" onclick="downloadImportTemplate()" style="font-size: 1.1em; padding: 12px 30px;">
+                        📄 Download Import Template
+                    </button>
+                </div>
             </div>
 
             <!-- Statistics Section -->
@@ -924,7 +1108,9 @@
     <!-- OneDrive Sync Status -->
     <div class="sync-status" id="syncStatus" onclick="toggleSyncMenu()">
         <div class="sync-indicator offline" id="syncIndicator"></div>
-        <span id="syncText">Offline Mode</span>
+        <div id="syncText">
+            <span class="sync-main-text">Offline Mode</span>
+        </div>
     </div>
 
     <!-- Sync Menu -->
@@ -1250,20 +1436,30 @@
             sortAlbums(albums, sortBy) {
                 const sorted = [...albums];
                 switch (sortBy) {
-                    case 'name':
+                    case 'name-asc':
                         return sorted.sort((a, b) => String(a.albumName).localeCompare(String(b.albumName)));
-                    case 'artist':
+                    case 'name-desc':
+                        return sorted.sort((a, b) => String(b.albumName).localeCompare(String(a.albumName)));
+                    case 'artist-asc':
                         return sorted.sort((a, b) => String(a.artist).localeCompare(String(b.artist)));
-                    case 'score':
+                    case 'artist-desc':
+                        return sorted.sort((a, b) => String(b.artist).localeCompare(String(a.artist)));
+                    case 'score-desc':
                         return sorted.sort((a, b) => (b.score || 0) - (a.score || 0));
-                    case 'date':
+                    case 'score-asc':
+                        return sorted.sort((a, b) => (a.score || 0) - (b.score || 0));
+                    case 'date-desc':
                         return sorted.sort((a, b) => {
                             if (!a.dateListened) return 1;
                             if (!b.dateListened) return -1;
                             return new Date(b.dateListened) - new Date(a.dateListened);
                         });
-                    case 'year':
-                        return sorted.sort((a, b) => (b.year || 0) - (a.year || 0));
+                    case 'date-asc':
+                        return sorted.sort((a, b) => {
+                            if (!a.dateListened) return 1;
+                            if (!b.dateListened) return -1;
+                            return new Date(a.dateListened) - new Date(b.dateListened);
+                        });
                     default:
                         return sorted;
                 }
@@ -1538,10 +1734,10 @@
 
                 // Show helpful instructions
                 const proceed = confirm(
-                    '🔐 OneDrive Connection Process:\n\n' +
+                    '🔐 Important:\n\n' +
                     '1. You\'ll be redirected to Microsoft login\n' +
                     '2. After login, you\'ll be sent to http://localhost\n' +
-                    '3. IMPORTANT: After redirect, manually open this HTML file again\n' +
+                    '3. IMPORTANT: After redirect, manually open this site again\n' +
                     '4. The app will detect your login and connect automatically\n\n' +
                     '⚠️ Make sure you\'ve added "http://localhost" to your Azure app\'s redirect URIs!\n\n' +
                     'Click OK to continue to Microsoft login.'
@@ -1915,23 +2111,45 @@
             updateUI(status, text) {
                 const indicator = document.getElementById('syncIndicator');
                 const statusText = document.getElementById('syncText');
+                const syncStatus = document.getElementById('syncStatus');
 
-                if (!indicator || !statusText) return;
+                if (!indicator || !statusText || !syncStatus) return;
 
                 // Remove all status classes
                 indicator.classList.remove('connected', 'syncing', 'offline', 'error');
+                syncStatus.classList.remove('compact');
 
                 if (status) {
                     indicator.classList.add(status);
-                    statusText.textContent = text;
+                    if (status === 'connected') {
+                        // Use compact mode for connected status
+                        syncStatus.classList.add('compact');
+                        const lastSync = this.lastSyncTime 
+                            ? new Date(this.lastSyncTime).toLocaleString()
+                            : 'Never';
+                        statusText.innerHTML = `
+                            <span class="sync-main-text">Synced</span>
+                            <span class="sync-details">
+                                <span class="sync-sub-text">Last: ${lastSync}</span>
+                            </span>
+                        `;
+                    } else {
+                        statusText.textContent = text;
+                    }
                 } else {
                     // Default status based on connection
                     if (this.isConnected()) {
                         indicator.classList.add('connected');
+                        syncStatus.classList.add('compact');
                         const lastSync = this.lastSyncTime 
                             ? new Date(this.lastSyncTime).toLocaleString()
                             : 'Never';
-                        statusText.textContent = `OneDrive (${lastSync})`;
+                        statusText.innerHTML = `
+                            <span class="sync-main-text">Synced</span>
+                            <span class="sync-details">
+                                <span class="sync-sub-text">Last: ${lastSync}</span>
+                            </span>
+                        `;
                     } else {
                         indicator.classList.add('offline');
                         statusText.textContent = 'Offline Mode';
@@ -2021,6 +2239,71 @@
             } else if (sectionId === 'stats') {
                 loadStatsSection();
             }
+        }
+
+        // Show/Hide Add Album Form
+        function showAddAlbumForm() {
+            document.getElementById('addAlbumFormContainer').style.display = 'block';
+            document.getElementById('albumNameInline').focus();
+        }
+
+        function hideAddAlbumForm() {
+            document.getElementById('addAlbumFormContainer').style.display = 'none';
+            document.getElementById('addAlbumFormInline').reset();
+        }
+
+        function addAlbumInline(event) {
+            event.preventDefault();
+            
+            const albumData = {
+                albumName: document.getElementById('albumNameInline').value,
+                artist: document.getElementById('artistInline').value,
+                year: document.getElementById('yearInline').value,
+                artworkUrl: document.getElementById('artworkUrlInline').value,
+                genre: document.getElementById('genreInline').value || '',
+                score: document.getElementById('scoreInline').value || null,
+                reason: 'Manual',
+                dateListened: null,
+                notes: ''
+            };
+
+            if (db.isDuplicate(albumData.albumName, albumData.artist)) {
+                alert('This album already exists in your collection!');
+                return;
+            }
+
+            db.addAlbum(albumData);
+            alert('Album added successfully!');
+            hideAddAlbumForm();
+            loadBrowseSection();
+        }
+
+        // Download Import Template
+        function downloadImportTemplate() {
+            const headers = ['ID', 'Album Name', 'Artist', 'Year', 'Reason', 'Album Artwork URL', 'Discogs URL', 'Artist ID', 'Genre', 'Style', 'Score', 'Date Listened', 'Notes'];
+            
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet([headers]);
+            
+            // Set column widths
+            ws['!cols'] = [
+                { wch: 5 },   // ID
+                { wch: 30 },  // Album Name
+                { wch: 25 },  // Artist
+                { wch: 6 },   // Year
+                { wch: 20 },  // Reason
+                { wch: 50 },  // Album Artwork URL
+                { wch: 50 },  // Discogs URL
+                { wch: 15 },  // Artist ID
+                { wch: 20 },  // Genre
+                { wch: 20 },  // Style
+                { wch: 6 },   // Score
+                { wch: 12 },  // Date Listened
+                { wch: 30 }   // Notes
+            ];
+            
+            XLSX.utils.book_append_sheet(wb, ws, 'Template');
+            XLSX.writeFile(wb, 'album_import_template.xlsx');
         }
 
         // Random Album Selection
@@ -2268,7 +2551,7 @@
             document.getElementById('filterGenre').value = '';
             document.getElementById('filterSource').value = '';
             document.getElementById('filterStatus').value = '';
-            document.getElementById('sortBy').value = 'name';
+            document.getElementById('sortBy').value = 'name-asc';
             applyFilters();
         }
 
@@ -3092,8 +3375,8 @@
                         <h3>🎸 Top Genres by Album Count</h3>
                         ${Object.entries(genreCounts).slice(0, 15).map(([genre, count]) => `
                             <div class="chart-bar" style="cursor: pointer;" onclick="showGenreDrilldown('${genre.replace(/'/g, "\\'")}')">
-                                <div class="chart-label">${genre}</div>
-                                <div class="chart-bar-fill" style="width: ${(count / maxCount) * 100}%;">
+                                <div class="chart-label" style="background: rgba(255,255,255,0.9); padding: 2px 8px; border-radius: 4px; color: #333; font-weight: 600; margin-right: 10px; white-space: nowrap;">${genre}</div>
+                                <div class="chart-bar-fill" style="width: ${(count / maxCount) * 100}%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); color: white; padding: 8px 12px; border-radius: 4px; font-weight: 600; text-align: right;">
                                     ${count} albums
                                 </div>
                             </div>
@@ -3109,8 +3392,8 @@
                         <h3>🎸 Top Genres by Average Score</h3>
                         ${Object.entries(genreAvg).slice(0, 10).map(([genre, score]) => `
                             <div class="chart-bar" style="cursor: pointer;" onclick="showGenreDrilldown('${genre.replace(/'/g, "\\'")}')">
-                                <div class="chart-label">${genre}</div>
-                                <div class="chart-bar-fill" style="width: ${(score / 10) * 100}%;">
+                                <div class="chart-label" style="background: rgba(255,255,255,0.9); padding: 2px 8px; border-radius: 4px; color: #333; font-weight: 600; margin-right: 10px; white-space: nowrap;">${genre}</div>
+                                <div class="chart-bar-fill" style="width: ${(score / 10) * 100}%; background: linear-gradient(90deg, #28a745 0%, #20c997 100%); color: white; padding: 8px 12px; border-radius: 4px; font-weight: 600; text-align: right;">
                                     ${score.toFixed(2)}
                                 </div>
                             </div>
@@ -3119,10 +3402,30 @@
                 `;
             }
 
-            // Source List Statistics
+            // Highest and Lowest Scoring Albums (Side by Side with Filter)
+            html += `
+                <div style="margin-top: 30px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="margin: 0;">🏆 Top & Bottom Albums</h3>
+                        <select id="scoreFilterSelect" onchange="updateScoreFilter()" style="padding: 8px 15px; border-radius: 6px; border: 1px solid #ddd; background: white; cursor: pointer; font-size: 14px;">
+                            <option value="all-time">All Time</option>
+                            <option value="this-month">This Month</option>
+                            <option value="previous-month">Previous Month</option>
+                            <option value="last-year">Last Year</option>
+                            <option value="select-month">Select Month...</option>
+                            <option value="select-year">Select Year...</option>
+                        </select>
+                    </div>
+                    <div id="scoreFilteredAlbums" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <!-- Will be populated by updateScoreFilter() -->
+                    </div>
+                </div>
+            `;
+
+            // Source List Statistics (Moved to bottom)
             if (Object.keys(sourceStats).length > 0) {
                 html += `
-                    <div class="chart">
+                    <div class="chart" style="margin-top: 30px;">
                         <h3>📚 Source List Statistics</h3>
                         <div class="stats-grid">
                             ${Object.entries(sourceStats).map(([source, stats]) => `
@@ -3147,46 +3450,89 @@
                 `;
             }
 
-            // Highest and Lowest Scoring Albums
-            const highScoring = albums
+            statsContent.innerHTML = html;
+            
+            // Initialize score filter
+            updateScoreFilter();
+        }
+
+        // Update score filter for highest/lowest albums
+        function updateScoreFilter() {
+            const filterValue = document.getElementById('scoreFilterSelect')?.value || 'all-time';
+            const albums = db.getAllAlbums();
+            let filteredAlbums = albums;
+
+            // Apply date filter
+            const now = new Date();
+            if (filterValue === 'this-month') {
+                const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+                filteredAlbums = albums.filter(a => a.dateListened && a.dateListened.startsWith(thisMonth));
+            } else if (filterValue === 'previous-month') {
+                const prevDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                const prevMonth = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`;
+                filteredAlbums = albums.filter(a => a.dateListened && a.dateListened.startsWith(prevMonth));
+            } else if (filterValue === 'last-year') {
+                const lastYear = (now.getFullYear() - 1).toString();
+                filteredAlbums = albums.filter(a => a.dateListened && a.dateListened.startsWith(lastYear));
+            } else if (filterValue === 'select-month') {
+                // Get all unique months
+                const months = [...new Set(albums.filter(a => a.dateListened).map(a => a.dateListened.substring(0, 7)))].sort().reverse();
+                if (months.length > 0) {
+                    const selected = prompt('Select month (format: YYYY-MM):\n\n' + months.map((m, i) => `${i + 1}. ${new Date(m + '-01').toLocaleDateString('en-US', { month: 'short', year: '2-digit' })}`).join('\n'));
+                    if (selected) {
+                        const index = parseInt(selected) - 1;
+                        if (index >= 0 && index < months.length) {
+                            filteredAlbums = albums.filter(a => a.dateListened && a.dateListened.startsWith(months[index]));
+                        }
+                    }
+                }
+            } else if (filterValue === 'select-year') {
+                // Get all unique years
+                const years = [...new Set(albums.filter(a => a.dateListened).map(a => a.dateListened.substring(0, 4)))].sort().reverse();
+                if (years.length > 0) {
+                    const selected = prompt('Select year:\n\n' + years.map((y, i) => `${i + 1}. ${y}`).join('\n'));
+                    if (selected) {
+                        const index = parseInt(selected) - 1;
+                        if (index >= 0 && index < years.length) {
+                            filteredAlbums = albums.filter(a => a.dateListened && a.dateListened.startsWith(years[index]));
+                        }
+                    }
+                }
+            }
+
+            const highScoring = filteredAlbums
                 .filter(a => a.score >= 8)
                 .sort((a, b) => b.score - a.score)
                 .slice(0, 10);
 
-            const lowScoring = albums
+            const lowScoring = filteredAlbums
                 .filter(a => a.score && a.score <= 4)
                 .sort((a, b) => a.score - b.score)
                 .slice(0, 10);
 
-            if (highScoring.length > 0) {
-                html += `
-                    <div class="chart">
-                        <h3>⭐ Highest Scoring Albums (≥8)</h3>
-                        ${highScoring.map(album => `
-                            <div class="stat-item" style="cursor: pointer;" onclick="showAlbumDetail(${album.id})">
-                                <span>${album.albumName} - ${album.artist}</span>
-                                <strong>${album.score}/10</strong>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            }
+            const container = document.getElementById('scoreFilteredAlbums');
+            if (!container) return;
 
-            if (lowScoring.length > 0) {
-                html += `
-                    <div class="chart">
-                        <h3>📉 Lowest Scoring Albums (≤4)</h3>
-                        ${lowScoring.map(album => `
-                            <div class="stat-item" style="cursor: pointer;" onclick="showAlbumDetail(${album.id})">
-                                <span>${album.albumName} - ${album.artist}</span>
-                                <strong>${album.score}/10</strong>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            }
-
-            statsContent.innerHTML = html;
+            container.innerHTML = `
+                <div class="chart" style="margin: 0;">
+                    <h4 style="color: #28a745;">⭐ Highest Scoring Albums (≥8)</h4>
+                    ${highScoring.length > 0 ? highScoring.map(album => `
+                        <div class="stat-item" style="cursor: pointer;" onclick="showAlbumDetail(${album.id})">
+                            <span>${album.albumName} - ${album.artist}</span>
+                            <strong style="color: #28a745;">${album.score}/10</strong>
+                        </div>
+                    `).join('') : '<p style="color: #999; padding: 20px; text-align: center;">No albums found</p>'}
+                </div>
+                <div class="chart" style="margin: 0;">
+                    <h4 style="color: #dc3545;">📉 Lowest Scoring Albums (≤4)</h4>
+                    ${lowScoring.length > 0 ? lowScoring.map(album => `
+                        <div class="stat-item" style="cursor: pointer;" onclick="showAlbumDetail(${album.id})">
+                            <span>${album.albumName} - ${album.artist}</span>
+                            <strong style="color: #dc3545;">${album.score}/10</strong>
+                        </div>
+                    `).join('') : '<p style="color: #999; padding: 20px; text-align: center;">No albums found</p>'}
+                </div>
+            `;
         }
 
         // Drilldown functions
