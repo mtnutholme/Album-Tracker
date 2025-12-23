@@ -58,8 +58,11 @@
         }
 
         .sync-status.compact {
-            padding: 10px 15px;
-            border-radius: 20px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            min-width: 100px;
+            width: auto;
+            max-width: 120px;
         }
 
         .sync-status.compact .sync-details {
@@ -834,20 +837,18 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🎵 Album Tracker</h1>
-            <p>Track, Rate, and Discover Your Music Journey</p>
-        </div>
-
-        <!-- Random Album Button (Vinyl Record Style) -->
-        <div style="position: absolute; top: 20px; left: 20px; z-index: 100;">
-            <button onclick="showSection('random', event)" class="vinyl-button" title="Random Album">
+        <div class="header" style="position: relative;">
+            <!-- Random Album Button (Vinyl Record Style) -->
+            <button onclick="pickRandomAlbum()" class="vinyl-button" title="Pick a Random Album" style="position: absolute; left: 25%; transform: translateX(-50%); top: 50%; margin-top: -30px;">
                 <div class="vinyl-record">
                     <div class="vinyl-center"></div>
                     <div class="vinyl-groove"></div>
                 </div>
-                <span style="display: block; margin-top: 8px; font-size: 0.85em;">Random</span>
+                <span style="display: block; margin-top: 8px; font-size: 0.75em; white-space: nowrap;">Pick a Random Album</span>
             </button>
+            
+            <h1>🎵 Album Tracker</h1>
+            <p>Track, Rate, and Discover Your Music Journey</p>
         </div>
 
         <div class="nav">
@@ -1523,11 +1524,14 @@
                 const averages = {};
                 Object.keys(artistScores).forEach(artist => {
                     const scores = artistScores[artist];
-                    averages[artist] = scores.reduce((a, b) => a + b, 0) / scores.length;
+                    averages[artist] = {
+                        average: scores.reduce((a, b) => a + b, 0) / scores.length,
+                        count: scores.length
+                    };
                 });
 
                 return Object.entries(averages)
-                    .sort((a, b) => b[1] - a[1])
+                    .sort((a, b) => b[1].average - a[1].average)
                     .reduce((obj, [key, val]) => ({ ...obj, [key]: val }), {});
             }
 
@@ -2304,6 +2308,71 @@
             
             XLSX.utils.book_append_sheet(wb, ws, 'Template');
             XLSX.writeFile(wb, 'album_import_template.xlsx');
+        }
+
+        // Pick Random Album (from vinyl button)
+        function pickRandomAlbum() {
+            // Get a random unscored album
+            const album = db.getRandomUnscoredAlbum();
+            
+            if (!album) {
+                alert('🎉 All albums have been rated! Add more albums to continue discovering.');
+                return;
+            }
+            
+            // Display the album directly in a modal
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                animation: fadeIn 0.3s;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 20px; padding: 40px; max-width: 600px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); position: relative;">
+                    <button onclick="this.closest('[style*=fixed]').remove()" style="position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; color: #999; line-height: 1;">&times;</button>
+                    <h2 style="text-align: center; margin-bottom: 30px; color: #667eea;">🎵 Your Random Album</h2>
+                    <div style="text-align: center;">
+                        ${album.artwork ? `<img src="${album.artwork}" alt="${album.album}" style="max-width: 300px; width: 100%; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">` : ''}
+                        <h3 style="margin: 20px 0 10px; color: #333;">${album.album}</h3>
+                        <p style="color: #666; font-size: 1.1em; margin-bottom: 10px;">${album.artist}</p>
+                        ${album.year ? `<p style="color: #999; margin-bottom: 20px;">${album.year}</p>` : ''}
+                        ${album.genre ? `<p style="color: #667eea; margin-bottom: 20px;"><strong>Genre:</strong> ${album.genre}</p>` : ''}
+                        <div style="margin-top: 30px;">
+                            <button onclick="rateAlbumFromModal(${album.id}, this.closest('[style*=fixed]'))" class="btn btn-success" style="padding: 12px 30px; font-size: 1.1em;">Rate This Album</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Close on background click
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+        
+        function rateAlbumFromModal(albumId, modal) {
+            modal.remove();
+            showSection('browse');
+            setTimeout(() => {
+                const albumCard = document.querySelector(`[data-album-id="${albumId}"]`);
+                if (albumCard) {
+                    albumCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    albumCard.style.animation = 'highlight 2s';
+                }
+            }, 100);
         }
 
         // Random Album Selection
@@ -3301,13 +3370,29 @@
             `;
 
             // Monthly Listening Stats
+            const currentYear = new Date().getFullYear();
+            const availableYears = [...new Set(Object.keys(monthlyStats).map(m => m.split(' ')[1]))].sort().reverse();
+            const selectedYear = window.monthlyStatsYear || currentYear.toString();
+            
             html += `
                 <div class="stat-card">
-                    <h3>📅 Monthly Listening</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="margin: 0;">📅 Monthly Listening</h3>
+                        ${availableYears.length > 0 ? `
+                            <select id="monthlyYearSelector" onchange="filterMonthlyStatsByYear(this.value)" style="padding: 5px 10px; border-radius: 6px; border: 1px solid #ddd; background: white; cursor: pointer;">
+                                ${availableYears.map(year => `<option value="${year}" ${year === selectedYear ? 'selected' : ''}>${year}</option>`).join('')}
+                            </select>
+                        ` : ''}
+                    </div>
                     ${Object.keys(monthlyStats).length > 0 ? 
                         Object.entries(monthlyStats)
-                            .sort((a, b) => b[0].localeCompare(a[0]))
-                            .slice(0, 12)
+                            .filter(([month]) => month.endsWith(selectedYear))
+                            .sort((a, b) => {
+                                const monthOrder = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                                const aMonth = a[0].split(' ')[0];
+                                const bMonth = b[0].split(' ')[0];
+                                return monthOrder.indexOf(bMonth) - monthOrder.indexOf(aMonth);
+                            })
                             .map(([month, data]) => {
                                 const avgScore = data.scores.length > 0 
                                     ? (data.scores.reduce((a, b) => a + b, 0) / data.scores.length).toFixed(2)
@@ -3355,11 +3440,11 @@
                 html += `
                     <div class="chart">
                         <h3>🎤 Top Artists by Average Score</h3>
-                        ${Object.entries(artistAvg).slice(0, 10).map(([artist, score]) => `
+                        ${Object.entries(artistAvg).slice(0, 10).map(([artist, data]) => `
                             <div class="chart-bar" style="cursor: pointer;" onclick="showArtistDrilldown('${artist.replace(/'/g, "\\'")}')">
                                 <div class="chart-label">${artist}</div>
-                                <div class="chart-bar-fill" style="width: ${(score / 10) * 100}%;">
-                                    ${score.toFixed(2)}
+                                <div class="chart-bar-fill" style="width: ${(data.average / 10) * 100}%;">
+                                    ${data.average.toFixed(2)} (${data.count} album${data.count !== 1 ? 's' : ''})
                                 </div>
                             </div>
                         `).join('')}
@@ -3555,6 +3640,11 @@
                 return sources.includes(source);
             });
             showDrilldownModal(`Albums from ${source}`, albums);
+        }
+
+        function filterMonthlyStatsByYear(year) {
+            window.monthlyStatsYear = year;
+            loadStatsSection();
         }
 
         function showMonthDrilldown(month) {
