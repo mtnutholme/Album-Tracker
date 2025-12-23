@@ -2346,8 +2346,59 @@
 
         // Pick Random Album (from vinyl button)
         function pickRandomAlbum() {
-            // Navigate to the random album section
-            showSection('random');
+            // Directly show random album without navigating to the page
+            const album = db.getRandomUnscoredAlbum();
+            
+            if (!album) {
+                alert('🎉 All albums have been rated! You\'ve completed your collection.');
+                return;
+            }
+
+            const genres = db.parseMultiValue(album.genre, true);
+            const styles = db.parseMultiValue(album.style);
+            const sources = db.parseMultiValue(album.reason);
+
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.display = 'flex';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 600px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
+                    <div style="text-align: center; padding: 20px;">
+                        <h2 style="margin-bottom: 20px; color: white;">🎵 Your Random Album</h2>
+                        ${album.artworkUrl ? `<img src="${album.artworkUrl}" alt="${album.albumName}" style="width: 300px; height: 300px; object-fit: cover; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(0,0,0,0.3);">` : ''}
+                        <h3 style="font-size: 1.8em; margin: 10px 0; color: white;">${album.albumName}</h3>
+                        <p style="font-size: 1.2em; margin: 5px 0; opacity: 0.9;">${album.artist}</p>
+                        ${album.year ? `<p style="font-size: 1em; margin: 5px 0; opacity: 0.8;">${album.year}</p>` : ''}
+                        ${genres.length > 0 ? `<p style="font-size: 0.9em; margin: 15px 0; opacity: 0.8;">${genres.join(', ')}</p>` : ''}
+                        <button onclick="rateAlbumFromModal(${album.id}, this.closest('.modal'))" style="margin-top: 20px; padding: 12px 30px; font-size: 1.1em; background: white; color: #667eea; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+                            Rate This Album
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            // Close modal when clicking outside
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+
+        // Rate album from modal
+        function rateAlbumFromModal(albumId, modal) {
+            modal.remove();
+            showSection('browse');
+            // Wait for section to load, then scroll to album
+            setTimeout(() => {
+                const albumCard = document.querySelector(`[data-album-id="${albumId}"]`);
+                if (albumCard) {
+                    albumCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    albumCard.style.animation = 'highlight 2s';
+                }
+            }, 100);
         }
         
 
@@ -3347,9 +3398,9 @@
             `;
 
             // Monthly Listening Stats
-            const currentYear = new Date().getFullYear();
-            const availableYears = [...new Set(Object.keys(monthlyStats).map(m => m.split(' ')[1]))].sort().reverse();
-            const selectedYear = window.monthlyStatsYear || currentYear.toString();
+            const currentYear = new Date().getFullYear().toString();
+            const availableYears = [...new Set(Object.keys(monthlyStats).map(m => m.split('-')[0]).filter(y => y))].sort().reverse();
+            const selectedYear = window.monthlyStatsYear || (availableYears.includes(currentYear) ? currentYear : (availableYears.length > 0 ? availableYears[0] : currentYear));
             
             html += `
                 <div class="stat-card">
@@ -3363,20 +3414,18 @@
                     </div>
                     ${Object.keys(monthlyStats).length > 0 ? 
                         Object.entries(monthlyStats)
-                            .filter(([month]) => month.endsWith(selectedYear))
-                            .sort((a, b) => {
-                                const monthOrder = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                                const aMonth = a[0].split(' ')[0];
-                                const bMonth = b[0].split(' ')[0];
-                                return monthOrder.indexOf(bMonth) - monthOrder.indexOf(aMonth);
-                            })
+                            .filter(([month]) => month.startsWith(selectedYear))
+                            .sort((a, b) => b[0].localeCompare(a[0]))
                             .map(([month, data]) => {
+                                const [year, monthNum] = month.split('-');
+                                const date = new Date(year, parseInt(monthNum) - 1);
+                                const displayMonth = date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
                                 const avgScore = data.scores.length > 0 
                                     ? (data.scores.reduce((a, b) => a + b, 0) / data.scores.length).toFixed(2)
                                     : 'N/A';
                                 return `
                                     <div class="stat-item" style="cursor: pointer;" onclick="showMonthDrilldown('${month}')">
-                                        <span>${month}</span>
+                                        <span>${displayMonth}</span>
                                         <strong>${data.count} albums (Avg: ${avgScore})</strong>
                                     </div>
                                 `;
@@ -3418,10 +3467,12 @@
                     <div class="chart">
                         <h3>🎤 Top Artists by Average Score</h3>
                         ${Object.entries(artistAvg).slice(0, 10).map(([artist, data]) => `
-                            <div class="chart-bar" style="cursor: pointer;" onclick="showArtistDrilldown('${artist.replace(/'/g, "\\'")}')">
-                                <div class="chart-label">${artist}</div>
-                                <div class="chart-bar-fill" style="width: ${(data.average / 10) * 100}%;">
-                                    ${data.average.toFixed(2)} (${data.count} album${data.count !== 1 ? 's' : ''})
+                            <div class="chart-bar" style="cursor: pointer; display: flex; align-items: center; margin-bottom: 8px;" onclick="showArtistDrilldown('${artist.replace(/'/g, "\\'")}')">
+                                <div style="min-width: 150px; max-width: 150px; padding-right: 10px; color: #333; font-weight: 600; font-size: 13px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${artist}">${artist}</div>
+                                <div style="flex: 1; display: flex; align-items: center;">
+                                    <div class="chart-bar-fill" style="width: ${(data.average / 10) * 100}%; background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%); color: white; padding: 8px 12px; border-radius: 4px; font-weight: 600; min-width: 100px;">
+                                        ${data.average.toFixed(2)} (${data.count} album${data.count !== 1 ? 's' : ''})
+                                    </div>
                                 </div>
                             </div>
                         `).join('')}
@@ -3436,10 +3487,13 @@
                     <div class="chart">
                         <h3>🎸 Top Genres by Album Count</h3>
                         ${Object.entries(genreCounts).slice(0, 15).map(([genre, count]) => `
-                            <div class="chart-bar" style="cursor: pointer;" onclick="showGenreDrilldown('${genre.replace(/'/g, "\\'")}')">
-                                <div class="chart-label" style="background: rgba(255,255,255,0.9); padding: 2px 8px; border-radius: 4px; color: #333; font-weight: 600; margin-right: 10px; white-space: nowrap;">${genre}</div>
-                                <div class="chart-bar-fill" style="width: ${(count / maxCount) * 100}%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); color: white; padding: 8px 12px; border-radius: 4px; font-weight: 600; text-align: right;">
-                                    ${count} albums
+                            <div class="chart-bar" style="cursor: pointer; display: flex; align-items: center; margin-bottom: 8px;" onclick="showGenreDrilldown('${genre.replace(/'/g, "\\'")}')">
+                                <div style="min-width: 150px; max-width: 150px; padding-right: 10px; color: #333; font-weight: 600; font-size: 13px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${genre}">${genre}</div>
+                                <div style="flex: 1; display: flex; align-items: center; position: relative;">
+                                    <div class="chart-bar-fill" style="width: ${(count / maxCount) * 100}%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); padding: 8px 12px; border-radius: 4px; min-height: 32px; min-width: 80px;"></div>
+                                    <div style="position: absolute; left: ${(count / maxCount) * 100 < 20 ? ((count / maxCount) * 100) + 2 : 12}%; color: ${(count / maxCount) * 100 < 20 ? '#333' : 'white'}; font-weight: 600; font-size: 14px; white-space: nowrap;">
+                                        ${count} album${count !== 1 ? 's' : ''}
+                                    </div>
                                 </div>
                             </div>
                         `).join('')}
@@ -3453,10 +3507,13 @@
                     <div class="chart">
                         <h3>🎸 Top Genres by Average Score</h3>
                         ${Object.entries(genreAvg).slice(0, 10).map(([genre, score]) => `
-                            <div class="chart-bar" style="cursor: pointer;" onclick="showGenreDrilldown('${genre.replace(/'/g, "\\'")}')">
-                                <div class="chart-label" style="background: rgba(255,255,255,0.9); padding: 2px 8px; border-radius: 4px; color: #333; font-weight: 600; margin-right: 10px; white-space: nowrap;">${genre}</div>
-                                <div class="chart-bar-fill" style="width: ${(score / 10) * 100}%; background: linear-gradient(90deg, #28a745 0%, #20c997 100%); color: white; padding: 8px 12px; border-radius: 4px; font-weight: 600; text-align: right;">
-                                    ${score.toFixed(2)}
+                            <div class="chart-bar" style="cursor: pointer; display: flex; align-items: center; margin-bottom: 8px;" onclick="showGenreDrilldown('${genre.replace(/'/g, "\\'")}')">
+                                <div style="min-width: 150px; max-width: 150px; padding-right: 10px; color: #333; font-weight: 600; font-size: 13px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${genre}">${genre}</div>
+                                <div style="flex: 1; display: flex; align-items: center; position: relative;">
+                                    <div class="chart-bar-fill" style="width: ${(score / 10) * 100}%; background: linear-gradient(90deg, #28a745 0%, #20c997 100%); padding: 8px 12px; border-radius: 4px; min-height: 32px;"></div>
+                                    <div style="position: absolute; left: 12px; color: #333; font-weight: 600; font-size: 14px; text-shadow: 1px 1px 2px rgba(255,255,255,0.8);">
+                                        ${score.toFixed(2)}
+                                    </div>
                                 </div>
                             </div>
                         `).join('')}
@@ -3465,17 +3522,29 @@
             }
 
             // Highest and Lowest Scoring Albums (Side by Side with Filter)
+            // Get available months and years for dropdowns
+            const allMonths = [...new Set(albums.filter(a => a.dateListened).map(a => a.dateListened.substring(0, 7)))].sort().reverse();
+            const allYears = [...new Set(albums.filter(a => a.dateListened).map(a => a.dateListened.substring(0, 4)))].sort().reverse();
+            
             html += `
                 <div style="margin-top: 30px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px;">
                         <h3 style="margin: 0;">🏆 Top & Bottom Albums</h3>
                         <select id="scoreFilterSelect" onchange="updateScoreFilter()" style="padding: 8px 15px; border-radius: 6px; border: 1px solid #ddd; background: white; cursor: pointer; font-size: 14px;">
                             <option value="all-time">All Time</option>
                             <option value="this-month">This Month</option>
                             <option value="previous-month">Previous Month</option>
                             <option value="last-year">Last Year</option>
-                            <option value="select-month">Select Month...</option>
-                            <option value="select-year">Select Year...</option>
+                            <optgroup label="Select Month">
+                                ${allMonths.map(m => {
+                                    const date = new Date(m + '-01');
+                                    const label = date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+                                    return `<option value="month:${m}">${label}</option>`;
+                                }).join('')}
+                            </optgroup>
+                            <optgroup label="Select Year">
+                                ${allYears.map(y => `<option value="year:${y}">${y}</option>`).join('')}
+                            </optgroup>
                         </select>
                     </div>
                     <div id="scoreFilteredAlbums" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -3536,30 +3605,12 @@
             } else if (filterValue === 'last-year') {
                 const lastYear = (now.getFullYear() - 1).toString();
                 filteredAlbums = albums.filter(a => a.dateListened && a.dateListened.startsWith(lastYear));
-            } else if (filterValue === 'select-month') {
-                // Get all unique months
-                const months = [...new Set(albums.filter(a => a.dateListened).map(a => a.dateListened.substring(0, 7)))].sort().reverse();
-                if (months.length > 0) {
-                    const selected = prompt('Select month (format: YYYY-MM):\n\n' + months.map((m, i) => `${i + 1}. ${new Date(m + '-01').toLocaleDateString('en-US', { month: 'short', year: '2-digit' })}`).join('\n'));
-                    if (selected) {
-                        const index = parseInt(selected) - 1;
-                        if (index >= 0 && index < months.length) {
-                            filteredAlbums = albums.filter(a => a.dateListened && a.dateListened.startsWith(months[index]));
-                        }
-                    }
-                }
-            } else if (filterValue === 'select-year') {
-                // Get all unique years
-                const years = [...new Set(albums.filter(a => a.dateListened).map(a => a.dateListened.substring(0, 4)))].sort().reverse();
-                if (years.length > 0) {
-                    const selected = prompt('Select year:\n\n' + years.map((y, i) => `${i + 1}. ${y}`).join('\n'));
-                    if (selected) {
-                        const index = parseInt(selected) - 1;
-                        if (index >= 0 && index < years.length) {
-                            filteredAlbums = albums.filter(a => a.dateListened && a.dateListened.startsWith(years[index]));
-                        }
-                    }
-                }
+            } else if (filterValue.startsWith('month:')) {
+                const month = filterValue.substring(6);
+                filteredAlbums = albums.filter(a => a.dateListened && a.dateListened.startsWith(month));
+            } else if (filterValue.startsWith('year:')) {
+                const year = filterValue.substring(5);
+                filteredAlbums = albums.filter(a => a.dateListened && a.dateListened.startsWith(year));
             }
 
             const highScoring = filteredAlbums
