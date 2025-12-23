@@ -205,31 +205,36 @@
             background: transparent;
             border: none;
             cursor: pointer;
-            padding: 10px;
+            padding: 5px;
             transition: transform 0.3s;
             display: flex;
             flex-direction: column;
             align-items: center;
             color: white;
             font-weight: 600;
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
         }
 
         .vinyl-button:hover {
-            transform: scale(1.1) rotate(15deg);
+            transform: translateY(-50%) scale(1.1);
         }
 
         .vinyl-record {
-            width: 60px;
-            height: 60px;
+            width: 70px;
+            height: 70px;
             background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
             border-radius: 50%;
             position: relative;
             box-shadow: 0 4px 15px rgba(0,0,0,0.4), inset 0 2px 5px rgba(255,255,255,0.1);
-            animation: spin 3s linear infinite paused;
+            animation: spin 4s linear infinite;
         }
 
         .vinyl-button:hover .vinyl-record {
-            animation-play-state: running;
+            animation: spin 2s linear infinite;
         }
 
         @keyframes spin {
@@ -242,11 +247,93 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 50%;
             box-shadow: 0 0 0 2px #1a1a1a, 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .vinyl-text {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        .vinyl-text text {
+            fill: white;
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* Mobile optimization for header */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5em;
+                margin-left: 90px;
+                margin-right: 10px;
+            }
+
+            .header p {
+                font-size: 0.85em;
+                margin-left: 90px;
+                margin-right: 10px;
+            }
+
+            .vinyl-button {
+                left: 10px;
+            }
+
+            .vinyl-record {
+                width: 60px;
+                height: 60px;
+            }
+
+            .vinyl-center {
+                width: 18px;
+                height: 18px;
+            }
+
+            .vinyl-text text {
+                font-size: 8px;
+                letter-spacing: 1.5px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.3em;
+                margin-left: 75px;
+            }
+
+            .header p {
+                font-size: 0.75em;
+                margin-left: 75px;
+            }
+
+            .vinyl-button {
+                left: 5px;
+            }
+
+            .vinyl-record {
+                width: 50px;
+                height: 50px;
+            }
+
+            .vinyl-center {
+                width: 16px;
+                height: 16px;
+            }
+
+            .vinyl-text text {
+                font-size: 7px;
+                letter-spacing: 1px;
+            }
         }
 
         .vinyl-groove {
@@ -402,6 +489,27 @@
         .album-details p {
             font-size: 1.1em;
             opacity: 0.95;
+        }
+
+        .wiki-link {
+            display: inline-block;
+            margin-left: 8px;
+            color: #fff;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+            text-decoration: none;
+            font-size: 0.85em;
+            vertical-align: middle;
+        }
+
+        .wiki-link:hover {
+            opacity: 1;
+        }
+
+        .wiki-link svg {
+            width: 16px;
+            height: 16px;
+            vertical-align: middle;
         }
 
         .rating-form {
@@ -839,12 +947,21 @@
     <div class="container">
         <div class="header" style="position: relative;">
             <!-- Random Album Button (Vinyl Record Style) -->
-            <button onclick="pickRandomAlbum()" class="vinyl-button" title="Pick a Random Album" style="position: absolute; left: 25%; transform: translateX(-50%); top: 50%; margin-top: -30px;">
+            <button onclick="pickRandomAlbum()" class="vinyl-button" title="Pick an Album">
                 <div class="vinyl-record">
+                    <svg class="vinyl-text" viewBox="0 0 100 100">
+                        <defs>
+                            <path id="circlePath" d="M 50, 50 m -35, 0 a 35,35 0 1,1 70,0 a 35,35 0 1,1 -70,0"/>
+                        </defs>
+                        <text>
+                            <textPath href="#circlePath" startOffset="0%">
+                                PICK AN ALBUM • PICK AN ALBUM • 
+                            </textPath>
+                        </text>
+                    </svg>
                     <div class="vinyl-center"></div>
                     <div class="vinyl-groove"></div>
                 </div>
-                <span style="display: block; margin-top: 8px; font-size: 0.75em; white-space: nowrap;">Pick a Random Album</span>
             </button>
             
             <h1>🎵 Album Tracker</h1>
@@ -2359,6 +2476,26 @@
         }
 
         // Random Album Selection
+        // Helper function to create Wikipedia link
+        function getWikipediaLink(searchTerm, type, artistName = null) {
+            let searchQuery = searchTerm;
+            if (type === 'album' && artistName) {
+                // Include artist name for album searches to get more accurate results
+                searchQuery = `${searchTerm} ${artistName}`;
+            }
+            const encodedSearch = encodeURIComponent(searchQuery + ' ' + type + ' wikipedia');
+            return `https://www.google.com/search?q=${encodedSearch}&btnI=I%27m+Feeling+Lucky`;
+        }
+
+        // Helper function to create Wikipedia icon
+        function getWikiIcon() {
+            return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>`;
+        }
+
         function selectRandomAlbum() {
             const album = db.getRandomUnscoredAlbum();
             const display = document.getElementById('randomAlbumDisplay');
@@ -2383,8 +2520,8 @@
                         <img src="${album.artworkUrl}" alt="${album.albumName}" class="album-artwork" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23ddd%22 width=%22300%22 height=%22300%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23999%22 font-size=%2220%22%3ENo Image%3C/text%3E%3C/svg%3E'">
                     </div>
                     <div class="album-details">
-                        <h2>${album.albumName}</h2>
-                        <p><strong>Artist:</strong> ${album.artist}</p>
+                        <h2>${album.albumName}<a href="${getWikipediaLink(album.albumName, 'album', album.artist)}" target="_blank" rel="noopener noreferrer" class="wiki-link" title="Search Wikipedia">${getWikiIcon()}</a></h2>
+                        <p><strong>Artist:</strong> ${album.artist}<a href="${getWikipediaLink(album.artist, 'artist')}" target="_blank" rel="noopener noreferrer" class="wiki-link" title="Search Wikipedia">${getWikiIcon()}</a></p>
                         <p><strong>Year:</strong> ${album.year}</p>
                         ${genres.length > 0 ? `<p><strong>Genre:</strong> ${genres.join(', ')}</p>` : ''}
                         ${styles.length > 0 ? `<p><strong>Style:</strong> ${styles.join(', ')}</p>` : ''}
@@ -2486,46 +2623,115 @@
             document.getElementById('randomAlbumDisplay').style.display = 'block';
         }
 
-        function downloadListAsImage() {
-            const canvas = document.getElementById('albumListCanvas');
-            
-            // Use html2canvas library to convert the div to an image
-            // First, we need to load the library if not already loaded
-            if (typeof html2canvas === 'undefined') {
-                // Load html2canvas from CDN
-                const script = document.createElement('script');
-                script.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
-                script.onload = () => {
-                    captureAndDownload(canvas);
-                };
-                document.head.appendChild(script);
-            } else {
-                captureAndDownload(canvas);
+        async function downloadListAsImage() {
+            try {
+                const element = document.getElementById('albumListCanvas');
+                
+                if (!element) {
+                    showAlert('error', 'List element not found!');
+                    return;
+                }
+
+                // Show loading message
+                showAlert('info', 'Generating image... Please wait.');
+
+                // Use modern approach with dom-to-image-more library (more reliable)
+                // Or fallback to manual canvas approach
+                await downloadUsingCanvas(element);
+                
+            } catch (err) {
+                console.error('Error generating image:', err);
+                showAlert('error', 'Failed to generate image. Please try again.');
             }
         }
 
-        function captureAndDownload(element) {
-            html2canvas(element, {
-                scale: 2,
-                backgroundColor: null,
-                logging: false,
-                useCORS: true
-            }).then(canvas => {
-                // Convert canvas to blob
-                canvas.toBlob(blob => {
-                    // Create download link
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.download = `album-list-${new Date().toISOString().split('T')[0]}.png`;
-                    link.href = url;
-                    link.click();
-                    URL.revokeObjectURL(url);
-                    showAlert('success', 'List downloaded successfully!');
-                });
-            }).catch(err => {
-                console.error('Error generating image:', err);
-                showAlert('error', 'Failed to generate image. Please try again.');
+        async function downloadUsingCanvas(element) {
+            // Create a canvas manually for better browser compatibility
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Get element dimensions
+            const rect = element.getBoundingClientRect();
+            const scale = 2; // High resolution
+            
+            canvas.width = rect.width * scale;
+            canvas.height = rect.height * scale;
+            
+            // Scale context for high resolution
+            ctx.scale(scale, scale);
+            
+            // Draw gradient background
+            const gradient = ctx.createLinearGradient(0, 0, rect.width, rect.height);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(1, '#764ba2');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, rect.width, rect.height);
+            
+            // Get all the text content
+            const albums = db.getAllAlbums();
+            const shuffled = [...albums].sort(() => 0.5 - Math.random());
+            const randomAlbums = shuffled.slice(0, Math.min(10, albums.length));
+            
+            // Draw title
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 32px Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+            ctx.shadowBlur = 4;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+            ctx.fillText('🎵 My Next 10 Albums', rect.width / 2, 60);
+            ctx.shadowColor = 'transparent';
+            
+            // Draw white content box
+            ctx.fillStyle = 'rgba(255,255,255,0.95)';
+            ctx.fillRect(40, 100, rect.width - 80, rect.height - 180);
+            
+            // Draw albums
+            let yPos = 140;
+            ctx.textAlign = 'left';
+            
+            randomAlbums.forEach((album, index) => {
+                // Album name
+                ctx.fillStyle = '#667eea';
+                ctx.font = 'bold 20px Arial, sans-serif';
+                ctx.fillText(`${index + 1}. ${album.albumName}`, 70, yPos);
+                
+                // Artist name
+                ctx.fillStyle = '#555';
+                ctx.font = '18px Arial, sans-serif';
+                ctx.fillText(album.artist, 90, yPos + 25);
+                
+                // Divider line (except for last item)
+                if (index < randomAlbums.length - 1) {
+                    ctx.strokeStyle = '#e0e0e0';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(70, yPos + 40);
+                    ctx.lineTo(rect.width - 70, yPos + 40);
+                    ctx.stroke();
+                }
+                
+                yPos += 60;
             });
+            
+            // Draw date
+            ctx.fillStyle = 'white';
+            ctx.font = '14px Arial, sans-serif';
+            ctx.textAlign = 'center';
+            const dateStr = new Date().toLocaleDateString();
+            ctx.fillText(`Generated ${dateStr}`, rect.width / 2, rect.height - 30);
+            
+            // Convert canvas to blob and download
+            canvas.toBlob(blob => {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.download = `album-list-${new Date().toISOString().split('T')[0]}.png`;
+                link.href = url;
+                link.click();
+                URL.revokeObjectURL(url);
+                showAlert('success', 'List downloaded successfully!');
+            }, 'image/png');
         }
 
         // Browse Section
@@ -2958,8 +3164,8 @@
                         <img src="${album.artworkUrl}" alt="${album.albumName}" style="width: 100%; border-radius: 12px;" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23ddd%22 width=%22300%22 height=%22300%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23999%22 font-size=%2220%22%3ENo Image%3C/text%3E%3C/svg%3E'">
                     </div>
                     <div>
-                        <h2 style="margin-bottom: 20px;">${album.albumName}</h2>
-                        <p style="margin-bottom: 10px;"><strong>Artist:</strong> ${album.artist}</p>
+                        <h2 style="margin-bottom: 20px;">${album.albumName}<a href="${getWikipediaLink(album.albumName, 'album', album.artist)}" target="_blank" rel="noopener noreferrer" class="wiki-link" title="Search Wikipedia" style="color: #667eea;">${getWikiIcon()}</a></h2>
+                        <p style="margin-bottom: 10px;"><strong>Artist:</strong> ${album.artist}<a href="${getWikipediaLink(album.artist, 'artist')}" target="_blank" rel="noopener noreferrer" class="wiki-link" title="Search Wikipedia" style="color: #667eea;">${getWikiIcon()}</a></p>
                         <p style="margin-bottom: 10px;"><strong>Year:</strong> ${album.year}</p>
                         ${album.artistId ? `<p style="margin-bottom: 10px;"><strong>Artist ID:</strong> ${album.artistId}</p>` : ''}
                         ${album.discogsUrl ? `<p style="margin-bottom: 10px;"><a href="${album.discogsUrl}" target="_blank" style="color: #667eea; text-decoration: none;">View on Discogs</a></p>` : ''}
