@@ -1608,6 +1608,18 @@
                                 <input type="text" id="genreInline" placeholder="Rock; Alternative">
                             </div>
                             <div class="form-group">
+                                <label>Style</label>
+                                <input type="text" id="styleInline" placeholder="Indie Rock; Post-Punk">
+                            </div>
+                            <div class="form-group">
+                                <label>Source / Reason</label>
+                                <input type="text" id="reasonInline" placeholder="Manual or source lists">
+                            </div>
+                            <div class="form-group">
+                                <label>Discogs URL</label>
+                                <input type="url" id="discogsUrlInline" placeholder="https://www.discogs.com/...">
+                            </div>
+                            <div class="form-group">
                                 <label>Score (0-10)</label>
                                 <input type="number" id="scoreInline" min="0" max="10" step="0.1">
                             </div>
@@ -3136,8 +3148,10 @@
             const statusDiv = document.getElementById('oneDriveSettingsStatus');
             const buttonsDiv = document.getElementById('oneDriveSettingsButtons');
             
-            if (oneDriveManager && oneDriveManager.isAuthenticated) {
-                const lastSync = localStorage.getItem('lastSyncTime');
+            if (!statusDiv || !buttonsDiv) return;
+            
+            if (syncManager && syncManager.isConnected()) {
+                const lastSync = localStorage.getItem('last_sync_time');
                 const lastSyncText = lastSync ? new Date(parseInt(lastSync)).toLocaleString() : 'Never';
                 
                 statusDiv.innerHTML = `
@@ -3151,6 +3165,9 @@
                     <button onclick="disconnectOneDriveFromSettings()" class="settings-btn settings-btn-secondary">
                         Disconnect from OneDrive
                     </button>
+                    <button onclick="syncManager.syncToOneDrive()" class="settings-btn settings-btn-primary">
+                        Sync Now
+                    </button>
                 `;
             } else {
                 statusDiv.innerHTML = `
@@ -3160,7 +3177,7 @@
                 `;
                 
                 buttonsDiv.innerHTML = `
-                    <button onclick="connectOneDrive()" class="settings-btn settings-btn-primary">
+                    <button onclick="syncManager.connect()" class="settings-btn settings-btn-primary">
                         Connect to OneDrive
                     </button>
                 `;
@@ -3169,9 +3186,9 @@
 
         function disconnectOneDriveFromSettings() {
             if (confirm('Are you sure you want to disconnect from OneDrive? Your local data will not be affected.')) {
-                oneDriveManager.disconnect();
+                syncManager.disconnect();
                 updateOneDriveSettingsStatus();
-                updateUI();
+                syncManager.updateUI();
             }
         }
 
@@ -3353,14 +3370,19 @@
             const year = album.year || new Date().getFullYear();
             const genres = album.genres ? album.genres.join('; ') : '';
             const styles = album.styles ? album.styles.join('; ') : '';
+            const labels = album.labels ? album.labels.map(l => l.name).join('; ') : '';
             const artworkUrl = album.images && album.images.length > 0 ? album.images[0].uri : '';
+            const discogsUrl = album.uri || '';
             
             // Fill inline form fields
             document.getElementById('albumNameInline').value = albumName;
             document.getElementById('artistInline').value = artist;
             document.getElementById('yearInline').value = year;
-            document.getElementById('genreInline').value = genres || styles;
+            document.getElementById('genreInline').value = genres;
+            document.getElementById('styleInline').value = styles;
+            document.getElementById('reasonInline').value = labels ? `Discogs: ${labels}` : 'Discogs';
             document.getElementById('artworkUrlInline').value = artworkUrl;
+            document.getElementById('discogsUrlInline').value = discogsUrl;
             
             // Scroll to form
             document.getElementById('addAlbumFormInline').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -3590,9 +3612,11 @@
                 artist: document.getElementById('artistInline').value,
                 year: document.getElementById('yearInline').value,
                 artworkUrl: document.getElementById('artworkUrlInline').value,
+                discogsUrl: document.getElementById('discogsUrlInline').value || '',
                 genre: document.getElementById('genreInline').value || '',
+                style: document.getElementById('styleInline').value || '',
+                reason: document.getElementById('reasonInline').value || 'Manual',
                 score: document.getElementById('scoreInline').value || null,
-                reason: 'Manual',
                 dateListened: null,
                 notes: ''
             };
@@ -5264,7 +5288,37 @@
         }
 
         // Initialize
+        // Auto-sync on activity
+        let autoSyncTimeout = null;
+        
+        function scheduleAutoSync() {
+            // Clear any existing timeout
+            if (autoSyncTimeout) {
+                clearTimeout(autoSyncTimeout);
+            }
+            
+            // Schedule sync for 30 seconds from now
+            autoSyncTimeout = setTimeout(() => {
+                if (syncManager && syncManager.isConnected()) {
+                    console.log('Auto-syncing to OneDrive...');
+                    syncManager.syncToOneDrive();
+                }
+            }, 30000); // 30 seconds
+        }
+        
+        // Trigger auto-sync on any user activity
+        function setupAutoSync() {
+            const activityEvents = ['click', 'keydown', 'scroll', 'touchstart'];
+            
+            activityEvents.forEach(eventType => {
+                document.addEventListener(eventType, scheduleAutoSync, { passive: true });
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
+            // Setup auto-sync
+            setupAutoSync();
+            
             // Load initial section
             loadBrowseSection();
             
