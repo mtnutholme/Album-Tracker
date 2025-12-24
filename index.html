@@ -3398,7 +3398,10 @@
         function fillFormFromDiscogs(album) {
             // Extract data from Discogs response
             const albumName = album.title || '';
-            const artist = album.artists && album.artists.length > 0 ? album.artists[0].name : '';
+            // Join all artists with " & " separator (handles multiple artists)
+            const artist = album.artists && album.artists.length > 0 
+                ? album.artists.map(a => a.name).join(' & ') 
+                : '';
             const year = album.year || new Date().getFullYear();
             const genres = album.genres ? album.genres.join('; ') : '';
             const styles = album.styles ? album.styles.join('; ') : '';
