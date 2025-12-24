@@ -1563,6 +1563,17 @@
                                 🔍 Find on Discogs
                             </button>
                         </div>
+                        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
+                            <div class="form-group" style="margin: 0;">
+                                <label>Or paste Discogs URL</label>
+                                <div style="display: flex; gap: 10px;">
+                                    <input type="url" id="discogsUrl" placeholder="https://www.discogs.com/release/..." style="flex: 1;">
+                                    <button type="button" class="btn" onclick="fetchFromDiscogsUrl()" style="background: #667eea;">
+                                        📥 Import from URL
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                         <div style="display: flex; gap: 10px; margin-top: 10px;">
                             <button type="button" class="btn btn-secondary" onclick="clearQuickSearch()" style="font-size: 0.9em;">
                                 Clear
@@ -3064,7 +3075,12 @@
                 });
                 
                 if (response.ok) {
-                    updateDiscogsStatus('connected', 'Token saved and verified!');
+                    updateDiscogsStatus('connected', '✅ Token saved and verified successfully!');
+                    
+                    // Show confirmation alert
+                    setTimeout(() => {
+                        alert('✅ Discogs API token saved successfully!\n\nYou can now use the "Find on Discogs" feature when adding albums.');
+                    }, 100);
                     
                     // Sync to OneDrive if connected
                     if (oneDriveManager && oneDriveManager.isAuthenticated) {
@@ -3229,12 +3245,47 @@
                 }
                 
                 // Filter results to only albums/releases
-                const albums = data.results.filter(r => r.type === 'release' || r.type === 'master');
+                let albums = data.results.filter(r => r.type === 'release' || r.type === 'master');
                 
                 if (albums.length === 0) {
                     showDiscogsStatus('❌ No albums found. Try different search terms.', 'error');
                     return;
                 }
+                
+                // Prioritize master releases
+                const masterReleases = albums.filter(a => a.type === 'master');
+                const regularReleases = albums.filter(a => a.type === 'release');
+                
+                // If there's a master release, check if other results are just different versions of the same album
+                if (masterReleases.length > 0) {
+                    // Group by title to detect multiple versions of same album
+                    const titleGroups = {};
+                    albums.forEach(a => {
+                        const normalizedTitle = a.title.toLowerCase().replace(/[^a-z0-9]/g, '');
+                        if (!titleGroups[normalizedTitle]) {
+                            titleGroups[normalizedTitle] = [];
+                        }
+                        titleGroups[normalizedTitle].push(a);
+                    });
+                    
+                    // If most results are versions of the same album, just use the master
+                    const largestGroup = Object.values(titleGroups).sort((a, b) => b.length - a.length)[0];
+                    if (largestGroup && largestGroup.length >= albums.length * 0.7) {
+                        // 70% or more are the same album - use master release
+                        const masterInGroup = largestGroup.find(a => a.type === 'master');
+                        if (masterInGroup) {
+                            await fetchAlbumDetails(masterInGroup.id, true); // true = is master
+                            return;
+                        }
+                    }
+                }
+                
+                // Sort: masters first, then by year (newest first)
+                albums.sort((a, b) => {
+                    if (a.type === 'master' && b.type !== 'master') return -1;
+                    if (a.type !== 'master' && b.type === 'master') return 1;
+                    return (b.year || 0) - (a.year || 0);
+                });
                 
                 // Check for clear match
                 const exactMatch = albums.find(a => 
@@ -3246,7 +3297,8 @@
                 if (albums.length === 1 || (exactMatch && albums.length <= 3)) {
                     // Single clear match - auto-fill
                     const selectedAlbum = exactMatch || albums[0];
-                    await fetchAlbumDetails(selectedAlbum.id);
+                    const isMaster = selectedAlbum.type === 'master';
+                    await fetchAlbumDetails(selectedAlbum.id, isMaster);
                 } else {
                     // Multiple matches - show selection UI
                     showDiscogsResults(albums.slice(0, 10)); // Show top 10 results
@@ -3258,14 +3310,16 @@
             }
         }
 
-        async function fetchAlbumDetails(releaseId) {
+        async function fetchAlbumDetails(releaseId, isMaster = false) {
             const apiToken = localStorage.getItem('discogs_api_token');
             const statusDiv = document.getElementById('discogsSearchStatus');
             
             showDiscogsStatus('📥 Loading album details...', 'loading');
             
             try {
-                const url = `https://api.discogs.com/releases/${releaseId}?token=${apiToken}`;
+                // Use appropriate endpoint based on whether it's a master or release
+                const endpoint = isMaster ? 'masters' : 'releases';
+                const url = `https://api.discogs.com/${endpoint}/${releaseId}?token=${apiToken}`;
                 const response = await fetch(url, {
                     headers: {
                         'User-Agent': 'AlbumTracker/1.0'
@@ -3323,12 +3377,14 @@
                 const label = result.label ? result.label.join(', ') : 'Unknown';
                 const country = result.country || 'Unknown';
                 const imageUrl = result.thumb || result.cover_image || '';
+                const isMaster = result.type === 'master';
+                const typeLabel = isMaster ? ' <span style="background: #667eea; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.8em;">MASTER</span>' : '';
                 
                 return `
-                    <div class="discogs-result-card" onclick="selectDiscogsResult(${result.id})">
+                    <div class="discogs-result-card" onclick="selectDiscogsResult(${result.id}, ${isMaster})">
                         ${imageUrl ? `<img src="${imageUrl}" alt="${title}" class="discogs-result-image">` : '<div class="discogs-result-image"></div>'}
                         <div class="discogs-result-info">
-                            <div class="discogs-result-title">${title}</div>
+                            <div class="discogs-result-title">${title}${typeLabel}</div>
                             <div class="discogs-result-details">
                                 <strong>Year:</strong> ${year}<br>
                                 <strong>Format:</strong> ${format}<br>
@@ -3336,7 +3392,7 @@
                                 <strong>Country:</strong> ${country}
                             </div>
                         </div>
-                        <button class="discogs-result-button" onclick="event.stopPropagation(); selectDiscogsResult(${result.id})">
+                        <button class="discogs-result-button" onclick="event.stopPropagation(); selectDiscogsResult(${result.id}, ${isMaster})">
                             Select This
                         </button>
                     </div>
@@ -3347,8 +3403,8 @@
             showDiscogsStatus('', 'hidden');
         }
 
-        function selectDiscogsResult(releaseId) {
-            fetchAlbumDetails(releaseId);
+        function selectDiscogsResult(releaseId, isMaster = false) {
+            fetchAlbumDetails(releaseId, isMaster);
         }
 
         function closeDiscogsResults() {
@@ -3382,7 +3438,57 @@
         function clearQuickSearch() {
             document.getElementById('quickSearchArtist').value = '';
             document.getElementById('quickSearchAlbum').value = '';
+            document.getElementById('discogsUrl').value = '';
             showDiscogsStatus('', 'hidden');
+        }
+
+        async function fetchFromDiscogsUrl() {
+            const urlInput = document.getElementById('discogsUrl').value.trim();
+            
+            if (!urlInput) {
+                showDiscogsStatus('Please enter a Discogs URL.', 'error');
+                return;
+            }
+            
+            // Check if API token is configured
+            const apiToken = localStorage.getItem('discogs_api_token');
+            if (!apiToken) {
+                showDiscogsStatus('⚠️ Discogs API not configured. Please add your API token in Settings.', 'error');
+                setTimeout(() => {
+                    if (confirm('Would you like to open Settings to add your Discogs API token?')) {
+                        openSettings();
+                    }
+                }, 500);
+                return;
+            }
+            
+            // Extract release ID from URL
+            // Formats: https://www.discogs.com/release/123456 or https://www.discogs.com/Artist-Album/release/123456
+            let releaseId = null;
+            let isMaster = false;
+            
+            const releaseMatch = urlInput.match(/\/release\/(\d+)/);
+            const masterMatch = urlInput.match(/\/master\/(\d+)/);
+            
+            if (releaseMatch) {
+                releaseId = releaseMatch[1];
+                isMaster = false;
+            } else if (masterMatch) {
+                releaseId = masterMatch[1];
+                isMaster = true;
+            } else {
+                showDiscogsStatus('❌ Invalid Discogs URL. Please use a release or master URL.', 'error');
+                return;
+            }
+            
+            showDiscogsStatus('📥 Loading album from Discogs URL...', 'loading');
+            
+            try {
+                await fetchAlbumDetails(releaseId, isMaster);
+            } catch (error) {
+                console.error('Error fetching from URL:', error);
+                showDiscogsStatus('❌ Error loading album from URL. Please check the URL and try again.', 'error');
+            }
         }
 
         function openDiscogsManually() {
@@ -3600,7 +3706,7 @@
                     </div>
                     <div class="album-details">
                         <h2>${album.albumName}<a href="${getWikipediaLink(album.albumName, 'album', album.artist)}" target="_blank" rel="noopener noreferrer" class="wiki-link" title="Search Wikipedia">${getWikiIcon()}</a><a href="${getSpotifyLink(album.albumName, album.artist)}" target="_blank" rel="noopener noreferrer" class="spotify-link" title="Search on Spotify">${getSpotifyIcon()}</a></h2>
-                        <p><strong>Artist:</strong> ${album.artist}<a href="${getWikipediaLink(album.artist, 'artist')}" target="_blank" rel="noopener noreferrer" class="wiki-link" title="Search Wikipedia">${getWikiIcon()}</a><a href="${getSpotifyLink(album.artist, album.artist)}" target="_blank" rel="noopener noreferrer" class="spotify-link" title="Search on Spotify">${getSpotifyIcon()}</a></p>
+                        <p><strong>Artist:</strong> ${album.artist}<a href="${getWikipediaLink(album.artist, 'artist')}" target="_blank" rel="noopener noreferrer" class="wiki-link" title="Search Wikipedia">${getWikiIcon()}</a></p>
                         <p><strong>Year:</strong> ${album.year}</p>
                         ${genres.length > 0 ? `<p><strong>Genre:</strong> ${genres.join(', ')}</p>` : ''}
                         ${styles.length > 0 ? `<p><strong>Style:</strong> ${styles.join(', ')}</p>` : ''}
@@ -4244,7 +4350,7 @@
                     </div>
                     <div>
                         <h2 style="margin-bottom: 20px;">${album.albumName}<a href="${getWikipediaLink(album.albumName, 'album', album.artist)}" target="_blank" rel="noopener noreferrer" class="wiki-link" title="Search Wikipedia" style="color: #667eea;">${getWikiIcon()}</a><a href="${getSpotifyLink(album.albumName, album.artist)}" target="_blank" rel="noopener noreferrer" class="spotify-link" title="Search on Spotify">${getSpotifyIcon()}</a></h2>
-                        <p style="margin-bottom: 10px;"><strong>Artist:</strong> ${album.artist}<a href="${getWikipediaLink(album.artist, 'artist')}" target="_blank" rel="noopener noreferrer" class="wiki-link" title="Search Wikipedia" style="color: #667eea;">${getWikiIcon()}</a><a href="${getSpotifyLink(album.artist, album.artist)}" target="_blank" rel="noopener noreferrer" class="spotify-link" title="Search on Spotify">${getSpotifyIcon()}</a></p>
+                        <p style="margin-bottom: 10px;"><strong>Artist:</strong> ${album.artist}<a href="${getWikipediaLink(album.artist, 'artist')}" target="_blank" rel="noopener noreferrer" class="wiki-link" title="Search Wikipedia" style="color: #667eea;">${getWikiIcon()}</a></p>
                         <p style="margin-bottom: 10px;"><strong>Year:</strong> ${album.year}</p>
                         ${album.artistId ? `<p style="margin-bottom: 10px;"><strong>Artist ID:</strong> ${album.artistId}</p>` : ''}
                         ${album.discogsUrl ? `<p style="margin-bottom: 10px;"><a href="${album.discogsUrl}" target="_blank" style="color: #667eea; text-decoration: none;">View on Discogs</a></p>` : ''}
