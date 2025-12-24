@@ -3398,9 +3398,9 @@
         function fillFormFromDiscogs(album) {
             // Extract data from Discogs response
             const albumName = album.title || '';
-            // Join all artists with " & " separator (handles multiple artists)
+            // Join all artists with "; " separator (handles multiple artists)
             const artist = album.artists && album.artists.length > 0 
-                ? album.artists.map(a => a.name).join(' & ') 
+                ? album.artists.map(a => a.name).join('; ') 
                 : '';
             const year = album.year || new Date().getFullYear();
             const genres = album.genres ? album.genres.join('; ') : '';
