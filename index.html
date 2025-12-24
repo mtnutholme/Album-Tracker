@@ -359,6 +359,446 @@
             border-radius: 50%;
         }
 
+        /* Settings Button */
+        .settings-button {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        .settings-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-50%) rotate(90deg);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        @media (max-width: 768px) {
+            .settings-button {
+                right: 10px;
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .settings-button {
+                right: 5px;
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
+            }
+        }
+
+        /* Settings Modal */
+        .settings-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s;
+        }
+
+        .settings-modal.active {
+            display: flex;
+        }
+
+        .settings-content {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .settings-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 30px;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .settings-header h2 {
+            font-size: 1.8em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .settings-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .settings-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .settings-body {
+            padding: 30px;
+        }
+
+        .settings-section {
+            margin-bottom: 35px;
+            padding-bottom: 35px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .settings-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .settings-section h3 {
+            font-size: 1.3em;
+            margin-bottom: 10px;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .settings-section p {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .settings-input-group {
+            margin-bottom: 15px;
+        }
+
+        .settings-input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .settings-input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            font-family: monospace;
+        }
+
+        .settings-input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .settings-button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .settings-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .settings-btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .settings-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .settings-btn-secondary {
+            background: #f8f9fa;
+            color: #666;
+            border: 2px solid #e9ecef;
+        }
+
+        .settings-btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        .settings-btn-link {
+            background: transparent;
+            color: #667eea;
+            text-decoration: underline;
+            padding: 10px 0;
+        }
+
+        .settings-btn-link:hover {
+            color: #764ba2;
+        }
+
+        .settings-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        .settings-status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .settings-status.disconnected {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .settings-status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Instructions Modal */
+        .instructions-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10001;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s;
+        }
+
+        .instructions-modal.active {
+            display: flex;
+        }
+
+        .instructions-content {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .instructions-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 30px;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .instructions-header h2 {
+            font-size: 1.5em;
+        }
+
+        .instructions-body {
+            padding: 30px;
+        }
+
+        .instruction-step {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            align-items: flex-start;
+        }
+
+        .instruction-number {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .instruction-text {
+            flex: 1;
+            padding-top: 5px;
+        }
+
+        .instruction-text p {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .instruction-link {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .instruction-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .instruction-note {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+
+        .instruction-note strong {
+            color: #667eea;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        /* Discogs Results Styles */
+        .discogs-result-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            gap: 15px;
+        }
+
+        .discogs-result-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .discogs-result-card.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .discogs-result-image {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: #f0f0f0;
+            flex-shrink: 0;
+        }
+
+        .discogs-result-info {
+            flex: 1;
+        }
+
+        .discogs-result-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .discogs-result-details {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .discogs-result-details strong {
+            color: #333;
+        }
+
+        .discogs-result-button {
+            align-self: center;
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9em;
+        }
+
+        .discogs-result-button:hover {
+            background: #5568d3;
+            transform: scale(1.05);
+        }
+
+        .vinyl-groove::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 35px;
+            height: 35px;
+            border: 1px solid rgba(255,255,255,0.03);
+            border-radius: 50%;
+        }
+
         .content {
             padding: 30px;
             min-height: 500px;
@@ -509,6 +949,28 @@
         .wiki-link svg {
             width: 16px;
             height: 16px;
+            vertical-align: middle;
+        }
+
+        .spotify-link {
+            display: inline-block;
+            margin-left: 8px;
+            color: #1DB954;
+            opacity: 0.9;
+            transition: all 0.2s;
+            text-decoration: none;
+            font-size: 0.85em;
+            vertical-align: middle;
+        }
+
+        .spotify-link:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .spotify-link svg {
+            width: 18px;
+            height: 18px;
             vertical-align: middle;
         }
 
@@ -966,6 +1428,11 @@
             
             <h1>🎵 Album Tracker</h1>
             <p>Track, Rate, and Discover Your Music Journey</p>
+            
+            <!-- Settings Button -->
+            <button onclick="openSettings()" class="settings-button" title="Settings">
+                ⚙️
+            </button>
         </div>
 
         <div class="nav">
@@ -1079,6 +1546,34 @@
                         <h3 style="margin: 0;">Add New Album</h3>
                         <button class="btn btn-secondary" onclick="hideAddAlbumForm()">✕ Cancel</button>
                     </div>
+                    
+                    <!-- Quick Search Section -->
+                    <div id="discogsQuickSearch" style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ddd;">
+                        <h4 style="margin: 0 0 10px 0; color: #667eea;">🔍 Quick Search</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: end;">
+                            <div class="form-group" style="margin: 0;">
+                                <label>Artist Name</label>
+                                <input type="text" id="quickSearchArtist" placeholder="e.g., Pink Floyd">
+                            </div>
+                            <div class="form-group" style="margin: 0;">
+                                <label>Album Name</label>
+                                <input type="text" id="quickSearchAlbum" placeholder="e.g., Dark Side of the Moon">
+                            </div>
+                            <button type="button" class="btn" onclick="searchDiscogs()" style="background: #667eea; margin: 0;">
+                                🔍 Find on Discogs
+                            </button>
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-top: 10px;">
+                            <button type="button" class="btn btn-secondary" onclick="clearQuickSearch()" style="font-size: 0.9em;">
+                                Clear
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="openDiscogsManually()" style="font-size: 0.9em;">
+                                🌐 Search on Discogs
+                            </button>
+                        </div>
+                        <div id="discogsSearchStatus" style="margin-top: 10px; padding: 8px; border-radius: 4px; display: none;"></div>
+                    </div>
+                    
                     <form id="addAlbumFormInline" onsubmit="addAlbumInline(event)">
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
                             <div class="form-group">
@@ -1228,6 +1723,145 @@
     </div>
 
     <!-- OneDrive Sync Status -->
+    <!-- Settings Modal -->
+    <div class="settings-modal" id="settingsModal">
+        <div class="settings-content">
+            <div class="settings-header">
+                <h2>⚙️ Settings</h2>
+                <button onclick="closeSettings()" class="settings-close">✕</button>
+            </div>
+            <div class="settings-body">
+                <!-- Discogs Integration Section -->
+                <div class="settings-section">
+                    <h3>🎵 Discogs Integration</h3>
+                    <p>Enable auto-fill album details from Discogs when adding new albums.</p>
+                    
+                    <div class="settings-input-group">
+                        <label for="discogsToken">API Token:</label>
+                        <input 
+                            type="text" 
+                            id="discogsToken" 
+                            placeholder="Paste your Discogs API token here"
+                            autocomplete="off"
+                        >
+                    </div>
+                    
+                    <div class="settings-button-group">
+                        <button onclick="saveDiscogsToken()" class="settings-btn settings-btn-primary">
+                            💾 Save Token
+                        </button>
+                        <button onclick="clearDiscogsToken()" class="settings-btn settings-btn-secondary">
+                            🗑️ Clear Token
+                        </button>
+                    </div>
+                    
+                    <div id="discogsStatus"></div>
+                    
+                    <button onclick="showDiscogsInstructions()" class="settings-btn settings-btn-link">
+                        📖 How to get your Discogs API token
+                    </button>
+                </div>
+                
+                <!-- OneDrive Sync Section -->
+                <div class="settings-section">
+                    <h3>☁️ OneDrive Sync</h3>
+                    <p>Sync your album collection across devices using Microsoft OneDrive.</p>
+                    
+                    <div id="oneDriveSettingsStatus"></div>
+                    
+                    <div class="settings-button-group" id="oneDriveSettingsButtons">
+                        <!-- Buttons will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Data Management Section -->
+                <div class="settings-section">
+                    <h3>📊 Data Management</h3>
+                    <p>Manage your local album data and backups.</p>
+                    
+                    <div class="settings-button-group">
+                        <button onclick="exportBackup()" class="settings-btn settings-btn-secondary">
+                            📥 Export Backup
+                        </button>
+                        <button onclick="confirmClearData()" class="settings-btn settings-btn-secondary">
+                            🗑️ Clear All Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Instructions Modal -->
+    <div class="instructions-modal" id="instructionsModal">
+        <div class="instructions-content">
+            <div class="instructions-header">
+                <h2>How to Get Your Discogs API Token</h2>
+                <button onclick="closeInstructions()" class="settings-close">✕</button>
+            </div>
+            <div class="instructions-body">
+                <div class="instruction-step">
+                    <div class="instruction-number">1</div>
+                    <div class="instruction-text">
+                        <p><strong>Go to Discogs Settings</strong></p>
+                        <p>Click the button below to open Discogs Developer Settings in a new tab.</p>
+                        <a href="https://www.discogs.com/settings/developers" target="_blank" class="instruction-link">
+                            Open Discogs Settings →
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="instruction-step">
+                    <div class="instruction-number">2</div>
+                    <div class="instruction-text">
+                        <p><strong>Generate a New Token</strong></p>
+                        <p>On the Developers page, click "Generate new token" button.</p>
+                    </div>
+                </div>
+                
+                <div class="instruction-step">
+                    <div class="instruction-number">3</div>
+                    <div class="instruction-text">
+                        <p><strong>Copy the Token</strong></p>
+                        <p>Discogs will display your new token. Copy it to your clipboard.</p>
+                    </div>
+                </div>
+                
+                <div class="instruction-step">
+                    <div class="instruction-number">4</div>
+                    <div class="instruction-text">
+                        <p><strong>Paste in Settings</strong></p>
+                        <p>Return to this app, paste the token in the Settings, and click "Save Token".</p>
+                    </div>
+                </div>
+                
+                <div class="instruction-note">
+                    <strong>🔒 Privacy & Security</strong>
+                    <p>Your API token is stored locally on your device only. It's never sent to anyone except Discogs when you use the "Find on Discogs" feature.</p>
+                    <p>⚠️ Keep your token private! Don't share it with others. You can revoke and regenerate it anytime on Discogs.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Discogs Results Modal -->
+    <div class="modal" id="discogsResultsModal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2>Select the Correct Album</h2>
+                <button onclick="closeDiscogsResults()" class="modal-close">✕</button>
+            </div>
+            <div class="modal-body">
+                <p style="color: #666; margin-bottom: 20px;">Found multiple versions. Select the one that matches your album:</p>
+                <div id="discogsResultsList" style="max-height: 500px; overflow-y: auto;"></div>
+            </div>
+            <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="openDiscogsManually()">🌐 Search on Discogs</button>
+                <button class="btn btn-secondary" onclick="closeDiscogsResults()">Manual Entry</button>
+            </div>
+        </div>
+    </div>
+
     <div class="sync-status" id="syncStatus" onclick="toggleSyncMenu()">
         <div class="sync-indicator offline" id="syncIndicator"></div>
         <div id="syncText">
@@ -2369,6 +3003,437 @@
         // Initialize OneDrive sync
         const syncManager = new OneDriveSyncManager();
 
+        // Settings Functions
+        function openSettings() {
+            const modal = document.getElementById('settingsModal');
+            modal.classList.add('active');
+            loadSettingsData();
+        }
+
+        function closeSettings() {
+            const modal = document.getElementById('settingsModal');
+            modal.classList.remove('active');
+        }
+
+        function loadSettingsData() {
+            // Load Discogs token
+            const token = localStorage.getItem('discogs_api_token');
+            const tokenInput = document.getElementById('discogsToken');
+            if (token) {
+                tokenInput.value = token;
+                updateDiscogsStatus('connected');
+            } else {
+                tokenInput.value = '';
+                updateDiscogsStatus('disconnected');
+            }
+            
+            // Load OneDrive status
+            updateOneDriveSettingsStatus();
+        }
+
+        function saveDiscogsToken() {
+            const token = document.getElementById('discogsToken').value.trim();
+            
+            if (!token) {
+                updateDiscogsStatus('error', 'Please enter a token');
+                return;
+            }
+            
+            // Validate token format (basic check)
+            if (token.length < 20) {
+                updateDiscogsStatus('error', 'Token appears to be invalid');
+                return;
+            }
+            
+            // Save token
+            localStorage.setItem('discogs_api_token', token);
+            
+            // Test the token
+            testDiscogsToken(token);
+        }
+
+        async function testDiscogsToken(token) {
+            updateDiscogsStatus('disconnected', 'Testing token...');
+            
+            try {
+                const response = await fetch('https://api.discogs.com/database/search?q=test&per_page=1', {
+                    headers: {
+                        'Authorization': `Discogs token=${token}`,
+                        'User-Agent': 'AlbumTracker/1.0'
+                    }
+                });
+                
+                if (response.ok) {
+                    updateDiscogsStatus('connected', 'Token saved and verified!');
+                    
+                    // Sync to OneDrive if connected
+                    if (oneDriveManager && oneDriveManager.isAuthenticated) {
+                        await syncSettingsToOneDrive();
+                    }
+                } else {
+                    updateDiscogsStatus('error', 'Token is invalid. Please check and try again.');
+                    localStorage.removeItem('discogs_api_token');
+                }
+            } catch (error) {
+                updateDiscogsStatus('error', 'Could not verify token. It has been saved but may not work.');
+            }
+        }
+
+        function clearDiscogsToken() {
+            if (confirm('Are you sure you want to remove your Discogs API token?')) {
+                localStorage.removeItem('discogs_api_token');
+                document.getElementById('discogsToken').value = '';
+                updateDiscogsStatus('disconnected', 'Token removed');
+                
+                // Sync to OneDrive if connected
+                if (oneDriveManager && oneDriveManager.isAuthenticated) {
+                    syncSettingsToOneDrive();
+                }
+            }
+        }
+
+        function updateDiscogsStatus(status, message) {
+            const statusDiv = document.getElementById('discogsStatus');
+            
+            if (status === 'connected') {
+                statusDiv.innerHTML = `
+                    <div class="settings-status connected">
+                        ✅ ${message || 'Connected to Discogs'}
+                    </div>
+                `;
+            } else if (status === 'disconnected') {
+                statusDiv.innerHTML = `
+                    <div class="settings-status disconnected">
+                        ⚠️ ${message || 'Not configured'}
+                    </div>
+                `;
+            } else if (status === 'error') {
+                statusDiv.innerHTML = `
+                    <div class="settings-status error">
+                        ❌ ${message || 'Error'}
+                    </div>
+                `;
+            }
+        }
+
+        function updateOneDriveSettingsStatus() {
+            const statusDiv = document.getElementById('oneDriveSettingsStatus');
+            const buttonsDiv = document.getElementById('oneDriveSettingsButtons');
+            
+            if (oneDriveManager && oneDriveManager.isAuthenticated) {
+                const lastSync = localStorage.getItem('lastSyncTime');
+                const lastSyncText = lastSync ? new Date(parseInt(lastSync)).toLocaleString() : 'Never';
+                
+                statusDiv.innerHTML = `
+                    <div class="settings-status connected">
+                        🟢 Connected to OneDrive<br>
+                        <small>Last synced: ${lastSyncText}</small>
+                    </div>
+                `;
+                
+                buttonsDiv.innerHTML = `
+                    <button onclick="disconnectOneDriveFromSettings()" class="settings-btn settings-btn-secondary">
+                        Disconnect from OneDrive
+                    </button>
+                `;
+            } else {
+                statusDiv.innerHTML = `
+                    <div class="settings-status disconnected">
+                        ⚠️ Not connected
+                    </div>
+                `;
+                
+                buttonsDiv.innerHTML = `
+                    <button onclick="connectOneDrive()" class="settings-btn settings-btn-primary">
+                        Connect to OneDrive
+                    </button>
+                `;
+            }
+        }
+
+        function disconnectOneDriveFromSettings() {
+            if (confirm('Are you sure you want to disconnect from OneDrive? Your local data will not be affected.')) {
+                oneDriveManager.disconnect();
+                updateOneDriveSettingsStatus();
+                updateUI();
+            }
+        }
+
+        async function syncSettingsToOneDrive() {
+            // Sync settings (like API tokens) to OneDrive
+            const settings = {
+                discogs_api_token: localStorage.getItem('discogs_api_token')
+            };
+            
+            try {
+                await oneDriveManager.saveFile('settings.json', JSON.stringify(settings));
+            } catch (error) {
+                console.error('Failed to sync settings to OneDrive:', error);
+            }
+        }
+
+        function showDiscogsInstructions() {
+            const modal = document.getElementById('instructionsModal');
+            modal.classList.add('active');
+        }
+
+        function closeInstructions() {
+            const modal = document.getElementById('instructionsModal');
+            modal.classList.remove('active');
+        }
+
+        // Discogs Integration Functions
+        async function searchDiscogs() {
+            const artist = document.getElementById('quickSearchArtist').value.trim();
+            const album = document.getElementById('quickSearchAlbum').value.trim();
+            const statusDiv = document.getElementById('discogsSearchStatus');
+            
+            if (!artist || !album) {
+                showDiscogsStatus('Please enter both artist and album name.', 'error');
+                return;
+            }
+            
+            // Check if API token is configured
+            const apiToken = localStorage.getItem('discogs_api_token');
+            if (!apiToken) {
+                showDiscogsStatus('⚠️ Discogs API not configured. Please add your API token in Settings.', 'error');
+                setTimeout(() => {
+                    if (confirm('Would you like to open Settings to add your Discogs API token?')) {
+                        openSettings();
+                    }
+                }, 500);
+                return;
+            }
+            
+            showDiscogsStatus('🔍 Searching Discogs...', 'loading');
+            
+            try {
+                const query = `${artist} ${album}`;
+                const url = `https://api.discogs.com/database/search?q=${encodeURIComponent(query)}&type=release&token=${apiToken}`;
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'User-Agent': 'AlbumTracker/1.0'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Discogs API error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (!data.results || data.results.length === 0) {
+                    showDiscogsStatus('❌ No results found. Try different search terms or search manually.', 'error');
+                    return;
+                }
+                
+                // Filter results to only albums/releases
+                const albums = data.results.filter(r => r.type === 'release' || r.type === 'master');
+                
+                if (albums.length === 0) {
+                    showDiscogsStatus('❌ No albums found. Try different search terms.', 'error');
+                    return;
+                }
+                
+                // Check for clear match
+                const exactMatch = albums.find(a => 
+                    a.title.toLowerCase().includes(album.toLowerCase()) &&
+                    (a.title.toLowerCase().includes(artist.toLowerCase()) || 
+                     (a.artist && a.artist.toLowerCase().includes(artist.toLowerCase())))
+                );
+                
+                if (albums.length === 1 || (exactMatch && albums.length <= 3)) {
+                    // Single clear match - auto-fill
+                    const selectedAlbum = exactMatch || albums[0];
+                    await fetchAlbumDetails(selectedAlbum.id);
+                } else {
+                    // Multiple matches - show selection UI
+                    showDiscogsResults(albums.slice(0, 10)); // Show top 10 results
+                }
+                
+            } catch (error) {
+                console.error('Discogs search error:', error);
+                showDiscogsStatus('❌ Error searching Discogs. Please try again or search manually.', 'error');
+            }
+        }
+
+        async function fetchAlbumDetails(releaseId) {
+            const apiToken = localStorage.getItem('discogs_api_token');
+            const statusDiv = document.getElementById('discogsSearchStatus');
+            
+            showDiscogsStatus('📥 Loading album details...', 'loading');
+            
+            try {
+                const url = `https://api.discogs.com/releases/${releaseId}?token=${apiToken}`;
+                const response = await fetch(url, {
+                    headers: {
+                        'User-Agent': 'AlbumTracker/1.0'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Discogs API error: ${response.status}`);
+                }
+                
+                const album = await response.json();
+                
+                // Auto-fill form fields
+                fillFormFromDiscogs(album);
+                
+                showDiscogsStatus('✅ Album details loaded! Review and save below.', 'success');
+                
+                // Close results modal if open
+                closeDiscogsResults();
+                
+            } catch (error) {
+                console.error('Error fetching album details:', error);
+                showDiscogsStatus('❌ Error loading album details. Please try again.', 'error');
+            }
+        }
+
+        function fillFormFromDiscogs(album) {
+            // Extract data from Discogs response
+            const albumName = album.title || '';
+            const artist = album.artists && album.artists.length > 0 ? album.artists[0].name : '';
+            const year = album.year || new Date().getFullYear();
+            const genres = album.genres ? album.genres.join('; ') : '';
+            const styles = album.styles ? album.styles.join('; ') : '';
+            const artworkUrl = album.images && album.images.length > 0 ? album.images[0].uri : '';
+            
+            // Fill inline form fields
+            document.getElementById('albumNameInline').value = albumName;
+            document.getElementById('artistInline').value = artist;
+            document.getElementById('yearInline').value = year;
+            document.getElementById('genreInline').value = genres || styles;
+            document.getElementById('artworkUrlInline').value = artworkUrl;
+            
+            // Scroll to form
+            document.getElementById('addAlbumFormInline').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function showDiscogsResults(results) {
+            const modal = document.getElementById('discogsResultsModal');
+            const listDiv = document.getElementById('discogsResultsList');
+            
+            listDiv.innerHTML = results.map((result, index) => {
+                const title = result.title || 'Unknown Album';
+                const year = result.year || 'Unknown';
+                const format = result.format ? result.format.join(', ') : 'Unknown';
+                const label = result.label ? result.label.join(', ') : 'Unknown';
+                const country = result.country || 'Unknown';
+                const imageUrl = result.thumb || result.cover_image || '';
+                
+                return `
+                    <div class="discogs-result-card" onclick="selectDiscogsResult(${result.id})">
+                        ${imageUrl ? `<img src="${imageUrl}" alt="${title}" class="discogs-result-image">` : '<div class="discogs-result-image"></div>'}
+                        <div class="discogs-result-info">
+                            <div class="discogs-result-title">${title}</div>
+                            <div class="discogs-result-details">
+                                <strong>Year:</strong> ${year}<br>
+                                <strong>Format:</strong> ${format}<br>
+                                <strong>Label:</strong> ${label}<br>
+                                <strong>Country:</strong> ${country}
+                            </div>
+                        </div>
+                        <button class="discogs-result-button" onclick="event.stopPropagation(); selectDiscogsResult(${result.id})">
+                            Select This
+                        </button>
+                    </div>
+                `;
+            }).join('');
+            
+            modal.classList.add('active');
+            showDiscogsStatus('', 'hidden');
+        }
+
+        function selectDiscogsResult(releaseId) {
+            fetchAlbumDetails(releaseId);
+        }
+
+        function closeDiscogsResults() {
+            const modal = document.getElementById('discogsResultsModal');
+            modal.classList.remove('active');
+        }
+
+        function showDiscogsStatus(message, type) {
+            const statusDiv = document.getElementById('discogsSearchStatus');
+            statusDiv.textContent = message;
+            statusDiv.style.display = message ? 'block' : 'none';
+            
+            // Set colors based on type
+            if (type === 'error') {
+                statusDiv.style.background = '#fee';
+                statusDiv.style.color = '#c33';
+                statusDiv.style.border = '1px solid #fcc';
+            } else if (type === 'success') {
+                statusDiv.style.background = '#efe';
+                statusDiv.style.color = '#3a3';
+                statusDiv.style.border = '1px solid #cfc';
+            } else if (type === 'loading') {
+                statusDiv.style.background = '#fef9e7';
+                statusDiv.style.color = '#856404';
+                statusDiv.style.border = '1px solid #ffeaa7';
+            } else {
+                statusDiv.style.display = 'none';
+            }
+        }
+
+        function clearQuickSearch() {
+            document.getElementById('quickSearchArtist').value = '';
+            document.getElementById('quickSearchAlbum').value = '';
+            showDiscogsStatus('', 'hidden');
+        }
+
+        function openDiscogsManually() {
+            const artist = document.getElementById('quickSearchArtist').value.trim();
+            const album = document.getElementById('quickSearchAlbum').value.trim();
+            
+            let url = 'https://www.discogs.com/search/';
+            if (artist || album) {
+                const query = `${artist} ${album}`.trim();
+                url += `?q=${encodeURIComponent(query)}&type=release`;
+            }
+            
+            window.open(url, '_blank');
+        }
+
+        function exportBackup() {
+            // Use existing export functionality
+            exportToExcel();
+        }
+
+        function confirmClearData() {
+            if (confirm('⚠️ WARNING: This will delete ALL your album data from this device!\n\nThis action cannot be undone. Are you absolutely sure?')) {
+                if (confirm('This is your last chance! Click OK to permanently delete all data.')) {
+                    localStorage.removeItem('albumTrackerData');
+                    db.albums = [];
+                    alert('All data has been cleared.');
+                    closeSettings();
+                    loadBrowseSection();
+                }
+            }
+        }
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function(event) {
+            const settingsModal = document.getElementById('settingsModal');
+            const instructionsModal = document.getElementById('instructionsModal');
+            const discogsResultsModal = document.getElementById('discogsResultsModal');
+            
+            if (event.target === settingsModal) {
+                closeSettings();
+            }
+            
+            if (event.target === instructionsModal) {
+                closeInstructions();
+            }
+            
+            if (event.target === discogsResultsModal) {
+                closeDiscogsResults();
+            }
+        });
+
         // Navigation
         function showSection(sectionId, event) {
             console.log('showSection called with:', sectionId);
@@ -2496,6 +3561,20 @@
             </svg>`;
         }
 
+        // Helper function to create Spotify link
+        function getSpotifyLink(albumName, artistName) {
+            const searchQuery = `${albumName} ${artistName}`;
+            const encodedSearch = encodeURIComponent(searchQuery);
+            return `https://open.spotify.com/search/${encodedSearch}`;
+        }
+
+        // Helper function to create Spotify icon (green logo)
+        function getSpotifyIcon() {
+            return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+            </svg>`;
+        }
+
         function selectRandomAlbum() {
             const album = db.getRandomUnscoredAlbum();
             const display = document.getElementById('randomAlbumDisplay');
@@ -2520,8 +3599,8 @@
                         <img src="${album.artworkUrl}" alt="${album.albumName}" class="album-artwork" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23ddd%22 width=%22300%22 height=%22300%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23999%22 font-size=%2220%22%3ENo Image%3C/text%3E%3C/svg%3E'">
                     </div>
                     <div class="album-details">
-                        <h2>${album.albumName}<a href="${getWikipediaLink(album.albumName, 'album', album.artist)}" target="_blank" rel="noopener noreferrer" class="wiki-link" title="Search Wikipedia">${getWikiIcon()}</a></h2>
-                        <p><strong>Artist:</strong> ${album.artist}<a href="${getWikipediaLink(album.artist, 'artist')}" target="_blank" rel="noopener noreferrer" class="wiki-link" title="Search Wikipedia">${getWikiIcon()}</a></p>
+                        <h2>${album.albumName}<a href="${getWikipediaLink(album.albumName, 'album', album.artist)}" target="_blank" rel="noopener noreferrer" class="wiki-link" title="Search Wikipedia">${getWikiIcon()}</a><a href="${getSpotifyLink(album.albumName, album.artist)}" target="_blank" rel="noopener noreferrer" class="spotify-link" title="Search on Spotify">${getSpotifyIcon()}</a></h2>
+                        <p><strong>Artist:</strong> ${album.artist}<a href="${getWikipediaLink(album.artist, 'artist')}" target="_blank" rel="noopener noreferrer" class="wiki-link" title="Search Wikipedia">${getWikiIcon()}</a><a href="${getSpotifyLink(album.artist, album.artist)}" target="_blank" rel="noopener noreferrer" class="spotify-link" title="Search on Spotify">${getSpotifyIcon()}</a></p>
                         <p><strong>Year:</strong> ${album.year}</p>
                         ${genres.length > 0 ? `<p><strong>Genre:</strong> ${genres.join(', ')}</p>` : ''}
                         ${styles.length > 0 ? `<p><strong>Style:</strong> ${styles.join(', ')}</p>` : ''}
@@ -3164,8 +4243,8 @@
                         <img src="${album.artworkUrl}" alt="${album.albumName}" style="width: 100%; border-radius: 12px;" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23ddd%22 width=%22300%22 height=%22300%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23999%22 font-size=%2220%22%3ENo Image%3C/text%3E%3C/svg%3E'">
                     </div>
                     <div>
-                        <h2 style="margin-bottom: 20px;">${album.albumName}<a href="${getWikipediaLink(album.albumName, 'album', album.artist)}" target="_blank" rel="noopener noreferrer" class="wiki-link" title="Search Wikipedia" style="color: #667eea;">${getWikiIcon()}</a></h2>
-                        <p style="margin-bottom: 10px;"><strong>Artist:</strong> ${album.artist}<a href="${getWikipediaLink(album.artist, 'artist')}" target="_blank" rel="noopener noreferrer" class="wiki-link" title="Search Wikipedia" style="color: #667eea;">${getWikiIcon()}</a></p>
+                        <h2 style="margin-bottom: 20px;">${album.albumName}<a href="${getWikipediaLink(album.albumName, 'album', album.artist)}" target="_blank" rel="noopener noreferrer" class="wiki-link" title="Search Wikipedia" style="color: #667eea;">${getWikiIcon()}</a><a href="${getSpotifyLink(album.albumName, album.artist)}" target="_blank" rel="noopener noreferrer" class="spotify-link" title="Search on Spotify">${getSpotifyIcon()}</a></h2>
+                        <p style="margin-bottom: 10px;"><strong>Artist:</strong> ${album.artist}<a href="${getWikipediaLink(album.artist, 'artist')}" target="_blank" rel="noopener noreferrer" class="wiki-link" title="Search Wikipedia" style="color: #667eea;">${getWikiIcon()}</a><a href="${getSpotifyLink(album.artist, album.artist)}" target="_blank" rel="noopener noreferrer" class="spotify-link" title="Search on Spotify">${getSpotifyIcon()}</a></p>
                         <p style="margin-bottom: 10px;"><strong>Year:</strong> ${album.year}</p>
                         ${album.artistId ? `<p style="margin-bottom: 10px;"><strong>Artist ID:</strong> ${album.artistId}</p>` : ''}
                         ${album.discogsUrl ? `<p style="margin-bottom: 10px;"><a href="${album.discogsUrl}" target="_blank" style="color: #667eea; text-decoration: none;">View on Discogs</a></p>` : ''}
