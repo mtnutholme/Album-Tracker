@@ -3242,6 +3242,42 @@
             
             try {
                 const query = `${artist} ${album}`;
+                
+                // First, try to find master release
+                const masterUrl = `https://api.discogs.com/database/search?q=${encodeURIComponent(query)}&type=master&token=${apiToken}`;
+                
+                const masterResponse = await fetch(masterUrl, {
+                    headers: {
+                        'User-Agent': 'AlbumTracker/1.0'
+                    }
+                });
+                
+                if (!masterResponse.ok) {
+                    throw new Error(`Discogs API error: ${masterResponse.status}`);
+                }
+                
+                const masterData = await masterResponse.json();
+                
+                // If we found a master release with exact match, use it immediately
+                if (masterData.results && masterData.results.length > 0) {
+                    const exactMaster = masterData.results.find(m => {
+                        const titleLower = m.title.toLowerCase();
+                        const albumLower = album.toLowerCase();
+                        const artistLower = artist.toLowerCase();
+                        
+                        // Check if title contains album name and artist name
+                        return titleLower.includes(albumLower) && titleLower.includes(artistLower);
+                    });
+                    
+                    if (exactMaster) {
+                        // Found exact master match - auto-fill immediately
+                        showDiscogsStatus('✅ Found master release! Auto-filling...', 'success');
+                        await fetchAlbumDetails(exactMaster.id, true);
+                        return;
+                    }
+                }
+                
+                // If no exact master found, search all releases
                 const url = `https://api.discogs.com/database/search?q=${encodeURIComponent(query)}&type=release&token=${apiToken}`;
                 
                 const response = await fetch(url, {
@@ -3256,46 +3292,30 @@
                 
                 const data = await response.json();
                 
-                if (!data.results || data.results.length === 0) {
+                // Combine master and release results
+                let albums = [];
+                if (masterData.results) {
+                    albums = albums.concat(masterData.results);
+                }
+                if (data.results) {
+                    albums = albums.concat(data.results.filter(r => r.type === 'release' || r.type === 'master'));
+                }
+                
+                if (albums.length === 0) {
                     showDiscogsStatus('❌ No results found. Try different search terms or search manually.', 'error');
                     return;
                 }
                 
-                // Filter results to only albums/releases
-                let albums = data.results.filter(r => r.type === 'release' || r.type === 'master');
-                
-                if (albums.length === 0) {
-                    showDiscogsStatus('❌ No albums found. Try different search terms.', 'error');
-                    return;
-                }
-                
-                // Prioritize master releases
-                const masterReleases = albums.filter(a => a.type === 'master');
-                const regularReleases = albums.filter(a => a.type === 'release');
-                
-                // If there's a master release, check if other results are just different versions of the same album
-                if (masterReleases.length > 0) {
-                    // Group by title to detect multiple versions of same album
-                    const titleGroups = {};
-                    albums.forEach(a => {
-                        const normalizedTitle = a.title.toLowerCase().replace(/[^a-z0-9]/g, '');
-                        if (!titleGroups[normalizedTitle]) {
-                            titleGroups[normalizedTitle] = [];
-                        }
-                        titleGroups[normalizedTitle].push(a);
-                    });
-                    
-                    // If most results are versions of the same album, just use the master
-                    const largestGroup = Object.values(titleGroups).sort((a, b) => b.length - a.length)[0];
-                    if (largestGroup && largestGroup.length >= albums.length * 0.7) {
-                        // 70% or more are the same album - use master release
-                        const masterInGroup = largestGroup.find(a => a.type === 'master');
-                        if (masterInGroup) {
-                            await fetchAlbumDetails(masterInGroup.id, true); // true = is master
-                            return;
-                        }
+                // Remove duplicates (same ID)
+                const uniqueAlbums = [];
+                const seenIds = new Set();
+                albums.forEach(a => {
+                    if (!seenIds.has(a.id)) {
+                        seenIds.add(a.id);
+                        uniqueAlbums.push(a);
                     }
-                }
+                });
+                albums = uniqueAlbums;
                 
                 // Sort: masters first, then by year (newest first)
                 albums.sort((a, b) => {
@@ -3304,18 +3324,30 @@
                     return (b.year || 0) - (a.year || 0);
                 });
                 
-                // Check for clear match
-                const exactMatch = albums.find(a => 
-                    a.title.toLowerCase().includes(album.toLowerCase()) &&
-                    (a.title.toLowerCase().includes(artist.toLowerCase()) || 
-                     (a.artist && a.artist.toLowerCase().includes(artist.toLowerCase())))
-                );
+                // If there's only one master and multiple releases, auto-select the master
+                const masters = albums.filter(a => a.type === 'master');
+                if (masters.length === 1 && albums.length > 1) {
+                    showDiscogsStatus('✅ Found master release! Auto-filling...', 'success');
+                    await fetchAlbumDetails(masters[0].id, true);
+                    return;
+                }
                 
-                if (albums.length === 1 || (exactMatch && albums.length <= 3)) {
-                    // Single clear match - auto-fill
-                    const selectedAlbum = exactMatch || albums[0];
+                // Check for clear match
+                const exactMatch = albums.find(a => {
+                    const titleLower = a.title.toLowerCase();
+                    const albumLower = album.toLowerCase();
+                    const artistLower = artist.toLowerCase();
+                    return titleLower.includes(albumLower) && titleLower.includes(artistLower);
+                });
+                
+                if (albums.length === 1) {
+                    // Single result - auto-fill
+                    const selectedAlbum = albums[0];
                     const isMaster = selectedAlbum.type === 'master';
                     await fetchAlbumDetails(selectedAlbum.id, isMaster);
+                } else if (exactMatch && albums.length <= 3 && exactMatch.type === 'master') {
+                    // Exact master match with few results - auto-fill
+                    await fetchAlbumDetails(exactMatch.id, true);
                 } else {
                     // Multiple matches - show selection UI
                     showDiscogsResults(albums.slice(0, 10)); // Show top 10 results
