@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=1400, user-scalable=yes" id="viewport-meta">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob:;">
     <title>Album Tracker</title>
     <style>
@@ -384,6 +384,34 @@
             background: rgba(255, 255, 255, 0.3);
             transform: translateY(-50%) rotate(90deg);
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .view-toggle-button {
+            position: absolute;
+            right: 75px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            z-index: 10;
+            display: none; /* Hidden by default, shown on mobile */
+        }
+
+        .view-toggle-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        @media (max-width: 768px) {
+            .view-toggle-button {
+                display: block; /* Show on mobile/tablet */
+            }
         }
 
         @media (max-width: 768px) {
@@ -1428,6 +1456,11 @@
             
             <h1>🎵 Album Tracker</h1>
             <p>Track, Rate, and Discover Your Music Journey</p>
+            
+            <!-- View Toggle Button (Mobile Only) -->
+            <button onclick="toggleViewMode()" class="view-toggle-button" id="viewToggleBtn" title="Toggle View Mode">
+                📱 Mobile View
+            </button>
             
             <!-- Settings Button -->
             <button onclick="openSettings()" class="settings-button" title="Settings">
@@ -3027,6 +3060,24 @@
         const syncManager = new OneDriveSyncManager();
 
         // Settings Functions
+        function toggleViewMode() {
+            const viewportMeta = document.getElementById('viewport-meta');
+            const toggleBtn = document.getElementById('viewToggleBtn');
+            const currentContent = viewportMeta.getAttribute('content');
+            
+            if (currentContent.includes('width=1400')) {
+                // Switch to mobile view
+                viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0');
+                toggleBtn.innerHTML = '🖥️ Desktop View';
+                localStorage.setItem('viewMode', 'mobile');
+            } else {
+                // Switch to desktop view
+                viewportMeta.setAttribute('content', 'width=1400, user-scalable=yes');
+                toggleBtn.innerHTML = '📱 Mobile View';
+                localStorage.setItem('viewMode', 'desktop');
+            }
+        }
+
         function openSettings() {
             const modal = document.getElementById('settingsModal');
             modal.classList.add('active');
@@ -3820,9 +3871,17 @@
                 return;
             }
 
-            // Get 10 random albums
-            const shuffled = [...albums].sort(() => 0.5 - Math.random());
-            const randomAlbums = shuffled.slice(0, Math.min(10, albums.length));
+            // Filter to only unrated albums (no score or score is 0)
+            const unratedAlbums = albums.filter(album => !album.score || album.score === 0 || album.score === '0');
+            
+            if (unratedAlbums.length === 0) {
+                showAlert('info', 'All albums have been rated! Add more albums to generate a new list.');
+                return;
+            }
+
+            // Get 10 random unrated albums
+            const shuffled = [...unratedAlbums].sort(() => 0.5 - Math.random());
+            const randomAlbums = shuffled.slice(0, Math.min(10, unratedAlbums.length));
 
             // Hide the single album display
             document.getElementById('randomAlbumDisplay').style.display = 'none';
@@ -5351,6 +5410,20 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            // Restore view mode preference
+            const savedViewMode = localStorage.getItem('viewMode');
+            const viewportMeta = document.getElementById('viewport-meta');
+            const toggleBtn = document.getElementById('viewToggleBtn');
+            
+            if (savedViewMode === 'mobile') {
+                viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0');
+                toggleBtn.innerHTML = '🖥️ Desktop View';
+            } else {
+                // Default to desktop view on mobile devices
+                viewportMeta.setAttribute('content', 'width=1400, user-scalable=yes');
+                toggleBtn.innerHTML = '📱 Mobile View';
+            }
+            
             // Setup auto-sync
             setupAutoSync();
             
