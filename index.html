@@ -3817,7 +3817,7 @@
             const highConfidence = decisions.filter(d => d.confidence === 'high').length;
             const mediumConfidence = decisions.filter(d => d.confidence === 'medium').length;
             const lowConfidence = decisions.filter(d => d.confidence === 'low').length;
-            const totalToDelete = decisions.reduce((sum, d) => sum + d.delete.length, 0);
+            const totalToDelete = decisions.reduce((sum, d) => sum + d.deleteIndices.length, 0);
 
             // Display duplicate groups
             let html = `
@@ -3858,8 +3858,9 @@
                 `;
 
                 group.forEach((album, itemIndex) => {
-                    const action = decision.keep.includes(album.id) ? 'keep' : 
-                                 decision.delete.includes(album.id) ? 'delete' : 'query';
+                    // Use itemIndex instead of album.id to distinguish albums with same ID
+                    const action = decision.keepIndices.includes(itemIndex) ? 'keep' : 
+                                 decision.deleteIndices.includes(itemIndex) ? 'delete' : 'query';
                     
                     const checked = action === 'delete' ? 'checked' : '';
                     const badge = action === 'keep' ? '<span class="duplicate-badge badge-keep">✓ KEEP</span>' :
@@ -3901,8 +3902,8 @@
             duplicatesToDelete = [];
             duplicateGroups.forEach(group => {
                 const decision = decideDuplicateAction(group);
-                // Push album objects instead of IDs
-                const albumsToDelete = group.filter(album => decision.delete.includes(album.id));
+                // Push album objects based on deleteIndices
+                const albumsToDelete = decision.deleteIndices.map(index => group[index]);
                 duplicatesToDelete.push(...albumsToDelete);
             });
 
@@ -3910,7 +3911,10 @@
         }
 
         function decideDuplicateAction(group) {
-            const decision = { keep: [], delete: [], confidence: 'low', reason: '' };
+            const decision = { keepIndices: [], deleteIndices: [], confidence: 'low', reason: '' };
+
+            // Helper function to convert albums to their indices in the group
+            const getIndices = (albums) => albums.map(album => group.indexOf(album));
 
             // Rule 1: Semicolon vs Comma in artist names
             const semicolonVersions = group.filter(a => String(a.artist).includes(';'));
@@ -3923,21 +3927,21 @@
                 
                 // Exception: If comma version is rated and semicolon is not, keep comma version
                 if (ratedCommaVersions.length > 0 && ratedSemicolonVersions.length === 0) {
-                    decision.keep.push(ratedCommaVersions[0].id);
-                    decision.delete.push(...commaVersions.filter(a => a.id !== ratedCommaVersions[0].id).map(a => a.id));
-                    decision.delete.push(...semicolonVersions.map(a => a.id));
+                    decision.keepIndices.push(group.indexOf(ratedCommaVersions[0]));
+                    decision.deleteIndices.push(...getIndices(commaVersions.filter(a => a !== ratedCommaVersions[0])));
+                    decision.deleteIndices.push(...getIndices(semicolonVersions));
                     decision.confidence = 'high';
                     decision.reason = 'Rated comma version kept over unrated semicolon version';
                     return decision;
                 }
                 
                 // Default: Keep semicolon version, delete comma versions
-                decision.keep.push(semicolonVersions[0].id);
-                decision.delete.push(...commaVersions.map(a => a.id));
+                decision.keepIndices.push(group.indexOf(semicolonVersions[0]));
+                decision.deleteIndices.push(...getIndices(commaVersions));
                 
                 // If multiple semicolon versions, mark as medium confidence
                 if (semicolonVersions.length > 1) {
-                    decision.delete.push(...semicolonVersions.slice(1).map(a => a.id));
+                    decision.deleteIndices.push(...getIndices(semicolonVersions.slice(1)));
                     decision.confidence = 'medium';
                     decision.reason = 'Multiple semicolon versions - kept first one';
                 } else {
@@ -3952,8 +3956,8 @@
             const unratedAlbums = group.filter(a => !a.score || a.score === '');
             
             if (ratedAlbums.length === 1 && unratedAlbums.length > 0) {
-                decision.keep.push(ratedAlbums[0].id);
-                decision.delete.push(...unratedAlbums.map(a => a.id));
+                decision.keepIndices.push(group.indexOf(ratedAlbums[0]));
+                decision.deleteIndices.push(...getIndices(unratedAlbums));
                 decision.confidence = 'high';
                 decision.reason = 'Rated version kept over unrated';
                 return decision;
@@ -3961,9 +3965,9 @@
             
             if (ratedAlbums.length > 1) {
                 // Multiple rated versions - need manual review
-                decision.keep.push(ratedAlbums[0].id);
-                decision.delete.push(...ratedAlbums.slice(1).map(a => a.id));
-                decision.delete.push(...unratedAlbums.map(a => a.id));
+                decision.keepIndices.push(group.indexOf(ratedAlbums[0]));
+                decision.deleteIndices.push(...getIndices(ratedAlbums.slice(1)));
+                decision.deleteIndices.push(...getIndices(unratedAlbums));
                 decision.confidence = 'low';
                 decision.reason = 'Multiple rated versions - manual review needed';
                 return decision;
@@ -3980,8 +3984,8 @@
 
             if (allSame) {
                 const sorted = [...group].sort((a, b) => a.id - b.id);
-                decision.keep.push(sorted[0].id);
-                decision.delete.push(...sorted.slice(1).map(a => a.id));
+                decision.keepIndices.push(group.indexOf(sorted[0]));
+                decision.deleteIndices.push(...getIndices(sorted.slice(1)));
                 decision.confidence = 'high';
                 decision.reason = 'Identical albums - kept lowest ID';
                 return decision;
@@ -3990,8 +3994,8 @@
             // Rule 4: Different years - likely different editions
             const years = [...new Set(group.map(a => a.year).filter(y => y))];
             if (years.length > 1) {
-                decision.keep.push(group[0].id);
-                decision.delete.push(...group.slice(1).map(a => a.id));
+                decision.keepIndices.push(0);
+                decision.deleteIndices.push(...Array.from({length: group.length - 1}, (_, i) => i + 1));
                 decision.confidence = 'low';
                 decision.reason = 'Different years - possibly different editions';
                 return decision;
@@ -4000,16 +4004,16 @@
             // Rule 5: Different genres - uncertain
             const genres = [...new Set(group.map(a => a.genre).filter(g => g))];
             if (genres.length > 1) {
-                decision.keep.push(group[0].id);
-                decision.delete.push(...group.slice(1).map(a => a.id));
+                decision.keepIndices.push(0);
+                decision.deleteIndices.push(...Array.from({length: group.length - 1}, (_, i) => i + 1));
                 decision.confidence = 'low';
                 decision.reason = 'Different genres - manual review needed';
                 return decision;
             }
 
             // Default: Can't decide automatically
-            decision.keep.push(group[0].id);
-            decision.delete.push(...group.slice(1).map(a => a.id));
+            decision.keepIndices.push(0);
+            decision.deleteIndices.push(...Array.from({length: group.length - 1}, (_, i) => i + 1));
             decision.confidence = 'low';
             decision.reason = 'Unable to determine automatically';
             return decision;
