@@ -1043,7 +1043,13 @@
             top: 50%;
             transform: translateY(-50%);
             color: #6c757d;
-            pointer-events: none;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: color 0.2s;
+        }
+
+        .search-icon:hover {
+            color: #667eea;
         }
 
         .search-results {
@@ -1602,7 +1608,7 @@
                         placeholder="Search by album name or artist..."
                         autocomplete="off"
                     >
-                    <span class="search-icon" id="browseSearchIcon" style="cursor: pointer;" title="Click to search">🔍</span>
+                    <span class="search-icon" id="browseSearchIcon" title="Click to search">🔍</span>
                     <div id="browseSearchResults" class="search-results"></div>
                 </div>
                 
@@ -4622,7 +4628,16 @@
             setupSearch();
         }
 
+        // Track if search is already set up to prevent duplicate listeners
+        let searchSetupComplete = false;
+
         function setupSearch() {
+            // Prevent duplicate setup
+            if (searchSetupComplete) {
+                console.log('Search already set up, skipping...');
+                return;
+            }
+
             const searchInput = document.getElementById('browseSearchInput');
             const searchResults = document.getElementById('browseSearchResults');
             const searchIcon = document.getElementById('browseSearchIcon');
@@ -4632,7 +4647,7 @@
                 return;
             }
             
-            console.log('Search setup complete');
+            console.log('Setting up search functionality...');
 
             let searchTimeout;
 
@@ -4671,6 +4686,7 @@
             searchInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
+                    console.log('Enter key pressed, applying filters...');
                     // Close search dropdown
                     searchResults.classList.remove('active');
                     searchResults.innerHTML = '';
@@ -4682,8 +4698,11 @@
 
             // Handle click on search icon to apply filters
             if (searchIcon) {
+                console.log('Setting up search icon click handler...');
                 searchIcon.addEventListener('click', (e) => {
+                    e.preventDefault();
                     e.stopPropagation();
+                    console.log('Search icon clicked, applying filters...');
                     // Close search dropdown
                     searchResults.classList.remove('active');
                     searchResults.innerHTML = '';
@@ -4691,7 +4710,12 @@
                     // Apply filters using the existing filter system
                     applyFilters();
                 });
+            } else {
+                console.error('Search icon not found!');
             }
+
+            searchSetupComplete = true;
+            console.log('Search setup complete!');
         }
 
 
