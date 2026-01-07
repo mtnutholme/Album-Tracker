@@ -1231,6 +1231,13 @@
             border: 2px solid #e9ecef;
         }
 
+        .score-albums-section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
         .chart-bar {
             display: flex;
             align-items: center;
@@ -5701,14 +5708,6 @@
                 `;
             }
 
-            // Top 10 and Bottom 10 Lists (by source/reason)
-            // This will be populated by updateScoreFilter() along with Top & Bottom Albums
-            html += `
-                <div id="topBottomListsSection" style="margin-top: 30px;">
-                    <!-- Will be populated by updateScoreFilter() -->
-                </div>
-            `;
-
             // Highest and Lowest Scoring Albums (Side by Side with Filter)
             // Get available months and years for dropdowns
             const allMonths = [...new Set(albums.filter(a => a.dateListened).map(a => a.dateListened.substring(0, 7)))].sort().reverse();
@@ -5738,6 +5737,14 @@
                     <div id="scoreFilteredAlbums" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <!-- Will be populated by updateScoreFilter() -->
                     </div>
+                </div>
+            `;
+
+            // Top & Bottom 10 Lists (by source/reason)
+            // This will be populated by updateScoreFilter() along with Top & Bottom Albums
+            html += `
+                <div id="topBottomListsSection" class="score-albums-section" style="margin-top: 20px;">
+                    <!-- Will be populated by updateScoreFilter() -->
                 </div>
             `;
 
