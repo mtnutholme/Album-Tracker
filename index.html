@@ -3319,7 +3319,7 @@
             
             if (syncManager && syncManager.isConnected()) {
                 const lastSync = localStorage.getItem('last_sync_time');
-                const lastSyncText = lastSync ? new Date(parseInt(lastSync)).toLocaleString() : 'Never';
+                const lastSyncText = lastSync ? new Date(lastSync).toLocaleString() : 'Never';
                 
                 statusDiv.innerHTML = `
                     <div class="settings-status connected">
@@ -5463,7 +5463,31 @@
             const genreCounts = db.getGenreCounts();
             const sourceStats = db.getSourceListStats();
 
-            let html = '<div class="stats-grid">';
+            // Ranking method toggle
+            const rankingMethod = localStorage.getItem('ranking_method') || 'raw';
+            
+            let html = `
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 12px; margin-bottom: 20px; color: white;">
+                    <h3 style="margin: 0 0 15px 0; color: white;">📊 Ranking Method</h3>
+                    <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                        <label style="display: flex; align-items: center; cursor: pointer; background: rgba(255,255,255,0.2); padding: 10px 15px; border-radius: 8px; ${rankingMethod === 'raw' ? 'background: rgba(255,255,255,0.3); box-shadow: 0 2px 8px rgba(0,0,0,0.2);' : ''}">
+                            <input type="radio" name="rankingMethod" value="raw" ${rankingMethod === 'raw' ? 'checked' : ''} onchange="changeRankingMethod('raw')" style="margin-right: 8px;">
+                            <span style="font-weight: 600;">Raw Score</span>
+                            <span style="margin-left: 8px; font-size: 0.9em; opacity: 0.9;">(Simple Average)</span>
+                        </label>
+                        <label style="display: flex; align-items: center; cursor: pointer; background: rgba(255,255,255,0.2); padding: 10px 15px; border-radius: 8px; ${rankingMethod === 'weighted' ? 'background: rgba(255,255,255,0.3); box-shadow: 0 2px 8px rgba(0,0,0,0.2);' : ''}">
+                            <input type="radio" name="rankingMethod" value="weighted" ${rankingMethod === 'weighted' ? 'checked' : ''} onchange="changeRankingMethod('weighted')" style="margin-right: 8px;">
+                            <span style="font-weight: 600;">Weighted Score</span>
+                            <span style="margin-left: 8px; font-size: 0.9em; opacity: 0.9;">(Bayesian)</span>
+                        </label>
+                        <button onclick="showRankingExplanation()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 5px;">
+                            <span>ℹ️</span>
+                            <span>What's the difference?</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="stats-grid">
+            `;
 
             // Overall Stats
             const totalAlbums = albums.length;
@@ -5562,15 +5586,42 @@
 
             // Top Artists by Average Score
             if (Object.keys(artistAvg).length > 0) {
+                const globalMean = getGlobalMean(albums);
+                const confidenceWeight = getConfidenceWeight(albums.length);
+                
+                // Calculate weighted scores if needed
+                const artistData = Object.entries(artistAvg).map(([artist, data]) => {
+                    const artistAlbums = albums.filter(a => a.artist === artist && a.score);
+                    const scores = artistAlbums.map(a => parseFloat(a.score));
+                    const rawScore = data.average;
+                    const weightedScore = rankingMethod === 'weighted' 
+                        ? calculateWeightedScore(scores, globalMean, confidenceWeight)
+                        : rawScore;
+                    
+                    return {
+                        artist,
+                        rawScore,
+                        weightedScore,
+                        displayScore: rankingMethod === 'weighted' ? weightedScore : rawScore,
+                        count: data.count
+                    };
+                });
+                
+                // Sort by display score
+                artistData.sort((a, b) => b.displayScore - a.displayScore);
+                
                 html += `
                     <div class="chart">
                         <h3>🎤 Top Artists by Average Score</h3>
-                        ${Object.entries(artistAvg).slice(0, 10).map(([artist, data]) => `
-                            <div class="chart-bar" style="cursor: pointer; display: flex; align-items: center; margin-bottom: 8px;" onclick="showArtistDrilldown('${artist.replace(/'/g, "\\'")}')">
-                                <div style="min-width: 150px; max-width: 150px; padding-right: 10px; color: #333; font-weight: 600; font-size: 13px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${artist}">${artist}</div>
+                        ${artistData.slice(0, 10).map(data => `
+                            <div class="chart-bar" style="cursor: pointer; display: flex; align-items: center; margin-bottom: 8px;" onclick="showArtistDrilldown('${data.artist.replace(/'/g, "\\'")}')">
+                                <div style="min-width: 150px; max-width: 150px; padding-right: 10px; color: #333; font-weight: 600; font-size: 13px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${data.artist}">${data.artist}</div>
                                 <div style="flex: 1; display: flex; align-items: center;">
-                                    <div class="chart-bar-fill" style="width: ${(data.average / 10) * 100}%; background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%); color: white; padding: 8px 12px; border-radius: 4px; font-weight: 600; min-width: 100px;">
-                                        ${data.average.toFixed(2)} (${data.count} album${data.count !== 1 ? 's' : ''})
+                                    <div class="chart-bar-fill" style="width: ${(data.displayScore / 10) * 100}%; background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%); color: white; padding: 8px 12px; border-radius: 4px; font-weight: 600; min-width: 100px;">
+                                        ${rankingMethod === 'weighted' 
+                                            ? `${data.weightedScore.toFixed(2)} <span style="opacity: 0.7; font-size: 0.9em;">(Raw: ${data.rawScore.toFixed(2)})</span> | ${data.count} album${data.count !== 1 ? 's' : ''}`
+                                            : `${data.rawScore.toFixed(2)} (${data.count} album${data.count !== 1 ? 's' : ''})`
+                                        }
                                     </div>
                                 </div>
                             </div>
@@ -5602,20 +5653,92 @@
 
             // Top Genres by Average Score
             if (Object.keys(genreAvg).length > 0) {
+                const globalMean = getGlobalMean(albums);
+                const confidenceWeight = getConfidenceWeight(albums.length);
+                
+                // Calculate weighted scores if needed
+                const genreData = Object.entries(genreAvg).map(([genre, rawScore]) => {
+                    const genreAlbums = albums.filter(a => {
+                        if (!a.genre || !a.score) return false;
+                        const genres = a.genre.split(';').map(g => g.trim());
+                        return genres.includes(genre);
+                    });
+                    const scores = genreAlbums.map(a => parseFloat(a.score));
+                    const weightedScore = rankingMethod === 'weighted' 
+                        ? calculateWeightedScore(scores, globalMean, confidenceWeight)
+                        : rawScore;
+                    
+                    return {
+                        genre,
+                        rawScore,
+                        weightedScore,
+                        displayScore: rankingMethod === 'weighted' ? weightedScore : rawScore,
+                        count: genreAlbums.length
+                    };
+                });
+                
+                // Sort by display score
+                genreData.sort((a, b) => b.displayScore - a.displayScore);
+                
                 html += `
                     <div class="chart">
                         <h3>🎸 Top Genres by Average Score</h3>
-                        ${Object.entries(genreAvg).slice(0, 10).map(([genre, score]) => `
-                            <div class="chart-bar" style="cursor: pointer; display: flex; align-items: center; margin-bottom: 8px;" onclick="showGenreDrilldown('${genre.replace(/'/g, "\\'")}')">
-                                <div style="min-width: 150px; max-width: 150px; padding-right: 10px; color: #333; font-weight: 600; font-size: 13px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${genre}">${genre}</div>
+                        ${genreData.slice(0, 10).map(data => `
+                            <div class="chart-bar" style="cursor: pointer; display: flex; align-items: center; margin-bottom: 8px;" onclick="showGenreDrilldown('${data.genre.replace(/'/g, "\\'")}')">
+                                <div style="min-width: 150px; max-width: 150px; padding-right: 10px; color: #333; font-weight: 600; font-size: 13px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${data.genre}">${data.genre}</div>
                                 <div style="flex: 1; display: flex; align-items: center; position: relative;">
-                                    <div class="chart-bar-fill" style="width: ${(score / 10) * 100}%; background: linear-gradient(90deg, #28a745 0%, #20c997 100%); padding: 8px 12px; border-radius: 4px; min-height: 32px;"></div>
+                                    <div class="chart-bar-fill" style="width: ${(data.displayScore / 10) * 100}%; background: linear-gradient(90deg, #28a745 0%, #20c997 100%); padding: 8px 12px; border-radius: 4px; min-height: 32px;"></div>
                                     <div style="position: absolute; left: 12px; color: #333; font-weight: 600; font-size: 14px; text-shadow: 1px 1px 2px rgba(255,255,255,0.8);">
-                                        ${score.toFixed(2)}
+                                        ${rankingMethod === 'weighted' 
+                                            ? `${data.weightedScore.toFixed(2)} <span style="opacity: 0.7; font-size: 0.85em;">(Raw: ${data.rawScore.toFixed(2)})</span>`
+                                            : data.rawScore.toFixed(2)
+                                        }
                                     </div>
                                 </div>
                             </div>
                         `).join('')}
+                    </div>
+                `;
+            }
+
+            // Top 10 and Bottom 10 Albums (All Time)
+            const ratedAlbums = albums.filter(a => a.score !== null && a.score !== undefined && a.score !== '');
+            if (ratedAlbums.length > 0) {
+                const sortedAlbums = [...ratedAlbums].sort((a, b) => parseFloat(b.score) - parseFloat(a.score));
+                const top10 = sortedAlbums.slice(0, 10);
+                const bottom10 = sortedAlbums.slice(-10).reverse();
+                
+                html += `
+                    <div style="margin-top: 30px;">
+                        <h3 style="margin-bottom: 20px;">🏆 Top & Bottom 10 Albums (All Time)</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div class="chart">
+                                <h4 style="color: #28a745; margin-bottom: 15px;">🥇 Top 10 Albums</h4>
+                                ${top10.map((album, index) => `
+                                    <div class="chart-bar" style="cursor: pointer; display: flex; align-items: center; margin-bottom: 8px; padding: 10px; background: ${index === 0 ? 'linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)' : '#f8f9fa'}; border-radius: 8px;" onclick="showAlbumDetail(${album.id})">
+                                        <div style="min-width: 30px; font-weight: 700; font-size: 18px; color: ${index === 0 ? '#000' : '#667eea'};">#${index + 1}</div>
+                                        <div style="flex: 1; padding: 0 10px;">
+                                            <div style="font-weight: 600; color: #333; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${album.albumName}">${album.albumName}</div>
+                                            <div style="font-size: 12px; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${album.artist}">${album.artist}</div>
+                                        </div>
+                                        <div style="min-width: 50px; text-align: right; font-weight: 700; font-size: 16px; color: #28a745;">${parseFloat(album.score).toFixed(1)}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div class="chart">
+                                <h4 style="color: #dc3545; margin-bottom: 15px;">📉 Bottom 10 Albums</h4>
+                                ${bottom10.map((album, index) => `
+                                    <div class="chart-bar" style="cursor: pointer; display: flex; align-items: center; margin-bottom: 8px; padding: 10px; background: #f8f9fa; border-radius: 8px;" onclick="showAlbumDetail(${album.id})">
+                                        <div style="min-width: 30px; font-weight: 700; font-size: 18px; color: #dc3545;">#${ratedAlbums.length - index}</div>
+                                        <div style="flex: 1; padding: 0 10px;">
+                                            <div style="font-weight: 600; color: #333; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${album.albumName}">${album.albumName}</div>
+                                            <div style="font-size: 12px; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${album.artist}">${album.artist}</div>
+                                        </div>
+                                        <div style="min-width: 50px; text-align: right; font-weight: 700; font-size: 16px; color: #dc3545;">${parseFloat(album.score).toFixed(1)}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
                     </div>
                 `;
             }
@@ -5772,6 +5895,89 @@
         function filterMonthlyStatsByYear(year) {
             window.monthlyStatsYear = year;
             loadStatsSection();
+        }
+
+        // Bayesian weighted scoring
+        function calculateWeightedScore(scores, globalMean, confidenceWeight) {
+            if (!scores || scores.length === 0) return 0;
+            const n = scores.length;
+            const sum = scores.reduce((a, b) => a + parseFloat(b), 0);
+            return (confidenceWeight * globalMean + sum) / (confidenceWeight + n);
+        }
+
+        // Get adaptive confidence weight based on collection size
+        function getConfidenceWeight(totalAlbums) {
+            if (totalAlbums < 50) return 3;
+            if (totalAlbums < 200) return 5;
+            if (totalAlbums < 500) return 10;
+            return 15;
+        }
+
+        // Calculate global mean score
+        function getGlobalMean(albums) {
+            const ratedAlbums = albums.filter(a => a.score !== null && a.score !== undefined && a.score !== '');
+            if (ratedAlbums.length === 0) return 7.5; // Default
+            return ratedAlbums.reduce((sum, a) => sum + parseFloat(a.score), 0) / ratedAlbums.length;
+        }
+
+        // Change ranking method
+        function changeRankingMethod(method) {
+            localStorage.setItem('ranking_method', method);
+            loadStatsSection();
+        }
+
+        // Show ranking explanation modal
+        function showRankingExplanation() {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.display = 'flex';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 600px;">
+                    <div class="modal-header">
+                        <h2>📊 Ranking Methods Explained</h2>
+                        <button class="close-modal" onclick="this.closest('.modal').remove()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <h3 style="color: #667eea; margin-top: 0;">Raw Score (Simple Average)</h3>
+                        <p>Calculates the simple average of all scores.</p>
+                        <p><strong>Example:</strong></p>
+                        <ul>
+                            <li>Artist A: 1 album, score 10.0 → Average: <strong>10.0</strong></li>
+                            <li>Artist B: 50 albums, average 9.2 → Average: <strong>9.2</strong></li>
+                        </ul>
+                        <p style="color: #dc3545;"><strong>Problem:</strong> Artist A ranks higher, but is it really better with only 1 album?</p>
+                        
+                        <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
+                        
+                        <h3 style="color: #667eea;">Weighted Score (Bayesian)</h3>
+                        <p>Adjusts scores based on sample size. Small samples are pulled toward the global average, while large samples remain closer to their true average.</p>
+                        <p><strong>Same Example:</strong></p>
+                        <ul>
+                            <li>Artist A: 1 album, score 10.0 → Weighted: <strong>8.2</strong> (adjusted down)</li>
+                            <li>Artist B: 50 albums, average 9.2 → Weighted: <strong>9.1</strong> (barely adjusted)</li>
+                        </ul>
+                        <p style="color: #28a745;"><strong>Result:</strong> Artist B ranks higher, which is more reliable!</p>
+                        
+                        <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
+                        
+                        <h3 style="color: #667eea;">When to Use Each?</h3>
+                        <ul>
+                            <li><strong>Raw Score:</strong> Personal tracking, you trust all your ratings equally</li>
+                            <li><strong>Weighted Score:</strong> More accurate rankings, especially with varying sample sizes</li>
+                        </ul>
+                        
+                        <p style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                            <strong>💡 Tip:</strong> Weighted scoring is recommended for collections with 50+ albums, as it provides more meaningful rankings.
+                        </p>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // Close on outside click
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.remove();
+            });
         }
 
         function showMonthDrilldown(month) {
