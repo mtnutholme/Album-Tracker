@@ -5702,9 +5702,9 @@
             }
 
             // Top 10 and Bottom 10 Albums (All Time)
-            const ratedAlbums = albums.filter(a => a.score !== null && a.score !== undefined && a.score !== '');
-            if (ratedAlbums.length > 0) {
-                const sortedAlbums = [...ratedAlbums].sort((a, b) => parseFloat(b.score) - parseFloat(a.score));
+            const ratedAlbumsForTop10 = albums.filter(a => a.score !== null && a.score !== undefined && a.score !== '');
+            if (ratedAlbumsForTop10.length > 0) {
+                const sortedAlbums = [...ratedAlbumsForTop10].sort((a, b) => parseFloat(b.score) - parseFloat(a.score));
                 const top10 = sortedAlbums.slice(0, 10);
                 const bottom10 = sortedAlbums.slice(-10).reverse();
                 
