@@ -3866,15 +3866,20 @@
                                 action === 'delete' ? '<span class="duplicate-badge badge-delete">✗ DELETE</span>' :
                                 '<span class="duplicate-badge badge-query">? REVIEW</span>';
 
+                    // Use unique identifier combining group and item index
+                    const uniqueId = `${groupIndex}-${itemIndex}`;
+                    const albumIndex = db.albums.indexOf(album);
+
                     html += `
-                        <div class="duplicate-item ${action}" id="duplicate-${album.id}" data-confidence="${decision.confidence}">
+                        <div class="duplicate-item ${action}" id="duplicate-${uniqueId}" data-confidence="${decision.confidence}">
                             <input type="checkbox" 
                                    class="duplicate-checkbox" 
-                                   id="check-${album.id}" 
+                                   id="check-${uniqueId}" 
+                                   data-album-index="${albumIndex}"
                                    data-album-id="${album.id}"
                                    data-confidence="${decision.confidence}"
                                    ${checked}
-                                   onchange="toggleDuplicateSelection(${album.id})">
+                                   onchange="toggleDuplicateSelection('${uniqueId}', ${albumIndex})">
                             <div class="duplicate-info">
                                 <div><strong>ID:</strong> ${album.id} ${badge}</div>
                                 <div><strong>Artist:</strong> ${album.artist}</div>
@@ -3896,7 +3901,9 @@
             duplicatesToDelete = [];
             duplicateGroups.forEach(group => {
                 const decision = decideDuplicateAction(group);
-                duplicatesToDelete.push(...decision.delete);
+                // Push album objects instead of IDs
+                const albumsToDelete = group.filter(album => decision.delete.includes(album.id));
+                duplicatesToDelete.push(...albumsToDelete);
             });
 
             document.getElementById('deleteDuplicatesBtn').style.display = 'block';
@@ -4008,18 +4015,21 @@
             return decision;
         }
 
-        function toggleDuplicateSelection(albumId) {
-            const checkbox = document.getElementById(`check-${albumId}`);
-            const item = document.getElementById(`duplicate-${albumId}`);
+        function toggleDuplicateSelection(uniqueId, albumIndex) {
+            const checkbox = document.getElementById(`check-${uniqueId}`);
+            const item = document.getElementById(`duplicate-${uniqueId}`);
+            const album = db.albums[albumIndex];
             
             if (checkbox.checked) {
-                if (!duplicatesToDelete.includes(albumId)) {
-                    duplicatesToDelete.push(albumId);
+                // Add to delete list if not already there
+                if (!duplicatesToDelete.some(a => db.albums.indexOf(a) === albumIndex)) {
+                    duplicatesToDelete.push(album);
                 }
                 item.classList.add('delete');
                 item.classList.remove('keep');
             } else {
-                duplicatesToDelete = duplicatesToDelete.filter(id => id !== albumId);
+                // Remove from delete list
+                duplicatesToDelete = duplicatesToDelete.filter(a => db.albums.indexOf(a) !== albumIndex);
                 item.classList.add('keep');
                 item.classList.remove('delete');
             }
@@ -4030,13 +4040,15 @@
             duplicatesToDelete = [];
             
             checkboxes.forEach(checkbox => {
-                const item = document.getElementById(`duplicate-${checkbox.dataset.albumId}`);
+                const uniqueId = checkbox.id.replace('check-', '');
+                const item = document.getElementById(`duplicate-${uniqueId}`);
                 const badge = item.querySelector('.duplicate-badge');
+                const albumIndex = parseInt(checkbox.dataset.albumIndex);
                 
                 // Check if originally marked for deletion
                 if (badge && badge.textContent.includes('DELETE')) {
                     checkbox.checked = true;
-                    duplicatesToDelete.push(parseInt(checkbox.dataset.albumId));
+                    duplicatesToDelete.push(db.albums[albumIndex]);
                     item.classList.add('delete');
                     item.classList.remove('keep');
                 }
@@ -4050,14 +4062,16 @@
             duplicatesToDelete = [];
             
             checkboxes.forEach(checkbox => {
-                const item = document.getElementById(`duplicate-${checkbox.dataset.albumId}`);
+                const uniqueId = checkbox.id.replace('check-', '');
+                const item = document.getElementById(`duplicate-${uniqueId}`);
                 const badge = item.querySelector('.duplicate-badge');
                 const confidence = checkbox.dataset.confidence;
+                const albumIndex = parseInt(checkbox.dataset.albumIndex);
                 
                 // Check if high confidence AND marked for deletion
                 if (confidence === 'high' && badge && badge.textContent.includes('DELETE')) {
                     checkbox.checked = true;
-                    duplicatesToDelete.push(parseInt(checkbox.dataset.albumId));
+                    duplicatesToDelete.push(db.albums[albumIndex]);
                     item.classList.add('delete');
                     item.classList.remove('keep');
                 } else {
@@ -4076,7 +4090,8 @@
             
             checkboxes.forEach(checkbox => {
                 checkbox.checked = false;
-                const item = document.getElementById(`duplicate-${checkbox.dataset.albumId}`);
+                const uniqueId = checkbox.id.replace('check-', '');
+                const item = document.getElementById(`duplicate-${uniqueId}`);
                 item.classList.add('keep');
                 item.classList.remove('delete');
             });
@@ -4094,9 +4109,9 @@
                 return;
             }
 
-            // Delete the selected albums
-            duplicatesToDelete.forEach(id => {
-                db.deleteAlbum(id);
+            // Delete the selected albums by ID
+            duplicatesToDelete.forEach(album => {
+                db.deleteAlbum(album.id);
             });
 
             alert(`Successfully deleted ${duplicatesToDelete.length} duplicate album(s).`);
