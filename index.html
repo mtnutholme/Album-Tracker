@@ -1344,6 +1344,80 @@
             border: 1px solid #bee5eb;
         }
 
+        /* Duplicate Cleanup Styles */
+        .duplicate-group {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .duplicate-group.query {
+            border-color: #ffc107;
+            background: #fff3cd;
+        }
+
+        .duplicate-item {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .duplicate-item.keep {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+
+        .duplicate-item.delete {
+            border-color: #dc3545;
+            background: #f8d7da;
+        }
+
+        .duplicate-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .duplicate-info {
+            flex: 1;
+        }
+
+        .duplicate-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .badge-keep {
+            background: #28a745;
+            color: white;
+        }
+
+        .badge-delete {
+            background: #dc3545;
+            color: white;
+        }
+
+        .badge-query {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .badge-master {
+            background: #764ba2;
+            color: white;
+        }
+
         @media (max-width: 768px) {
             .random-album-content {
                 grid-template-columns: 1fr;
@@ -1843,6 +1917,15 @@
                             🗑️ Clear All Data
                         </button>
                     </div>
+                    
+                    <div class="settings-button-group" style="margin-top: 15px;">
+                        <button onclick="openDuplicateCleanup()" class="settings-btn settings-btn-secondary">
+                            🔍 Clean Up Duplicate Albums
+                        </button>
+                        <button onclick="cleanupIDs()" class="settings-btn settings-btn-secondary">
+                            🔢 Clean Up IDs
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1918,6 +2001,27 @@
         </div>
     </div>
 
+    <!-- Duplicate Cleanup Modal -->
+    <div class="modal" id="duplicateCleanupModal">
+        <div class="modal-content" style="max-width: 1000px;">
+            <div class="modal-header">
+                <h2>🔍 Clean Up Duplicate Albums</h2>
+                <button onclick="closeDuplicateCleanup()" class="modal-close">✕</button>
+            </div>
+            <div class="modal-body">
+                <div id="duplicateCleanupContent">
+                    <p style="color: #666; margin-bottom: 20px;">Scanning for duplicate albums...</p>
+                </div>
+            </div>
+            <div class="modal-footer" style="display: flex; gap: 10px; justify-content: space-between;">
+                <button class="btn btn-secondary" onclick="closeDuplicateCleanup()">Cancel</button>
+                <button class="btn btn-danger" id="deleteDuplicatesBtn" onclick="deleteDuplicates()" style="display: none;">
+                    🗑️ Delete Selected Duplicates
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="sync-status" id="syncStatus" onclick="toggleSyncMenu()">
         <div class="sync-indicator offline" id="syncIndicator"></div>
         <div id="syncText">
@@ -1950,6 +2054,18 @@
             }
 
             addAlbum(album) {
+                // If album has an ID, check if it already exists
+                if (album.id) {
+                    const existingIndex = this.albums.findIndex(a => a.id === album.id);
+                    if (existingIndex !== -1) {
+                        // Overwrite existing album with same ID
+                        this.albums[existingIndex] = album;
+                        this.saveToStorage();
+                        return album;
+                    }
+                }
+                
+                // Generate new ID if not provided or doesn't exist
                 const id = this.albums.length > 0 ? Math.max(...this.albums.map(a => a.id)) + 1 : 1;
                 album.id = id;
                 this.albums.push(album);
@@ -3629,11 +3745,252 @@
             }
         }
 
+        // Duplicate Cleanup Functions
+        let duplicatesToDelete = [];
+
+        function openDuplicateCleanup() {
+            const modal = document.getElementById('duplicateCleanupModal');
+            modal.classList.add('active');
+            scanForDuplicates();
+        }
+
+        function closeDuplicateCleanup() {
+            const modal = document.getElementById('duplicateCleanupModal');
+            modal.classList.remove('active');
+            duplicatesToDelete = [];
+        }
+
+        function scanForDuplicates() {
+            const content = document.getElementById('duplicateCleanupContent');
+            content.innerHTML = '<p style="color: #666;">Scanning for duplicates...</p>';
+
+            // Find potential duplicates
+            const duplicateGroups = [];
+            const processed = new Set();
+
+            db.albums.forEach((album, index) => {
+                if (processed.has(album.id)) return;
+
+                const potentialDupes = db.albums.filter((other, otherIndex) => {
+                    if (otherIndex === index || processed.has(other.id)) return false;
+                    
+                    // Check if album names match
+                    const nameMatch = String(album.albumName).toLowerCase().trim() === 
+                                    String(other.albumName).toLowerCase().trim();
+                    
+                    if (!nameMatch) return false;
+
+                    // Check if artist names are similar
+                    const artist1 = String(album.artist).toLowerCase().trim();
+                    const artist2 = String(other.artist).toLowerCase().trim();
+                    
+                    // Exact match
+                    if (artist1 === artist2) return true;
+                    
+                    // Check if only difference is semicolon vs comma
+                    const artist1Normalized = artist1.replace(/[;,]/g, '|').split('|').map(s => s.trim()).sort().join('|');
+                    const artist2Normalized = artist2.replace(/[;,]/g, '|').split('|').map(s => s.trim()).sort().join('|');
+                    
+                    return artist1Normalized === artist2Normalized;
+                });
+
+                if (potentialDupes.length > 0) {
+                    const group = [album, ...potentialDupes];
+                    group.forEach(a => processed.add(a.id));
+                    duplicateGroups.push(group);
+                }
+            });
+
+            if (duplicateGroups.length === 0) {
+                content.innerHTML = `
+                    <div class="alert alert-success">
+                        <strong>✅ No duplicates found!</strong>
+                        <p>Your album collection is clean.</p>
+                    </div>
+                `;
+                document.getElementById('deleteDuplicatesBtn').style.display = 'none';
+                return;
+            }
+
+            // Display duplicate groups
+            let html = `
+                <div class="alert alert-info">
+                    <strong>Found ${duplicateGroups.length} duplicate group(s)</strong>
+                    <p>Review the albums below and confirm which ones to delete.</p>
+                </div>
+            `;
+
+            duplicateGroups.forEach((group, groupIndex) => {
+                const decision = decideDuplicateAction(group);
+                const isQuery = decision.type === 'query';
+
+                html += `
+                    <div class="duplicate-group ${isQuery ? 'query' : ''}">
+                        <h4 style="margin-bottom: 15px;">
+                            ${group[0].albumName} - ${group[0].artist}
+                            ${isQuery ? '<span class="duplicate-badge badge-query">⚠️ NEEDS REVIEW</span>' : ''}
+                        </h4>
+                `;
+
+                group.forEach((album, itemIndex) => {
+                    const action = decision.keep.includes(album.id) ? 'keep' : 
+                                 decision.delete.includes(album.id) ? 'delete' : 'query';
+                    
+                    const checked = action === 'delete' ? 'checked' : '';
+                    const badge = action === 'keep' ? '<span class="duplicate-badge badge-keep">✓ KEEP</span>' :
+                                action === 'delete' ? '<span class="duplicate-badge badge-delete">✗ DELETE</span>' :
+                                '<span class="duplicate-badge badge-query">? REVIEW</span>';
+
+                    html += `
+                        <div class="duplicate-item ${action}" id="duplicate-${album.id}">
+                            <input type="checkbox" 
+                                   class="duplicate-checkbox" 
+                                   id="check-${album.id}" 
+                                   data-album-id="${album.id}"
+                                   ${checked}
+                                   onchange="toggleDuplicateSelection(${album.id})">
+                            <div class="duplicate-info">
+                                <div><strong>ID:</strong> ${album.id} ${badge}</div>
+                                <div><strong>Artist:</strong> ${album.artist}</div>
+                                <div><strong>Year:</strong> ${album.year || 'N/A'}</div>
+                                <div><strong>Score:</strong> ${album.score || 'Unrated'}</div>
+                                <div><strong>Genre:</strong> ${album.genre || 'N/A'}</div>
+                                ${album.discogsUrl ? `<div><strong>Discogs:</strong> <a href="${album.discogsUrl}" target="_blank">View</a></div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += '</div>';
+            });
+
+            content.innerHTML = html;
+            
+            // Initialize duplicatesToDelete with auto-selected items
+            duplicatesToDelete = [];
+            duplicateGroups.forEach(group => {
+                const decision = decideDuplicateAction(group);
+                duplicatesToDelete.push(...decision.delete);
+            });
+
+            document.getElementById('deleteDuplicatesBtn').style.display = 'block';
+        }
+
+        function decideDuplicateAction(group) {
+            const decision = { keep: [], delete: [], type: 'auto' };
+
+            // Rule 1: If only difference is semicolon vs comma in artist, keep semicolon version
+            const semicolonVersions = group.filter(a => String(a.artist).includes(';'));
+            const commaVersions = group.filter(a => String(a.artist).includes(',') && !String(a.artist).includes(';'));
+            
+            if (semicolonVersions.length > 0 && commaVersions.length > 0 && semicolonVersions.length + commaVersions.length === group.length) {
+                decision.keep.push(semicolonVersions[0].id);
+                decision.delete.push(...commaVersions.map(a => a.id));
+                if (semicolonVersions.length > 1) {
+                    // Multiple semicolon versions, need to decide between them
+                    decision.type = 'query';
+                }
+                return decision;
+            }
+
+            // Rule 2: If one is rated and others aren't, keep the rated one
+            const ratedAlbums = group.filter(a => a.score && a.score !== '');
+            const unratedAlbums = group.filter(a => !a.score || a.score === '');
+            
+            if (ratedAlbums.length === 1 && unratedAlbums.length > 0) {
+                decision.keep.push(ratedAlbums[0].id);
+                decision.delete.push(...unratedAlbums.map(a => a.id));
+                return decision;
+            }
+
+            // Rule 3: If all details are same except ID, keep lowest ID
+            const allSame = group.every(a => 
+                a.albumName === group[0].albumName &&
+                a.artist === group[0].artist &&
+                (a.year || '') === (group[0].year || '') &&
+                (a.genre || '') === (group[0].genre || '') &&
+                (a.score || '') === (group[0].score || '')
+            );
+
+            if (allSame) {
+                const sorted = [...group].sort((a, b) => a.id - b.id);
+                decision.keep.push(sorted[0].id);
+                decision.delete.push(...sorted.slice(1).map(a => a.id));
+                return decision;
+            }
+
+            // Can't decide automatically - mark as query
+            decision.type = 'query';
+            decision.keep.push(group[0].id); // Suggest keeping first one
+            decision.delete.push(...group.slice(1).map(a => a.id)); // Suggest deleting others
+            return decision;
+        }
+
+        function toggleDuplicateSelection(albumId) {
+            const checkbox = document.getElementById(`check-${albumId}`);
+            const item = document.getElementById(`duplicate-${albumId}`);
+            
+            if (checkbox.checked) {
+                if (!duplicatesToDelete.includes(albumId)) {
+                    duplicatesToDelete.push(albumId);
+                }
+                item.classList.add('delete');
+                item.classList.remove('keep');
+            } else {
+                duplicatesToDelete = duplicatesToDelete.filter(id => id !== albumId);
+                item.classList.add('keep');
+                item.classList.remove('delete');
+            }
+        }
+
+        function deleteDuplicates() {
+            if (duplicatesToDelete.length === 0) {
+                alert('No albums selected for deletion.');
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to delete ${duplicatesToDelete.length} duplicate album(s)?\n\nThis action cannot be undone.`)) {
+                return;
+            }
+
+            // Delete the selected albums
+            duplicatesToDelete.forEach(id => {
+                db.deleteAlbum(id);
+            });
+
+            alert(`Successfully deleted ${duplicatesToDelete.length} duplicate album(s).`);
+            closeDuplicateCleanup();
+            loadBrowseSection();
+        }
+
+        // Clean Up IDs Function
+        function cleanupIDs() {
+            if (!confirm('This will renumber all album IDs starting from 1.\n\nExisting IDs will be replaced with sequential numbers.\n\nContinue?')) {
+                return;
+            }
+
+            // Sort albums by current ID
+            const sortedAlbums = [...db.albums].sort((a, b) => a.id - b.id);
+
+            // Reassign IDs sequentially
+            sortedAlbums.forEach((album, index) => {
+                album.id = index + 1;
+            });
+
+            // Update the database
+            db.albums = sortedAlbums;
+            db.saveToStorage();
+
+            alert(`Successfully renumbered ${sortedAlbums.length} albums.\n\nIDs now range from 1 to ${sortedAlbums.length}.`);
+            loadBrowseSection();
+        }
+
         // Close modals when clicking outside
         document.addEventListener('click', function(event) {
             const settingsModal = document.getElementById('settingsModal');
             const instructionsModal = document.getElementById('instructionsModal');
             const discogsResultsModal = document.getElementById('discogsResultsModal');
+            const duplicateCleanupModal = document.getElementById('duplicateCleanupModal');
             
             if (event.target === settingsModal) {
                 closeSettings();
@@ -3645,6 +4002,10 @@
             
             if (event.target === discogsResultsModal) {
                 closeDiscogsResults();
+            }
+            
+            if (event.target === duplicateCleanupModal) {
+                closeDuplicateCleanup();
             }
         });
 
