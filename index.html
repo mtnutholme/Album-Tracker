@@ -4648,6 +4648,96 @@
                     performSearch(e.target.value.trim());
                 }
             });
+
+            // Handle Enter key to filter albums
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const query = e.target.value.trim();
+                    if (query.length > 0) {
+                        // Close search dropdown
+                        searchResults.classList.remove('active');
+                        searchResults.innerHTML = '';
+                        
+                        // Apply filter to browse albums
+                        filterBrowseAlbums(query);
+                    }
+                }
+            });
+        }
+
+        function filterBrowseAlbums(query) {
+            const allAlbums = db.getAllAlbums();
+            const lowerQuery = query.toLowerCase();
+            
+            // Filter albums by search query
+            const filtered = allAlbums.filter(album => {
+                return (
+                    album.albumName?.toLowerCase().includes(lowerQuery) ||
+                    album.artist?.toLowerCase().includes(lowerQuery) ||
+                    album.genre?.toLowerCase().includes(lowerQuery) ||
+                    album.year?.toString().includes(lowerQuery)
+                );
+            });
+
+            // Update the browse albums display
+            displayBrowseAlbums(filtered);
+            
+            // Show filter indicator
+            const browseSection = document.getElementById('browse');
+            if (browseSection) {
+                let filterIndicator = document.getElementById('filterIndicator');
+                if (!filterIndicator) {
+                    filterIndicator = document.createElement('div');
+                    filterIndicator.id = 'filterIndicator';
+                    filterIndicator.style.cssText = 'background: #667eea; color: white; padding: 10px 20px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;';
+                    const albumGrid = document.getElementById('albumGrid');
+                    if (albumGrid) {
+                        albumGrid.parentNode.insertBefore(filterIndicator, albumGrid);
+                    }
+                }
+                filterIndicator.innerHTML = `
+                    <span>🔍 Filtered: ${filtered.length} album${filtered.length !== 1 ? 's' : ''} matching "${query}"</span>
+                    <button onclick="clearBrowseFilter()" style="background: white; color: #667eea; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-weight: 600;">Clear Filter</button>
+                `;
+            }
+        }
+
+        function clearBrowseFilter() {
+            // Remove filter indicator
+            const filterIndicator = document.getElementById('filterIndicator');
+            if (filterIndicator) {
+                filterIndicator.remove();
+            }
+            
+            // Clear search input
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.value = '';
+            }
+            
+            // Show all albums
+            const allAlbums = db.getAllAlbums();
+            displayBrowseAlbums(allAlbums);
+        }
+
+        function displayBrowseAlbums(albums) {
+            const albumGrid = document.getElementById('albumGrid');
+            if (!albumGrid) return;
+
+            if (albums.length === 0) {
+                albumGrid.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">No albums found</p>';
+                return;
+            }
+
+            albumGrid.innerHTML = albums.map(album => `
+                <div class="album-card" onclick="showAlbumDetail(${album.id})">
+                    ${album.artworkUrl ? `<img src="${album.artworkUrl}" alt="${album.albumName}" onerror="this.src='https://via.placeholder.com/150?text=No+Image'">` : '<div style="width: 100%; height: 150px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 48px;">🎵</div>'}
+                    <h3>${album.albumName}</h3>
+                    <p>${album.artist}</p>
+                    ${album.score ? `<div class="album-score">${album.score}/10</div>` : ''}
+                </div>
+            `).join('');
         }
 
         function performSearch(query) {
@@ -5619,7 +5709,7 @@
                 
                 html += `
                     <div class="chart">
-                        <h3>🎤 Top Artists by Average Score</h3>
+                        <h3>🎤 Top Artists by Average Score (${rankingMethod === 'weighted' ? 'Weighted' : 'Raw Score'})</h3>
                         ${artistData.slice(0, 10).map(data => `
                             <div class="chart-bar" style="cursor: pointer; display: flex; align-items: center; margin-bottom: 8px;" onclick="showArtistDrilldown('${data.artist.replace(/'/g, "\\'")}')">
                                 <div style="min-width: 150px; max-width: 150px; padding-right: 10px; color: #333; font-weight: 600; font-size: 13px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${data.artist}">${data.artist}</div>
@@ -5689,7 +5779,7 @@
                 
                 html += `
                     <div class="chart">
-                        <h3>🎸 Top Genres by Average Score</h3>
+                        <h3>🎸 Top Genres by Average Score (${rankingMethod === 'weighted' ? 'Weighted' : 'Raw Score'})</h3>
                         ${genreData.slice(0, 10).map(data => `
                             <div class="chart-bar" style="cursor: pointer; display: flex; align-items: center; margin-bottom: 8px;" onclick="showGenreDrilldown('${data.genre.replace(/'/g, "\\'")}')">
                                 <div style="min-width: 150px; max-width: 150px; padding-right: 10px; color: #333; font-weight: 600; font-size: 13px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${data.genre}">${data.genre}</div>
@@ -5752,25 +5842,39 @@
             if (Object.keys(sourceStats).length > 0) {
                 html += `
                     <div class="chart" style="margin-top: 30px;">
-                        <h3>📚 Source List Statistics</h3>
-                        <div class="stats-grid">
-                            ${Object.entries(sourceStats).map(([source, stats]) => `
-                                <div class="stat-card" style="cursor: pointer;" onclick="showSourceDrilldown('${source.replace(/'/g, "\\'")}')">
-                                    <h4 style="font-size: 1em; margin-bottom: 10px;">${source}</h4>
-                                    <div class="stat-item">
-                                        <span>Total Albums</span>
-                                        <strong>${stats.total}</strong>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h3 style="margin: 0;">📚 Source List Statistics</h3>
+                            <select id="sourceListSort" onchange="sortSourceLists()" style="padding: 8px 15px; border-radius: 6px; border: 1px solid #ddd; background: white; cursor: pointer; font-size: 14px;">
+                                <option value="score">Sort by Score</option>
+                                <option value="complete">Sort by % Complete</option>
+                                <option value="name">Sort by Name</option>
+                            </select>
+                        </div>
+                        <div id="sourceListsGrid" class="stats-grid">
+                            ${Object.entries(sourceStats).map(([source, stats]) => {
+                                const percentComplete = stats.total > 0 ? ((stats.listened / stats.total) * 100).toFixed(0) : 0;
+                                return `
+                                    <div class="stat-card" style="cursor: pointer;" onclick="showSourceDrilldown('${source.replace(/'/g, "\\'")}')">
+                                        <h4 style="font-size: 1em; margin-bottom: 10px;">${source}</h4>
+                                        <div class="stat-item">
+                                            <span>Total Albums</span>
+                                            <strong>${stats.total}</strong>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span>Listened</span>
+                                            <strong>${stats.listened}</strong>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span>% Complete</span>
+                                            <strong style="color: ${percentComplete >= 75 ? '#28a745' : percentComplete >= 50 ? '#ffc107' : '#dc3545'};">${percentComplete}%</strong>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span>Average Score</span>
+                                            <strong>${stats.avgScore ? stats.avgScore.toFixed(2) : 'N/A'}</strong>
+                                        </div>
                                     </div>
-                                    <div class="stat-item">
-                                        <span>Listened</span>
-                                        <strong>${stats.listened}</strong>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span>Average Score</span>
-                                        <strong>${stats.avgScore ? stats.avgScore.toFixed(2) : 'N/A'}</strong>
-                                    </div>
-                                </div>
-                            `).join('')}
+                                `;
+                            }).join('')}
                         </div>
                     </div>
                 `;
@@ -5884,7 +5988,7 @@
                 const filterLabel = document.getElementById('scoreFilterSelect')?.selectedOptions[0]?.text || 'All Time';
 
                 listsContainer.innerHTML = `
-                    <h3 style="margin-bottom: 20px;">📚 Top & Bottom 10 Lists (${filterLabel})</h3>
+                    <h3 style="margin-bottom: 20px;">📚 Top & Bottom 10 Lists (${filterLabel}) (${useWeighted ? 'Weighted' : 'Raw Score'})</h3>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div class="chart">
                             <h4 style="color: #28a745; margin-bottom: 15px;">🥇 Top 10 Lists</h4>
@@ -5914,6 +6018,77 @@
                         </div>
                     </div>
                 `;
+            }
+        }
+
+        // Sort source lists
+        function sortSourceLists() {
+            const sortValue = document.getElementById('sourceListSort')?.value || 'score';
+            const albums = db.getAllAlbums();
+            
+            // Calculate source stats
+            const sourceStats = {};
+            albums.forEach(album => {
+                if (album.reason) {
+                    const sources = db.parseMultiValue(album.reason);
+                    sources.forEach(source => {
+                        if (!sourceStats[source]) {
+                            sourceStats[source] = { total: 0, listened: 0, scores: [] };
+                        }
+                        sourceStats[source].total++;
+                        if (album.score) {
+                            sourceStats[source].listened++;
+                            sourceStats[source].scores.push(parseFloat(album.score));
+                        }
+                    });
+                }
+            });
+
+            // Calculate averages and percentages
+            const sourceData = Object.entries(sourceStats).map(([source, stats]) => {
+                const avgScore = stats.scores.length > 0 
+                    ? stats.scores.reduce((a, b) => a + b, 0) / stats.scores.length 
+                    : 0;
+                const percentComplete = stats.total > 0 ? (stats.listened / stats.total) * 100 : 0;
+                return { source, ...stats, avgScore, percentComplete };
+            });
+
+            // Sort based on selection
+            if (sortValue === 'score') {
+                sourceData.sort((a, b) => b.avgScore - a.avgScore);
+            } else if (sortValue === 'complete') {
+                sourceData.sort((a, b) => b.percentComplete - a.percentComplete);
+            } else if (sortValue === 'name') {
+                sourceData.sort((a, b) => a.source.localeCompare(b.source));
+            }
+
+            // Update the grid
+            const grid = document.getElementById('sourceListsGrid');
+            if (grid) {
+                grid.innerHTML = sourceData.map(data => {
+                    const percentComplete = data.percentComplete.toFixed(0);
+                    return `
+                        <div class="stat-card" style="cursor: pointer;" onclick="showSourceDrilldown('${data.source.replace(/'/g, "\\'")}')">
+                            <h4 style="font-size: 1em; margin-bottom: 10px;">${data.source}</h4>
+                            <div class="stat-item">
+                                <span>Total Albums</span>
+                                <strong>${data.total}</strong>
+                            </div>
+                            <div class="stat-item">
+                                <span>Listened</span>
+                                <strong>${data.listened}</strong>
+                            </div>
+                            <div class="stat-item">
+                                <span>% Complete</span>
+                                <strong style="color: ${percentComplete >= 75 ? '#28a745' : percentComplete >= 50 ? '#ffc107' : '#dc3545'};">${percentComplete}%</strong>
+                            </div>
+                            <div class="stat-item">
+                                <span>Average Score</span>
+                                <strong>${data.avgScore > 0 ? data.avgScore.toFixed(2) : 'N/A'}</strong>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
             }
         }
 
