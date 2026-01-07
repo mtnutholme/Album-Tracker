@@ -3812,24 +3812,49 @@
                 return;
             }
 
+            // Count confidence levels
+            const decisions = duplicateGroups.map(g => decideDuplicateAction(g));
+            const highConfidence = decisions.filter(d => d.confidence === 'high').length;
+            const mediumConfidence = decisions.filter(d => d.confidence === 'medium').length;
+            const lowConfidence = decisions.filter(d => d.confidence === 'low').length;
+            const totalToDelete = decisions.reduce((sum, d) => sum + d.delete.length, 0);
+
             // Display duplicate groups
             let html = `
                 <div class="alert alert-info">
                     <strong>Found ${duplicateGroups.length} duplicate group(s)</strong>
                     <p>Review the albums below and confirm which ones to delete.</p>
+                    <div style="margin-top: 10px; font-size: 0.9em;">
+                        <strong>Confidence:</strong> 
+                        <span style="color: #28a745;">●</span> High: ${highConfidence} | 
+                        <span style="color: #ffc107;">●</span> Medium: ${mediumConfidence} | 
+                        <span style="color: #dc3545;">●</span> Low: ${lowConfidence}
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <button onclick="selectAllMarkedDelete()" class="btn btn-sm" style="margin-right: 5px;">Select All Marked Delete</button>
+                        <button onclick="selectHighConfidenceOnly()" class="btn btn-sm" style="margin-right: 5px;">Select High Confidence Only</button>
+                        <button onclick="deselectAll()" class="btn btn-sm">Deselect All</button>
+                    </div>
                 </div>
             `;
 
             duplicateGroups.forEach((group, groupIndex) => {
                 const decision = decideDuplicateAction(group);
-                const isQuery = decision.type === 'query';
+                const confidenceColor = decision.confidence === 'high' ? '#28a745' : 
+                                       decision.confidence === 'medium' ? '#ffc107' : '#dc3545';
+                const confidenceLabel = decision.confidence.toUpperCase();
 
                 html += `
-                    <div class="duplicate-group ${isQuery ? 'query' : ''}">
-                        <h4 style="margin-bottom: 15px;">
+                    <div class="duplicate-group" data-confidence="${decision.confidence}">
+                        <h4 style="margin-bottom: 10px;">
                             ${group[0].albumName} - ${group[0].artist}
-                            ${isQuery ? '<span class="duplicate-badge badge-query">⚠️ NEEDS REVIEW</span>' : ''}
+                            <span style="color: ${confidenceColor}; font-size: 0.8em; margin-left: 10px;">
+                                ● ${confidenceLabel} CONFIDENCE
+                            </span>
                         </h4>
+                        <div style="font-size: 0.85em; color: #666; margin-bottom: 15px; font-style: italic;">
+                            ${decision.reason}
+                        </div>
                 `;
 
                 group.forEach((album, itemIndex) => {
@@ -3842,11 +3867,12 @@
                                 '<span class="duplicate-badge badge-query">? REVIEW</span>';
 
                     html += `
-                        <div class="duplicate-item ${action}" id="duplicate-${album.id}">
+                        <div class="duplicate-item ${action}" id="duplicate-${album.id}" data-confidence="${decision.confidence}">
                             <input type="checkbox" 
                                    class="duplicate-checkbox" 
                                    id="check-${album.id}" 
                                    data-album-id="${album.id}"
+                                   data-confidence="${decision.confidence}"
                                    ${checked}
                                    onchange="toggleDuplicateSelection(${album.id})">
                             <div class="duplicate-info">
@@ -3877,33 +3903,66 @@
         }
 
         function decideDuplicateAction(group) {
-            const decision = { keep: [], delete: [], type: 'auto' };
+            const decision = { keep: [], delete: [], confidence: 'low', reason: '' };
 
-            // Rule 1: If only difference is semicolon vs comma in artist, keep semicolon version
+            // Rule 1: Semicolon vs Comma in artist names
             const semicolonVersions = group.filter(a => String(a.artist).includes(';'));
             const commaVersions = group.filter(a => String(a.artist).includes(',') && !String(a.artist).includes(';'));
             
-            if (semicolonVersions.length > 0 && commaVersions.length > 0 && semicolonVersions.length + commaVersions.length === group.length) {
+            if (semicolonVersions.length > 0 && commaVersions.length > 0) {
+                // Check if comma versions are rated
+                const ratedCommaVersions = commaVersions.filter(a => a.score && a.score !== '');
+                const ratedSemicolonVersions = semicolonVersions.filter(a => a.score && a.score !== '');
+                
+                // Exception: If comma version is rated and semicolon is not, keep comma version
+                if (ratedCommaVersions.length > 0 && ratedSemicolonVersions.length === 0) {
+                    decision.keep.push(ratedCommaVersions[0].id);
+                    decision.delete.push(...commaVersions.filter(a => a.id !== ratedCommaVersions[0].id).map(a => a.id));
+                    decision.delete.push(...semicolonVersions.map(a => a.id));
+                    decision.confidence = 'high';
+                    decision.reason = 'Rated comma version kept over unrated semicolon version';
+                    return decision;
+                }
+                
+                // Default: Keep semicolon version, delete comma versions
                 decision.keep.push(semicolonVersions[0].id);
                 decision.delete.push(...commaVersions.map(a => a.id));
+                
+                // If multiple semicolon versions, mark as medium confidence
                 if (semicolonVersions.length > 1) {
-                    // Multiple semicolon versions, need to decide between them
-                    decision.type = 'query';
+                    decision.delete.push(...semicolonVersions.slice(1).map(a => a.id));
+                    decision.confidence = 'medium';
+                    decision.reason = 'Multiple semicolon versions - kept first one';
+                } else {
+                    decision.confidence = 'high';
+                    decision.reason = 'Semicolon separator preferred over comma';
                 }
                 return decision;
             }
 
-            // Rule 2: If one is rated and others aren't, keep the rated one
+            // Rule 2: Rated vs Unrated
             const ratedAlbums = group.filter(a => a.score && a.score !== '');
             const unratedAlbums = group.filter(a => !a.score || a.score === '');
             
             if (ratedAlbums.length === 1 && unratedAlbums.length > 0) {
                 decision.keep.push(ratedAlbums[0].id);
                 decision.delete.push(...unratedAlbums.map(a => a.id));
+                decision.confidence = 'high';
+                decision.reason = 'Rated version kept over unrated';
+                return decision;
+            }
+            
+            if (ratedAlbums.length > 1) {
+                // Multiple rated versions - need manual review
+                decision.keep.push(ratedAlbums[0].id);
+                decision.delete.push(...ratedAlbums.slice(1).map(a => a.id));
+                decision.delete.push(...unratedAlbums.map(a => a.id));
+                decision.confidence = 'low';
+                decision.reason = 'Multiple rated versions - manual review needed';
                 return decision;
             }
 
-            // Rule 3: If all details are same except ID, keep lowest ID
+            // Rule 3: Same details except ID - keep lowest ID
             const allSame = group.every(a => 
                 a.albumName === group[0].albumName &&
                 a.artist === group[0].artist &&
@@ -3916,13 +3975,36 @@
                 const sorted = [...group].sort((a, b) => a.id - b.id);
                 decision.keep.push(sorted[0].id);
                 decision.delete.push(...sorted.slice(1).map(a => a.id));
+                decision.confidence = 'high';
+                decision.reason = 'Identical albums - kept lowest ID';
                 return decision;
             }
 
-            // Can't decide automatically - mark as query
-            decision.type = 'query';
-            decision.keep.push(group[0].id); // Suggest keeping first one
-            decision.delete.push(...group.slice(1).map(a => a.id)); // Suggest deleting others
+            // Rule 4: Different years - likely different editions
+            const years = [...new Set(group.map(a => a.year).filter(y => y))];
+            if (years.length > 1) {
+                decision.keep.push(group[0].id);
+                decision.delete.push(...group.slice(1).map(a => a.id));
+                decision.confidence = 'low';
+                decision.reason = 'Different years - possibly different editions';
+                return decision;
+            }
+
+            // Rule 5: Different genres - uncertain
+            const genres = [...new Set(group.map(a => a.genre).filter(g => g))];
+            if (genres.length > 1) {
+                decision.keep.push(group[0].id);
+                decision.delete.push(...group.slice(1).map(a => a.id));
+                decision.confidence = 'low';
+                decision.reason = 'Different genres - manual review needed';
+                return decision;
+            }
+
+            // Default: Can't decide automatically
+            decision.keep.push(group[0].id);
+            decision.delete.push(...group.slice(1).map(a => a.id));
+            decision.confidence = 'low';
+            decision.reason = 'Unable to determine automatically';
             return decision;
         }
 
@@ -3941,6 +4023,65 @@
                 item.classList.add('keep');
                 item.classList.remove('delete');
             }
+        }
+
+        function selectAllMarkedDelete() {
+            const checkboxes = document.querySelectorAll('.duplicate-checkbox');
+            duplicatesToDelete = [];
+            
+            checkboxes.forEach(checkbox => {
+                const item = document.getElementById(`duplicate-${checkbox.dataset.albumId}`);
+                const badge = item.querySelector('.duplicate-badge');
+                
+                // Check if originally marked for deletion
+                if (badge && badge.textContent.includes('DELETE')) {
+                    checkbox.checked = true;
+                    duplicatesToDelete.push(parseInt(checkbox.dataset.albumId));
+                    item.classList.add('delete');
+                    item.classList.remove('keep');
+                }
+            });
+            
+            alert(`Selected ${duplicatesToDelete.length} albums marked for deletion.`);
+        }
+
+        function selectHighConfidenceOnly() {
+            const checkboxes = document.querySelectorAll('.duplicate-checkbox');
+            duplicatesToDelete = [];
+            
+            checkboxes.forEach(checkbox => {
+                const item = document.getElementById(`duplicate-${checkbox.dataset.albumId}`);
+                const badge = item.querySelector('.duplicate-badge');
+                const confidence = checkbox.dataset.confidence;
+                
+                // Check if high confidence AND marked for deletion
+                if (confidence === 'high' && badge && badge.textContent.includes('DELETE')) {
+                    checkbox.checked = true;
+                    duplicatesToDelete.push(parseInt(checkbox.dataset.albumId));
+                    item.classList.add('delete');
+                    item.classList.remove('keep');
+                } else {
+                    checkbox.checked = false;
+                    item.classList.add('keep');
+                    item.classList.remove('delete');
+                }
+            });
+            
+            alert(`Selected ${duplicatesToDelete.length} high-confidence albums for deletion.`);
+        }
+
+        function deselectAll() {
+            const checkboxes = document.querySelectorAll('.duplicate-checkbox');
+            duplicatesToDelete = [];
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+                const item = document.getElementById(`duplicate-${checkbox.dataset.albumId}`);
+                item.classList.add('keep');
+                item.classList.remove('delete');
+            });
+            
+            alert('All selections cleared.');
         }
 
         function deleteDuplicates() {
