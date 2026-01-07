@@ -1597,13 +1597,13 @@
                 <div class="search-container">
                     <input 
                         type="text" 
-                        id="searchInput" 
+                        id="browseSearchInput" 
                         class="search-input" 
                         placeholder="Search by album name or artist..."
                         autocomplete="off"
                     >
-                    <span class="search-icon" id="searchIcon" style="cursor: pointer;" title="Click to search">🔍</span>
-                    <div id="searchResults" class="search-results"></div>
+                    <span class="search-icon" id="browseSearchIcon" style="cursor: pointer;" title="Click to search">🔍</span>
+                    <div id="browseSearchResults" class="search-results"></div>
                 </div>
                 
                 <div class="filters">
@@ -2377,6 +2377,23 @@
             // Filter albums
             filterAlbums(filters) {
                 return this.albums.filter(album => {
+                    // Text search filter
+                    if (filters.searchText) {
+                        const searchLower = filters.searchText.toLowerCase();
+                        const albumName = (album.albumName || '').toLowerCase();
+                        const artist = (album.artist || '').toLowerCase();
+                        const genre = (album.genre || '').toLowerCase();
+                        const reason = (album.reason || '').toLowerCase();
+                        
+                        // Check if search text is found in any of these fields
+                        const matchFound = albumName.includes(searchLower) || 
+                                         artist.includes(searchLower) || 
+                                         genre.includes(searchLower) || 
+                                         reason.includes(searchLower);
+                        
+                        if (!matchFound) return false;
+                    }
+
                     // Genre filter
                     if (filters.genre) {
                         const genres = this.parseMultiValue(album.genre, true);
@@ -4606,9 +4623,9 @@
         }
 
         function setupSearch() {
-            const searchInput = document.getElementById('searchInput');
-            const searchResults = document.getElementById('searchResults');
-            const searchIcon = document.getElementById('searchIcon');
+            const searchInput = document.getElementById('browseSearchInput');
+            const searchResults = document.getElementById('browseSearchResults');
+            const searchIcon = document.getElementById('browseSearchIcon');
             
             if (!searchInput || !searchResults) {
                 console.error('Search elements not found:', { searchInput, searchResults });
@@ -4650,97 +4667,38 @@
                 }
             });
 
-            // Handle Enter key to filter albums
+            // Handle Enter key to apply filters
             searchInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
-                    const query = e.target.value.trim();
-                    if (query.length > 0) {
-                        // Close search dropdown
-                        searchResults.classList.remove('active');
-                        searchResults.innerHTML = '';
-                        
-                        // Apply filter to browse albums
-                        filterBrowseAlbums(query);
-                    }
+                    // Close search dropdown
+                    searchResults.classList.remove('active');
+                    searchResults.innerHTML = '';
+                    
+                    // Apply filters using the existing filter system
+                    applyFilters();
                 }
             });
 
-            // Handle click on search icon
+            // Handle click on search icon to apply filters
             if (searchIcon) {
                 searchIcon.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    const query = searchInput.value.trim();
-                    if (query.length > 0) {
-                        // Close search dropdown
-                        searchResults.classList.remove('active');
-                        searchResults.innerHTML = '';
-                        
-                        // Apply filter to browse albums
-                        filterBrowseAlbums(query);
-                    }
+                    // Close search dropdown
+                    searchResults.classList.remove('active');
+                    searchResults.innerHTML = '';
+                    
+                    // Apply filters using the existing filter system
+                    applyFilters();
                 });
             }
         }
 
-        function filterBrowseAlbums(query) {
-            const allAlbums = db.getAllAlbums();
-            const lowerQuery = query.toLowerCase();
-            
-            // Filter albums by search query
-            const filtered = allAlbums.filter(album => {
-                return (
-                    album.albumName?.toLowerCase().includes(lowerQuery) ||
-                    album.artist?.toLowerCase().includes(lowerQuery) ||
-                    album.genre?.toLowerCase().includes(lowerQuery) ||
-                    album.year?.toString().includes(lowerQuery)
-                );
-            });
 
-            // Update the browse albums display using the main display function
-            displayAlbums(filtered);
-            
-            // Show filter indicator
-            const browseSection = document.getElementById('browse');
-            if (browseSection) {
-                let filterIndicator = document.getElementById('filterIndicator');
-                if (!filterIndicator) {
-                    filterIndicator = document.createElement('div');
-                    filterIndicator.id = 'filterIndicator';
-                    filterIndicator.style.cssText = 'background: #667eea; color: white; padding: 10px 20px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;';
-                    const albumGrid = document.getElementById('albumGrid');
-                    if (albumGrid) {
-                        albumGrid.parentNode.insertBefore(filterIndicator, albumGrid);
-                    }
-                }
-                filterIndicator.innerHTML = `
-                    <span>🔍 Filtered: ${filtered.length} album${filtered.length !== 1 ? 's' : ''} matching "${query}"</span>
-                    <button onclick="clearBrowseFilter()" style="background: white; color: #667eea; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-weight: 600;">Clear Filter</button>
-                `;
-            }
-        }
-
-        function clearBrowseFilter() {
-            // Remove filter indicator
-            const filterIndicator = document.getElementById('filterIndicator');
-            if (filterIndicator) {
-                filterIndicator.remove();
-            }
-            
-            // Clear search input
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput) {
-                searchInput.value = '';
-            }
-            
-            // Show all albums using the main display function
-            const allAlbums = db.getAllAlbums();
-            displayAlbums(allAlbums);
-        }
 
         function performSearch(query) {
             console.log('Performing search for:', query);
-            const searchResults = document.getElementById('searchResults');
+            const searchResults = document.getElementById('browseSearchResults');
             const allAlbums = db.getAllAlbums();
             console.log('Total albums:', allAlbums.length);
             if (allAlbums.length > 0) {
@@ -4800,8 +4758,8 @@
         }
 
         function openAlbumFromSearch(albumId) {
-            const searchInput = document.getElementById('searchInput');
-            const searchResults = document.getElementById('searchResults');
+            const searchInput = document.getElementById('browseSearchInput');
+            const searchResults = document.getElementById('browseSearchResults');
             
             // Clear search
             searchInput.value = '';
@@ -4817,6 +4775,7 @@
             const sourceEl = document.getElementById('filterSource');
             const statusEl = document.getElementById('filterStatus');
             const sortByEl = document.getElementById('sortBy');
+            const searchEl = document.getElementById('browseSearchInput');
 
             // Check if elements exist
             if (!genreEl || !sourceEl || !statusEl || !sortByEl) {
@@ -4827,7 +4786,8 @@
             const filters = {
                 genre: genreEl.value,
                 source: sourceEl.value,
-                status: statusEl.value
+                status: statusEl.value,
+                searchText: searchEl ? searchEl.value.trim() : ''
             };
 
             const sortBy = sortByEl.value;
@@ -4843,6 +4803,10 @@
             document.getElementById('filterSource').value = '';
             document.getElementById('filterStatus').value = '';
             document.getElementById('sortBy').value = 'name-asc';
+            const searchInput = document.getElementById('browseSearchInput');
+            if (searchInput) {
+                searchInput.value = '';
+            }
             applyFilters();
         }
 
