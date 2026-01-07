@@ -1602,7 +1602,7 @@
                         placeholder="Search by album name or artist..."
                         autocomplete="off"
                     >
-                    <span class="search-icon">🔍</span>
+                    <span class="search-icon" id="searchIcon" style="cursor: pointer;" title="Click to search">🔍</span>
                     <div id="searchResults" class="search-results"></div>
                 </div>
                 
@@ -4608,6 +4608,7 @@
         function setupSearch() {
             const searchInput = document.getElementById('searchInput');
             const searchResults = document.getElementById('searchResults');
+            const searchIcon = document.getElementById('searchIcon');
             
             if (!searchInput || !searchResults) {
                 console.error('Search elements not found:', { searchInput, searchResults });
@@ -4637,7 +4638,7 @@
 
             // Close search results when clicking outside
             document.addEventListener('click', (e) => {
-                if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                if (!searchInput.contains(e.target) && !searchResults.contains(e.target) && e.target !== searchIcon) {
                     searchResults.classList.remove('active');
                 }
             });
@@ -4664,6 +4665,22 @@
                     }
                 }
             });
+
+            // Handle click on search icon
+            if (searchIcon) {
+                searchIcon.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const query = searchInput.value.trim();
+                    if (query.length > 0) {
+                        // Close search dropdown
+                        searchResults.classList.remove('active');
+                        searchResults.innerHTML = '';
+                        
+                        // Apply filter to browse albums
+                        filterBrowseAlbums(query);
+                    }
+                });
+            }
         }
 
         function filterBrowseAlbums(query) {
@@ -6013,6 +6030,7 @@
 
         // Sort source lists
         let sourceListViewMode = 'tiles'; // 'tiles' or 'table'
+        let sourceListTableSort = { column: 'score', direction: 'desc' }; // Track table sorting
         
         function sortSourceLists() {
             const sortValue = document.getElementById('sourceListSort')?.value || 'score-desc';
@@ -6045,19 +6063,45 @@
                 return { source, ...stats, avgScore, percentComplete };
             });
 
-            // Sort based on selection
-            if (sortValue === 'score-desc') {
-                sourceData.sort((a, b) => b.avgScore - a.avgScore);
-            } else if (sortValue === 'score-asc') {
-                sourceData.sort((a, b) => a.avgScore - b.avgScore);
-            } else if (sortValue === 'complete-desc') {
-                sourceData.sort((a, b) => b.percentComplete - a.percentComplete);
-            } else if (sortValue === 'complete-asc') {
-                sourceData.sort((a, b) => a.percentComplete - b.percentComplete);
-            } else if (sortValue === 'name-asc') {
-                sourceData.sort((a, b) => a.source.localeCompare(b.source));
-            } else if (sortValue === 'name-desc') {
-                sourceData.sort((a, b) => b.source.localeCompare(a.source));
+            // Sort based on selection (use table sort if in table view, otherwise use dropdown)
+            let sortColumn, sortDirection;
+            if (sourceListViewMode === 'table') {
+                sortColumn = sourceListTableSort.column;
+                sortDirection = sourceListTableSort.direction;
+            } else {
+                // Parse dropdown value for tiles view
+                if (sortValue === 'score-desc') {
+                    sortColumn = 'score';
+                    sortDirection = 'desc';
+                } else if (sortValue === 'score-asc') {
+                    sortColumn = 'score';
+                    sortDirection = 'asc';
+                } else if (sortValue === 'complete-desc') {
+                    sortColumn = 'complete';
+                    sortDirection = 'desc';
+                } else if (sortValue === 'complete-asc') {
+                    sortColumn = 'complete';
+                    sortDirection = 'asc';
+                } else if (sortValue === 'name-asc') {
+                    sortColumn = 'name';
+                    sortDirection = 'asc';
+                } else if (sortValue === 'name-desc') {
+                    sortColumn = 'name';
+                    sortDirection = 'desc';
+                }
+            }
+
+            // Apply sorting
+            if (sortColumn === 'score') {
+                sourceData.sort((a, b) => sortDirection === 'desc' ? b.avgScore - a.avgScore : a.avgScore - b.avgScore);
+            } else if (sortColumn === 'complete') {
+                sourceData.sort((a, b) => sortDirection === 'desc' ? b.percentComplete - a.percentComplete : a.percentComplete - b.percentComplete);
+            } else if (sortColumn === 'name') {
+                sourceData.sort((a, b) => sortDirection === 'desc' ? b.source.localeCompare(a.source) : a.source.localeCompare(b.source));
+            } else if (sortColumn === 'total') {
+                sourceData.sort((a, b) => sortDirection === 'desc' ? b.total - a.total : a.total - b.total);
+            } else if (sortColumn === 'listened') {
+                sourceData.sort((a, b) => sortDirection === 'desc' ? b.listened - a.listened : a.listened - b.listened);
             }
 
             // Update the grid based on view mode
@@ -6092,15 +6136,34 @@
                 } else {
                     // Table view
                     grid.className = '';
+                    
+                    // Helper function to get sort indicator
+                    const getSortIndicator = (column) => {
+                        if (sourceListTableSort.column === column) {
+                            return sourceListTableSort.direction === 'desc' ? ' ▼' : ' ▲';
+                        }
+                        return '';
+                    };
+                    
                     grid.innerHTML = `
                         <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden;">
                             <thead>
                                 <tr style="background: #667eea; color: white;">
-                                    <th style="padding: 12px; text-align: left; font-weight: 600;">Source List</th>
-                                    <th style="padding: 12px; text-align: center; font-weight: 600;">Total Albums</th>
-                                    <th style="padding: 12px; text-align: center; font-weight: 600;">Listened</th>
-                                    <th style="padding: 12px; text-align: center; font-weight: 600;">% Complete</th>
-                                    <th style="padding: 12px; text-align: center; font-weight: 600;">Average Score</th>
+                                    <th style="padding: 12px; text-align: left; font-weight: 600; cursor: pointer; user-select: none;" onclick="sortSourceListTable('name')" title="Click to sort">
+                                        Source List${getSortIndicator('name')}
+                                    </th>
+                                    <th style="padding: 12px; text-align: center; font-weight: 600; cursor: pointer; user-select: none;" onclick="sortSourceListTable('total')" title="Click to sort">
+                                        Total Albums${getSortIndicator('total')}
+                                    </th>
+                                    <th style="padding: 12px; text-align: center; font-weight: 600; cursor: pointer; user-select: none;" onclick="sortSourceListTable('listened')" title="Click to sort">
+                                        Listened${getSortIndicator('listened')}
+                                    </th>
+                                    <th style="padding: 12px; text-align: center; font-weight: 600; cursor: pointer; user-select: none;" onclick="sortSourceListTable('complete')" title="Click to sort">
+                                        % Complete${getSortIndicator('complete')}
+                                    </th>
+                                    <th style="padding: 12px; text-align: center; font-weight: 600; cursor: pointer; user-select: none;" onclick="sortSourceListTable('score')" title="Click to sort">
+                                        Average Score${getSortIndicator('score')}
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -6123,6 +6186,9 @@
                         <style>
                             #sourceListsGrid tbody tr:hover {
                                 background: #f8f9fa !important;
+                            }
+                            #sourceListsGrid thead th:hover {
+                                background: #5568d3 !important;
                             }
                         </style>
                     `;
@@ -6147,6 +6213,19 @@
             }
             
             // Re-render with current sort
+            sortSourceLists();
+        }
+
+        function sortSourceListTable(column) {
+            // Toggle direction if clicking the same column, otherwise default to descending
+            if (sourceListTableSort.column === column) {
+                sourceListTableSort.direction = sourceListTableSort.direction === 'desc' ? 'asc' : 'desc';
+            } else {
+                sourceListTableSort.column = column;
+                sourceListTableSort.direction = 'desc';
+            }
+            
+            // Re-render the table with new sort
             sortSourceLists();
         }
 
