@@ -5701,47 +5701,13 @@
                 `;
             }
 
-            // Top 10 and Bottom 10 Albums (All Time)
-            const ratedAlbumsForTop10 = albums.filter(a => a.score !== null && a.score !== undefined && a.score !== '');
-            if (ratedAlbumsForTop10.length > 0) {
-                const sortedAlbums = [...ratedAlbumsForTop10].sort((a, b) => parseFloat(b.score) - parseFloat(a.score));
-                const top10 = sortedAlbums.slice(0, 10);
-                const bottom10 = sortedAlbums.slice(-10).reverse();
-                
-                html += `
-                    <div style="margin-top: 30px;">
-                        <h3 style="margin-bottom: 20px;">🏆 Top & Bottom 10 Albums (All Time)</h3>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                            <div class="chart">
-                                <h4 style="color: #28a745; margin-bottom: 15px;">🥇 Top 10 Albums</h4>
-                                ${top10.map((album, index) => `
-                                    <div class="chart-bar" style="cursor: pointer; display: flex; align-items: center; margin-bottom: 8px; padding: 10px; background: ${index === 0 ? 'linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)' : '#f8f9fa'}; border-radius: 8px;" onclick="showAlbumDetail(${album.id})">
-                                        <div style="min-width: 30px; font-weight: 700; font-size: 18px; color: ${index === 0 ? '#000' : '#667eea'};">#${index + 1}</div>
-                                        <div style="flex: 1; padding: 0 10px;">
-                                            <div style="font-weight: 600; color: #333; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${album.albumName}">${album.albumName}</div>
-                                            <div style="font-size: 12px; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${album.artist}">${album.artist}</div>
-                                        </div>
-                                        <div style="min-width: 50px; text-align: right; font-weight: 700; font-size: 16px; color: #28a745;">${parseFloat(album.score).toFixed(1)}</div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                            <div class="chart">
-                                <h4 style="color: #dc3545; margin-bottom: 15px;">📉 Bottom 10 Albums</h4>
-                                ${bottom10.map((album, index) => `
-                                    <div class="chart-bar" style="cursor: pointer; display: flex; align-items: center; margin-bottom: 8px; padding: 10px; background: #f8f9fa; border-radius: 8px;" onclick="showAlbumDetail(${album.id})">
-                                        <div style="min-width: 30px; font-weight: 700; font-size: 18px; color: #dc3545;">#${ratedAlbums.length - index}</div>
-                                        <div style="flex: 1; padding: 0 10px;">
-                                            <div style="font-weight: 600; color: #333; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${album.albumName}">${album.albumName}</div>
-                                            <div style="font-size: 12px; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${album.artist}">${album.artist}</div>
-                                        </div>
-                                        <div style="min-width: 50px; text-align: right; font-weight: 700; font-size: 16px; color: #dc3545;">${parseFloat(album.score).toFixed(1)}</div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
+            // Top 10 and Bottom 10 Lists (by source/reason)
+            // This will be populated by updateScoreFilter() along with Top & Bottom Albums
+            html += `
+                <div id="topBottomListsSection" style="margin-top: 30px;">
+                    <!-- Will be populated by updateScoreFilter() -->
+                </div>
+            `;
 
             // Highest and Lowest Scoring Albums (Side by Side with Filter)
             // Get available months and years for dropdowns
@@ -5868,6 +5834,80 @@
                     `).join('') : '<p style="color: #999; padding: 20px; text-align: center;">No albums found</p>'}
                 </div>
             `;
+
+            // Update Top & Bottom Lists section
+            const listsContainer = document.getElementById('topBottomListsSection');
+            if (listsContainer) {
+                const rankingMethod = localStorage.getItem('ranking_method') || 'raw';
+                const useWeighted = rankingMethod === 'weighted';
+                
+                // Calculate list statistics
+                const listStats = {};
+                filteredAlbums.forEach(album => {
+                    if (album.reason && album.score) {
+                        const lists = db.parseMultiValue(album.reason);
+                        lists.forEach(list => {
+                            if (!listStats[list]) {
+                                listStats[list] = { scores: [], count: 0 };
+                            }
+                            listStats[list].scores.push(parseFloat(album.score));
+                            listStats[list].count++;
+                        });
+                    }
+                });
+
+                // Calculate averages (raw or weighted)
+                const listAverages = Object.entries(listStats).map(([list, stats]) => {
+                    let avgScore;
+                    if (useWeighted) {
+                        const globalMean = getGlobalMean(albums);
+                        const confidenceWeight = getConfidenceWeight(albums.length);
+                        avgScore = calculateWeightedScore(stats.scores, globalMean, confidenceWeight);
+                    } else {
+                        avgScore = stats.scores.reduce((a, b) => a + b, 0) / stats.scores.length;
+                    }
+                    return { list, avgScore, count: stats.count };
+                });
+
+                // Sort and get top/bottom 10
+                const sortedLists = listAverages.sort((a, b) => b.avgScore - a.avgScore);
+                const top10Lists = sortedLists.slice(0, 10);
+                const bottom10Lists = sortedLists.slice(-10).reverse();
+
+                const filterLabel = document.getElementById('scoreFilterSelect')?.selectedOptions[0]?.text || 'All Time';
+
+                listsContainer.innerHTML = `
+                    <h3 style="margin-bottom: 20px;">📚 Top & Bottom 10 Lists (${filterLabel})</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div class="chart">
+                            <h4 style="color: #28a745; margin-bottom: 15px;">🥇 Top 10 Lists</h4>
+                            ${top10Lists.length > 0 ? top10Lists.map((item, index) => `
+                                <div class="chart-bar" style="cursor: pointer; display: flex; align-items: center; margin-bottom: 8px; padding: 10px; background: ${index === 0 ? 'linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)' : '#f8f9fa'}; border-radius: 8px;" onclick="showSourceDrilldown('${item.list.replace(/'/g, "\\'")}')">
+                                    <div style="min-width: 30px; font-weight: 700; font-size: 18px; color: ${index === 0 ? '#000' : '#667eea'};">#${index + 1}</div>
+                                    <div style="flex: 1; padding: 0 10px;">
+                                        <div style="font-weight: 600; color: #333; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${item.list}">${item.list}</div>
+                                        <div style="font-size: 12px; color: #6c757d;">${item.count} album${item.count !== 1 ? 's' : ''}</div>
+                                    </div>
+                                    <div style="min-width: 50px; text-align: right; font-weight: 700; font-size: 16px; color: #28a745;">${item.avgScore.toFixed(1)}</div>
+                                </div>
+                            `).join('') : '<p style="color: #999; padding: 20px; text-align: center;">No lists found</p>'}
+                        </div>
+                        <div class="chart">
+                            <h4 style="color: #dc3545; margin-bottom: 15px;">📉 Bottom 10 Lists</h4>
+                            ${bottom10Lists.length > 0 ? bottom10Lists.map((item, index) => `
+                                <div class="chart-bar" style="cursor: pointer; display: flex; align-items: center; margin-bottom: 8px; padding: 10px; background: #f8f9fa; border-radius: 8px;" onclick="showSourceDrilldown('${item.list.replace(/'/g, "\\'")}')">
+                                    <div style="min-width: 30px; font-weight: 700; font-size: 18px; color: #dc3545;">#${sortedLists.length - index}</div>
+                                    <div style="flex: 1; padding: 0 10px;">
+                                        <div style="font-weight: 600; color: #333; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${item.list}">${item.list}</div>
+                                        <div style="font-size: 12px; color: #6c757d;">${item.count} album${item.count !== 1 ? 's' : ''}</div>
+                                    </div>
+                                    <div style="min-width: 50px; text-align: right; font-weight: 700; font-size: 16px; color: #dc3545;">${item.avgScore.toFixed(1)}</div>
+                                </div>
+                            `).join('') : '<p style="color: #999; padding: 20px; text-align: center;">No lists found</p>'}
+                        </div>
+                    </div>
+                `;
+            }
         }
 
         // Drilldown functions
