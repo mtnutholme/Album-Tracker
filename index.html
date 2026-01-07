@@ -3738,7 +3738,14 @@
                 if (confirm('This is your last chance! Click OK to permanently delete all data.')) {
                     localStorage.removeItem('albumTrackerData');
                     db.albums = [];
-                    alert('All data has been cleared.');
+                    db.saveToStorage();
+                    
+                    // Sync empty data to OneDrive so other devices also clear
+                    if (syncManager && syncManager.isConnected()) {
+                        syncManager.syncToOneDrive();
+                    }
+                    
+                    alert('All data has been cleared and synced to OneDrive.');
                     closeSettings();
                     loadBrowseSection();
                 }
@@ -4118,7 +4125,12 @@
                 db.deleteAlbum(album.id);
             });
 
-            alert(`Successfully deleted ${duplicatesToDelete.length} duplicate album(s).`);
+            // Sync to OneDrive immediately
+            if (syncManager && syncManager.isConnected()) {
+                syncManager.syncToOneDrive();
+            }
+
+            alert(`Successfully deleted ${duplicatesToDelete.length} duplicate album(s).\n\nChanges have been synced to OneDrive.`);
             closeDuplicateCleanup();
             loadBrowseSection();
         }
@@ -4141,7 +4153,12 @@
             db.albums = sortedAlbums;
             db.saveToStorage();
 
-            alert(`Successfully renumbered ${sortedAlbums.length} albums.\n\nIDs now range from 1 to ${sortedAlbums.length}.`);
+            // Sync to OneDrive immediately
+            if (syncManager && syncManager.isConnected()) {
+                syncManager.syncToOneDrive();
+            }
+
+            alert(`Successfully renumbered ${sortedAlbums.length} albums.\n\nIDs now range from 1 to ${sortedAlbums.length}.\n\nChanges have been synced to OneDrive.`);
             loadBrowseSection();
         }
 
@@ -4234,6 +4251,7 @@
             }
 
             db.addAlbum(albumData);
+            autoSyncToOneDrive();
             alert('Album added successfully!');
             hideAddAlbumForm();
             loadBrowseSection();
