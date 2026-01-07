@@ -2386,10 +2386,18 @@
                     // Text search filter
                     if (filters.searchText) {
                         const searchLower = filters.searchText.toLowerCase();
-                        const albumName = (album.albumName || '').toLowerCase();
-                        const artist = (album.artist || '').toLowerCase();
-                        const genre = (album.genre || '').toLowerCase();
-                        const reason = (album.reason || '').toLowerCase();
+                        
+                        // Helper function to safely convert to string
+                        const toString = (value) => {
+                            if (value === null || value === undefined) return '';
+                            if (typeof value === 'string') return value;
+                            return String(value);
+                        };
+                        
+                        const albumName = toString(album.albumName).toLowerCase();
+                        const artist = toString(album.artist).toLowerCase();
+                        const genre = toString(album.genre).toLowerCase();
+                        const reason = toString(album.reason).toLowerCase();
                         
                         // Check if search text is found in any of these fields
                         const matchFound = albumName.includes(searchLower) || 
