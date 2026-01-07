@@ -4680,8 +4680,8 @@
                 );
             });
 
-            // Update the browse albums display
-            displayBrowseAlbums(filtered);
+            // Update the browse albums display using the main display function
+            displayAlbums(filtered);
             
             // Show filter indicator
             const browseSection = document.getElementById('browse');
@@ -4716,28 +4716,9 @@
                 searchInput.value = '';
             }
             
-            // Show all albums
+            // Show all albums using the main display function
             const allAlbums = db.getAllAlbums();
-            displayBrowseAlbums(allAlbums);
-        }
-
-        function displayBrowseAlbums(albums) {
-            const albumGrid = document.getElementById('albumGrid');
-            if (!albumGrid) return;
-
-            if (albums.length === 0) {
-                albumGrid.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">No albums found</p>';
-                return;
-            }
-
-            albumGrid.innerHTML = albums.map(album => `
-                <div class="album-card" onclick="showAlbumDetail(${album.id})">
-                    ${album.artworkUrl ? `<img src="${album.artworkUrl}" alt="${album.albumName}" onerror="this.src='https://via.placeholder.com/150?text=No+Image'">` : '<div style="width: 100%; height: 150px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 48px;">🎵</div>'}
-                    <h3>${album.albumName}</h3>
-                    <p>${album.artist}</p>
-                    ${album.score ? `<div class="album-score">${album.score}/10</div>` : ''}
-                </div>
-            `).join('');
+            displayAlbums(allAlbums);
         }
 
         function performSearch(query) {
@@ -5842,13 +5823,22 @@
             if (Object.keys(sourceStats).length > 0) {
                 html += `
                     <div class="chart" style="margin-top: 30px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
                             <h3 style="margin: 0;">📚 Source List Statistics</h3>
-                            <select id="sourceListSort" onchange="sortSourceLists()" style="padding: 8px 15px; border-radius: 6px; border: 1px solid #ddd; background: white; cursor: pointer; font-size: 14px;">
-                                <option value="score">Sort by Score</option>
-                                <option value="complete">Sort by % Complete</option>
-                                <option value="name">Sort by Name</option>
-                            </select>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <select id="sourceListSort" onchange="sortSourceLists()" style="padding: 8px 15px; border-radius: 6px; border: 1px solid #ddd; background: white; cursor: pointer; font-size: 14px;">
+                                    <option value="score-desc">Score (High to Low)</option>
+                                    <option value="score-asc">Score (Low to High)</option>
+                                    <option value="complete-desc">% Complete (High to Low)</option>
+                                    <option value="complete-asc">% Complete (Low to High)</option>
+                                    <option value="name-asc">Name (A to Z)</option>
+                                    <option value="name-desc">Name (Z to A)</option>
+                                </select>
+                                <button id="sourceListViewToggle" onclick="toggleSourceListView()" style="padding: 8px 15px; border-radius: 6px; border: 1px solid #ddd; background: white; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 5px;">
+                                    <span id="sourceListViewIcon">📊</span>
+                                    <span id="sourceListViewText">Table View</span>
+                                </button>
+                            </div>
                         </div>
                         <div id="sourceListsGrid" class="stats-grid">
                             ${Object.entries(sourceStats).map(([source, stats]) => {
@@ -6022,8 +6012,10 @@
         }
 
         // Sort source lists
+        let sourceListViewMode = 'tiles'; // 'tiles' or 'table'
+        
         function sortSourceLists() {
-            const sortValue = document.getElementById('sourceListSort')?.value || 'score';
+            const sortValue = document.getElementById('sourceListSort')?.value || 'score-desc';
             const albums = db.getAllAlbums();
             
             // Calculate source stats
@@ -6054,42 +6046,108 @@
             });
 
             // Sort based on selection
-            if (sortValue === 'score') {
+            if (sortValue === 'score-desc') {
                 sourceData.sort((a, b) => b.avgScore - a.avgScore);
-            } else if (sortValue === 'complete') {
+            } else if (sortValue === 'score-asc') {
+                sourceData.sort((a, b) => a.avgScore - b.avgScore);
+            } else if (sortValue === 'complete-desc') {
                 sourceData.sort((a, b) => b.percentComplete - a.percentComplete);
-            } else if (sortValue === 'name') {
+            } else if (sortValue === 'complete-asc') {
+                sourceData.sort((a, b) => a.percentComplete - b.percentComplete);
+            } else if (sortValue === 'name-asc') {
                 sourceData.sort((a, b) => a.source.localeCompare(b.source));
+            } else if (sortValue === 'name-desc') {
+                sourceData.sort((a, b) => b.source.localeCompare(a.source));
             }
 
-            // Update the grid
+            // Update the grid based on view mode
             const grid = document.getElementById('sourceListsGrid');
             if (grid) {
-                grid.innerHTML = sourceData.map(data => {
-                    const percentComplete = data.percentComplete.toFixed(0);
-                    return `
-                        <div class="stat-card" style="cursor: pointer;" onclick="showSourceDrilldown('${data.source.replace(/'/g, "\\'")}')">
-                            <h4 style="font-size: 1em; margin-bottom: 10px;">${data.source}</h4>
-                            <div class="stat-item">
-                                <span>Total Albums</span>
-                                <strong>${data.total}</strong>
+                if (sourceListViewMode === 'tiles') {
+                    grid.className = 'stats-grid';
+                    grid.innerHTML = sourceData.map(data => {
+                        const percentComplete = data.percentComplete.toFixed(0);
+                        return `
+                            <div class="stat-card" style="cursor: pointer;" onclick="showSourceDrilldown('${data.source.replace(/'/g, "\\'")}')">
+                                <h4 style="font-size: 1em; margin-bottom: 10px;">${data.source}</h4>
+                                <div class="stat-item">
+                                    <span>Total Albums</span>
+                                    <strong>${data.total}</strong>
+                                </div>
+                                <div class="stat-item">
+                                    <span>Listened</span>
+                                    <strong>${data.listened}</strong>
+                                </div>
+                                <div class="stat-item">
+                                    <span>% Complete</span>
+                                    <strong style="color: ${percentComplete >= 75 ? '#28a745' : percentComplete >= 50 ? '#ffc107' : '#dc3545'};">${percentComplete}%</strong>
+                                </div>
+                                <div class="stat-item">
+                                    <span>Average Score</span>
+                                    <strong>${data.avgScore > 0 ? data.avgScore.toFixed(2) : 'N/A'}</strong>
+                                </div>
                             </div>
-                            <div class="stat-item">
-                                <span>Listened</span>
-                                <strong>${data.listened}</strong>
-                            </div>
-                            <div class="stat-item">
-                                <span>% Complete</span>
-                                <strong style="color: ${percentComplete >= 75 ? '#28a745' : percentComplete >= 50 ? '#ffc107' : '#dc3545'};">${percentComplete}%</strong>
-                            </div>
-                            <div class="stat-item">
-                                <span>Average Score</span>
-                                <strong>${data.avgScore > 0 ? data.avgScore.toFixed(2) : 'N/A'}</strong>
-                            </div>
-                        </div>
+                        `;
+                    }).join('');
+                } else {
+                    // Table view
+                    grid.className = '';
+                    grid.innerHTML = `
+                        <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden;">
+                            <thead>
+                                <tr style="background: #667eea; color: white;">
+                                    <th style="padding: 12px; text-align: left; font-weight: 600;">Source List</th>
+                                    <th style="padding: 12px; text-align: center; font-weight: 600;">Total Albums</th>
+                                    <th style="padding: 12px; text-align: center; font-weight: 600;">Listened</th>
+                                    <th style="padding: 12px; text-align: center; font-weight: 600;">% Complete</th>
+                                    <th style="padding: 12px; text-align: center; font-weight: 600;">Average Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${sourceData.map(data => {
+                                    const percentComplete = data.percentComplete.toFixed(0);
+                                    return `
+                                        <tr style="cursor: pointer; border-bottom: 1px solid #eee; transition: background 0.2s;" onclick="showSourceDrilldown('${data.source.replace(/'/g, "\\'")}')">
+                                            <td style="padding: 12px; font-weight: 500;">${data.source}</td>
+                                            <td style="padding: 12px; text-align: center;">${data.total}</td>
+                                            <td style="padding: 12px; text-align: center;">${data.listened}</td>
+                                            <td style="padding: 12px; text-align: center;">
+                                                <span style="color: ${percentComplete >= 75 ? '#28a745' : percentComplete >= 50 ? '#ffc107' : '#dc3545'}; font-weight: 600;">${percentComplete}%</span>
+                                            </td>
+                                            <td style="padding: 12px; text-align: center; font-weight: 600;">${data.avgScore > 0 ? data.avgScore.toFixed(2) : 'N/A'}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                        <style>
+                            #sourceListsGrid tbody tr:hover {
+                                background: #f8f9fa !important;
+                            }
+                        </style>
                     `;
-                }).join('');
+                }
             }
+        }
+        
+        function toggleSourceListView() {
+            sourceListViewMode = sourceListViewMode === 'tiles' ? 'table' : 'tiles';
+            
+            // Update button text and icon
+            const icon = document.getElementById('sourceListViewIcon');
+            const text = document.getElementById('sourceListViewText');
+            if (icon && text) {
+                if (sourceListViewMode === 'tiles') {
+                    icon.textContent = '📊';
+                    text.textContent = 'Table View';
+                } else {
+                    icon.textContent = '🎴';
+                    text.textContent = 'Tiles View';
+                }
+            }
+            
+            // Re-render with current sort
+            sortSourceLists();
         }
 
         // Drilldown functions
