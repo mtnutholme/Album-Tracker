@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=1400, user-scalable=yes" id="viewport-meta">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob:;">
     <title>Album Tracker</title>
+    
+    <!-- Favicon - Record Icon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23667eea'/><circle cx='50' cy='50' r='38' fill='%23764ba2'/><circle cx='50' cy='50' r='20' fill='%23667eea'/><circle cx='50' cy='50' r='8' fill='%23fff'/></svg>">
+    
+    <!-- Chart.js for graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -5577,6 +5583,25 @@
                         </button>
                     </div>
                 </div>
+            `;
+
+            // Listening Timeline Graph
+            const timelineFilter = window.listeningTimelineFilter || 'all';
+            html += `
+                <div style="background: white; padding: 25px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+                        <h3 style="margin: 0; color: #333;">📈 Listening Timeline</h3>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button onclick="changeTimelineFilter('all')" style="padding: 8px 16px; border-radius: 8px; border: 2px solid ${timelineFilter === 'all' ? '#667eea' : '#ddd'}; background: ${timelineFilter === 'all' ? '#667eea' : 'white'}; color: ${timelineFilter === 'all' ? 'white' : '#333'}; cursor: pointer; font-weight: 600; transition: all 0.3s;">All Time</button>
+                            <button onclick="changeTimelineFilter('5years')" style="padding: 8px 16px; border-radius: 8px; border: 2px solid ${timelineFilter === '5years' ? '#667eea' : '#ddd'}; background: ${timelineFilter === '5years' ? '#667eea' : 'white'}; color: ${timelineFilter === '5years' ? 'white' : '#333'}; cursor: pointer; font-weight: 600; transition: all 0.3s;">5 Years</button>
+                            <button onclick="changeTimelineFilter('3years')" style="padding: 8px 16px; border-radius: 8px; border: 2px solid ${timelineFilter === '3years' ? '#667eea' : '#ddd'}; background: ${timelineFilter === '3years' ? '#667eea' : 'white'}; color: ${timelineFilter === '3years' ? 'white' : '#333'}; cursor: pointer; font-weight: 600; transition: all 0.3s;">3 Years</button>
+                            <button onclick="changeTimelineFilter('1year')" style="padding: 8px 16px; border-radius: 8px; border: 2px solid ${timelineFilter === '1year' ? '#667eea' : '#ddd'}; background: ${timelineFilter === '1year' ? '#667eea' : 'white'}; color: ${timelineFilter === '1year' ? 'white' : '#333'}; cursor: pointer; font-weight: 600; transition: all 0.3s;">1 Year</button>
+                        </div>
+                    </div>
+                    <div style="position: relative; height: 400px;">
+                        <canvas id="listeningTimelineChart"></canvas>
+                    </div>
+                </div>
                 <div class="stats-grid">
             `;
 
@@ -5885,8 +5910,218 @@
 
             statsContent.innerHTML = html;
             
+            // Render the listening timeline chart
+            renderListeningTimelineChart();
+            
             // Initialize score filter
             updateScoreFilter();
+        }
+
+        // Global variable to store the chart instance
+        let listeningTimelineChartInstance = null;
+
+        // Render the listening timeline chart
+        function renderListeningTimelineChart() {
+            const canvas = document.getElementById('listeningTimelineChart');
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            const albums = db.getAllAlbums();
+            const filter = window.listeningTimelineFilter || 'all';
+
+            // Calculate date range based on filter
+            const now = new Date();
+            let startDate = null;
+            
+            if (filter === '1year') {
+                startDate = new Date(now.getFullYear() - 1, now.getMonth(), 1);
+            } else if (filter === '3years') {
+                startDate = new Date(now.getFullYear() - 3, now.getMonth(), 1);
+            } else if (filter === '5years') {
+                startDate = new Date(now.getFullYear() - 5, now.getMonth(), 1);
+            }
+
+            // Get monthly stats and filter by date range
+            const monthlyStats = db.getMonthlyStats();
+            let filteredStats = monthlyStats;
+            
+            if (startDate) {
+                filteredStats = {};
+                Object.entries(monthlyStats).forEach(([key, value]) => {
+                    const [year, month] = key.split('-');
+                    const date = new Date(parseInt(year), parseInt(month) - 1, 1);
+                    if (date >= startDate) {
+                        filteredStats[key] = value;
+                    }
+                });
+            }
+
+            // Sort months chronologically
+            const sortedMonths = Object.keys(filteredStats).sort();
+            
+            // Calculate cumulative totals
+            let cumulative = 0;
+            const labels = [];
+            const monthlyData = [];
+            const cumulativeData = [];
+
+            sortedMonths.forEach(month => {
+                const [year, monthNum] = month.split('-');
+                const date = new Date(parseInt(year), parseInt(monthNum) - 1, 1);
+                const label = date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+                
+                labels.push(label);
+                monthlyData.push(filteredStats[month].count);
+                cumulative += filteredStats[month].count;
+                cumulativeData.push(cumulative);
+            });
+
+            // Destroy existing chart if it exists
+            if (listeningTimelineChartInstance) {
+                listeningTimelineChartInstance.destroy();
+            }
+
+            // Create new chart
+            listeningTimelineChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            type: 'line',
+                            label: 'Cumulative Total',
+                            data: cumulativeData,
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            yAxisID: 'y1',
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            pointBackgroundColor: '#667eea',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2
+                        },
+                        {
+                            type: 'bar',
+                            label: 'Monthly Albums',
+                            data: monthlyData,
+                            backgroundColor: 'rgba(118, 75, 162, 0.7)',
+                            borderColor: '#764ba2',
+                            borderWidth: 1,
+                            yAxisID: 'y'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 13,
+                                    weight: '600'
+                                },
+                                padding: 15,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    label += context.parsed.y + ' albums';
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Monthly Albums',
+                                font: {
+                                    size: 12,
+                                    weight: '600'
+                                }
+                            },
+                            ticks: {
+                                stepSize: 1,
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Cumulative Total',
+                                font: {
+                                    size: 12,
+                                    weight: '600'
+                                }
+                            },
+                            ticks: {
+                                stepSize: 5,
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            grid: {
+                                drawOnChartArea: false,
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 11
+                                },
+                                maxRotation: 45,
+                                minRotation: 45
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Change timeline filter
+        function changeTimelineFilter(filter) {
+            window.listeningTimelineFilter = filter;
+            loadStatsSection();
         }
 
         // Update score filter for highest/lowest albums
