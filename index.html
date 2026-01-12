@@ -1871,6 +1871,41 @@
         </div>
     </div>
 
+    <!-- Score Album Modal -->
+    <div id="scoreModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <button class="modal-close" onclick="closeScoreModal()">&times;</button>
+            <div id="scoreModalContent">
+                <h2 style="margin-bottom: 20px;">Score Album</h2>
+                <form id="scoreAlbumForm" onsubmit="submitScore(event)">
+                    <div id="scoreAlbumInfo" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                        <!-- Album info will be inserted here -->
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="scoreInput">Score (0-10) *</label>
+                        <input type="number" id="scoreInput" step="0.1" min="0" max="10" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="dateListenedInput">Date Listened</label>
+                        <input type="date" id="dateListenedInput">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="notesInput">Notes</label>
+                        <textarea id="notesInput" rows="4" placeholder="Your thoughts about this album..."></textarea>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button type="submit" class="btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">Save Score</button>
+                        <button type="button" class="btn" onclick="closeScoreModal()" style="background: #6c757d;">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- OneDrive Sync Status -->
     <!-- Settings Modal -->
     <div class="settings-modal" id="settingsModal">
@@ -5150,7 +5185,8 @@
                         ` : ''}
                         
                         <div style="margin-top: 30px;">
-                            <button class="btn" onclick="editAlbum(${album.id})">Edit Album</button>
+                            <button class="btn" onclick="scoreAlbum(${album.id})" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">Score Album</button>
+                            <button class="btn" onclick="editAlbum(${album.id})" style="margin-left: 10px;">Edit Album</button>
                             <button class="btn btn-danger" onclick="deleteAlbumConfirm(${album.id})" style="margin-left: 10px;">Delete</button>
                         </div>
                     </div>
@@ -5237,6 +5273,86 @@
             if (previousSection === 'browse') {
                 loadBrowseSection();
             }
+        }
+
+        let currentScoringAlbumId = null;
+
+        function scoreAlbum(albumId) {
+            const album = db.getAlbum(albumId);
+            if (!album) return;
+
+            currentScoringAlbumId = albumId;
+
+            // Populate album info
+            const albumInfo = document.getElementById('scoreAlbumInfo');
+            albumInfo.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <img src="${album.artworkUrl}" alt="${album.albumName}" 
+                         style="width: 80px; height: 80px; border-radius: 8px; object-fit: cover;"
+                         onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%2280%22%3E%3Crect fill=%22%23ddd%22 width=%2280%22 height=%2280%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23999%22 font-size=%2212%22%3ENo Image%3C/text%3E%3C/svg%3E'">
+                    <div>
+                        <div style="font-weight: bold; font-size: 1.1em;">${album.albumName}</div>
+                        <div style="color: #6c757d;">${album.artist}</div>
+                        <div style="color: #6c757d; font-size: 0.9em;">${album.year}</div>
+                    </div>
+                </div>
+            `;
+
+            // Pre-fill existing values if they exist
+            document.getElementById('scoreInput').value = album.score || '';
+            document.getElementById('dateListenedInput').value = album.dateListened || getTodayDate();
+            document.getElementById('notesInput').value = album.notes || '';
+
+            // Close album detail modal and open score modal
+            closeModal();
+            document.getElementById('scoreModal').classList.add('active');
+        }
+
+        function getTodayDate() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function closeScoreModal() {
+            document.getElementById('scoreModal').classList.remove('active');
+            currentScoringAlbumId = null;
+        }
+
+        function submitScore(event) {
+            event.preventDefault();
+
+            if (!currentScoringAlbumId) return;
+
+            const album = db.getAlbum(currentScoringAlbumId);
+            if (!album) return;
+
+            const updates = {
+                ...album,
+                score: parseFloat(document.getElementById('scoreInput').value),
+                dateListened: document.getElementById('dateListenedInput').value || null,
+                notes: document.getElementById('notesInput').value || album.notes || ''
+            };
+
+            db.updateAlbum(currentScoringAlbumId, updates);
+            autoSyncToOneDrive();
+            showAlert('success', 'Album scored successfully!');
+
+            closeScoreModal();
+
+            // Refresh the current view
+            if (previousSection === 'browse') {
+                loadBrowseSection();
+            } else if (previousSection === 'stats') {
+                loadStatsSection();
+            }
+
+            // Show the updated album detail
+            setTimeout(() => {
+                showAlbumDetail(currentScoringAlbumId);
+            }, 100);
         }
 
         function deleteAlbumConfirm(albumId) {
