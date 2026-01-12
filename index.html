@@ -15,72 +15,278 @@
         :root {
             --gradient-start: #667eea;
             --gradient-end: #764ba2;
+            --content-bg: #ffffff;
+            --card-bg: #ffffff;
+            --modal-bg: #ffffff;
+            --chart-bg: #ffffff;
+            --content-text: #333333;
+            --card-text: #333333;
+            --modal-text: #333333;
+            --chart-text: #333333;
+            --header-text: #ffffff;
+            --subheader-text: #ffffff;
+            --button-bg: #667eea;
+            --button-hover: #764ba2;
         }
 
         /* Theme color schemes */
         body[data-theme="purple"] {
             --gradient-start: #667eea;
             --gradient-end: #764ba2;
+            --header-bg: #667eea;
+            --content-bg: #ffffff;
+            --card-bg: #f8f9ff;
+            --modal-bg: #ffffff;
+            --chart-bg: #fafbff;
+            --content-text: #333333;
+            --card-text: #333333;
+            --modal-text: #333333;
+            --chart-text: #333333;
+            --header-text: #ffffff;
+            --subheader-text: #ffffff;
+            --button-bg: #667eea;
+            --button-hover: #764ba2;
+            --border-color: #667eea;
+            --border-hover: #764ba2;
         }
 
         body[data-theme="ocean"] {
             --gradient-start: #2E3192;
             --gradient-end: #1BFFFF;
+            --header-bg: #2E3192;
+            --content-bg: #f0f8ff;
+            --card-bg: #e6f4ff;
+            --modal-bg: #f0f8ff;
+            --chart-bg: #f5faff;
+            --content-text: #1a3a52;
+            --card-text: #1a3a52;
+            --modal-text: #1a3a52;
+            --chart-text: #1a3a52;
+            --header-text: #ffffff;
+            --subheader-text: #ffffff;
+            --button-bg: #2E3192;
+            --button-hover: #1BFFFF;
+            --border-color: #2E3192;
+            --border-hover: #1BFFFF;
         }
 
         body[data-theme="sunset"] {
             --gradient-start: #FF512F;
             --gradient-end: #F09819;
+            --header-bg: #FF512F;
+            --content-bg: #fff8f0;
+            --card-bg: #fff0e6;
+            --modal-bg: #fff8f0;
+            --chart-bg: #fffaf5;
+            --content-text: #8b4513;
+            --card-text: #8b4513;
+            --modal-text: #8b4513;
+            --chart-text: #8b4513;
+            --header-text: #ffffff;
+            --subheader-text: #ffffff;
+            --button-bg: #FF512F;
+            --button-hover: #F09819;
+            --border-color: #FF512F;
+            --border-hover: #F09819;
         }
 
         body[data-theme="forest"] {
             --gradient-start: #134E5E;
             --gradient-end: #71B280;
+            --header-bg: #134E5E;
+            --content-bg: #f0f8f4;
+            --card-bg: #e6f4ed;
+            --modal-bg: #f0f8f4;
+            --chart-bg: #f5faf8;
+            --content-text: #1a4d3e;
+            --card-text: #1a4d3e;
+            --modal-text: #1a4d3e;
+            --chart-text: #1a4d3e;
+            --header-text: #ffffff;
+            --subheader-text: #ffffff;
+            --button-bg: #134E5E;
+            --button-hover: #71B280;
+            --border-color: #134E5E;
+            --border-hover: #71B280;
         }
 
         body[data-theme="rose"] {
             --gradient-start: #C94B4B;
             --gradient-end: #4B134F;
+            --header-bg: #C94B4B;
+            --content-bg: #fff0f5;
+            --card-bg: #ffe6f0;
+            --modal-bg: #fff0f5;
+            --chart-bg: #fff5f8;
+            --content-text: #6b1a3d;
+            --card-text: #6b1a3d;
+            --modal-text: #6b1a3d;
+            --chart-text: #6b1a3d;
+            --header-text: #ffffff;
+            --subheader-text: #ffffff;
+            --button-bg: #C94B4B;
+            --button-hover: #4B134F;
+            --border-color: #C94B4B;
+            --border-hover: #4B134F;
         }
 
         body[data-theme="midnight"] {
             --gradient-start: #232526;
             --gradient-end: #414345;
+            --header-bg: #232526;
+            --content-bg: #2a2a2a;
+            --card-bg: #333333;
+            --modal-bg: #2a2a2a;
+            --chart-bg: #2e2e2e;
+            --content-text: #ffffff;
+            --card-text: #ffffff;
+            --modal-text: #ffffff;
+            --chart-text: #ffffff;
+            --header-text: #ffffff;
+            --subheader-text: #ffffff;
+            --border-color: #414345;
+            --border-hover: #667eea;
+            --button-bg: #414345;
+            --button-hover: #667eea;
         }
 
         body[data-theme="cherry"] {
             --gradient-start: #EB3349;
             --gradient-end: #F45C43;
+            --header-bg: #EB3349;
+            --content-bg: #fff5f5;
+            --card-bg: #ffebeb;
+            --modal-bg: #fff5f5;
+            --chart-bg: #fff8f8;
+            --content-text: #8b1a1a;
+            --card-text: #8b1a1a;
+            --modal-text: #8b1a1a;
+            --chart-text: #8b1a1a;
+            --header-text: #ffffff;
+            --subheader-text: #ffffff;
+            --border-color: #EB3349;
+            --border-hover: #F45C43;
+            --button-bg: #EB3349;
+            --button-hover: #F45C43;
         }
 
         body[data-theme="lavender"] {
             --gradient-start: #868F96;
             --gradient-end: #596164;
+            --header-bg: #868F96;
+            --content-bg: #f5f5f5;
+            --card-bg: #ebebeb;
+            --modal-bg: #f5f5f5;
+            --chart-bg: #f8f8f8;
+            --content-text: #3a3a3a;
+            --card-text: #3a3a3a;
+            --modal-text: #3a3a3a;
+            --chart-text: #3a3a3a;
+            --header-text: #ffffff;
+            --subheader-text: #ffffff;
+            --border-color: #868F96;
+            --border-hover: #596164;
+            --button-bg: #868F96;
+            --button-hover: #596164;
         }
 
         body[data-theme="minimal"] {
             --gradient-start: #f5f5f5;
             --gradient-end: #e0e0e0;
+            --header-bg: #f5f5f5;
+            --content-bg: #fafafa;
+            --card-bg: #f0f0f0;
+            --modal-bg: #fafafa;
+            --chart-bg: #f5f5f5;
+            --content-text: #2a2a2a;
+            --card-text: #2a2a2a;
+            --modal-text: #2a2a2a;
+            --chart-text: #2a2a2a;
+            --header-text: #333333;
+            --subheader-text: #555555;
+            --border-color: #868F96;
+            --border-hover: #596164;
+            --button-bg: #868F96;
+            --button-hover: #596164;
         }
 
         body[data-theme="contrast"] {
             --gradient-start: #ffffff;
             --gradient-end: #f0f0f0;
+            --header-bg: #ffffff;
+            --content-bg: #ffffff;
+            --card-bg: #f8f8f8;
+            --modal-bg: #ffffff;
+            --chart-bg: #fafafa;
+            --content-text: #000000;
+            --card-text: #000000;
+            --modal-text: #000000;
+            --chart-text: #000000;
+            --header-text: #000000;
+            --subheader-text: #333333;
+            --border-color: #667eea;
+            --border-hover: #764ba2;
+            --button-bg: #667eea;
+            --button-hover: #764ba2;
         }
 
         body[data-theme="retro"] {
             --gradient-start: #f4e4c1;
             --gradient-end: #d4a574;
+            --header-bg: #f4e4c1;
+            --content-bg: #faf8f3;
+            --card-bg: #f5f0e6;
+            --modal-bg: #faf8f3;
+            --chart-bg: #fcfaf7;
+            --content-text: #5a4a2a;
+            --card-text: #5a4a2a;
+            --modal-text: #5a4a2a;
+            --chart-text: #5a4a2a;
+            --header-text: #5a4a2a;
+            --subheader-text: #6a5a3a;
+            --border-color: #a67c52;
+            --border-hover: #c49564;
+            --button-bg: #d4a574;
+            --button-hover: #c49564;
         }
 
         body[data-theme="neon"] {
             --gradient-start: #1a0033;
             --gradient-end: #330066;
+            --header-bg: #1a0033;
+            --content-bg: #1a0033;
+            --card-bg: #2a0044;
+            --modal-bg: #1a0033;
+            --chart-bg: #220038;
+            --content-text: #ffffff;
+            --card-text: #ffffff;
+            --modal-text: #ffffff;
+            --chart-text: #ffffff;
+            --header-text: #e0b3ff;
+            --subheader-text: #e0b3ff;
+            --border-color: #667eea;
+            --border-hover: #667eea;
+            --button-bg: #330066;
+            --button-hover: #667eea;
         }
 
         body[data-theme="custom"] {
-            --gradient-start: var(--custom-start, #667eea);
-            --gradient-end: var(--custom-end, #764ba2);
+            --gradient-start: var(--custom-gradient-start, #134E5E);
+            --gradient-end: var(--custom-gradient-end, #71B280);
+            --content-bg: var(--custom-content-bg, #ffffff);
+            --card-bg: var(--custom-card-bg, #f8f9ff);
+            --modal-bg: var(--custom-modal-bg, #ffffff);
+            --chart-bg: var(--custom-chart-bg, #fafbff);
+            --content-text: var(--custom-content-text, #333333);
+            --card-text: var(--custom-card-text, #333333);
+            --modal-text: var(--custom-modal-text, #333333);
+            --chart-text: var(--custom-chart-text, #333333);
+            --header-text: var(--custom-header-text, #ffffff);
+            --subheader-text: var(--custom-subheader-text, #ffffff);
+            --button-bg: var(--custom-button-bg, #667eea);
+            --button-hover: var(--custom-button-hover, #764ba2);
+            --border-color: var(--custom-border-color, #667eea);
+            --border-hover: var(--custom-border-hover, #764ba2);
         }
 
         * {
@@ -91,7 +297,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+            background: var(--content-bg);
             min-height: 100vh;
             padding: 20px;
             transition: background 0.5s ease;
@@ -100,23 +306,60 @@
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            background: white;
+            background: transparent;
+            color: var(--content-text);
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             overflow: hidden;
+            transition: background 0.5s ease, color 0.5s ease;
+        }
+
+        .header-nav-wrapper {
+            background: linear-gradient(90deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+            transition: background 0.5s ease;
+            margin: 0;
+            padding: 0;
+            display: block;
         }
 
         .header {
-            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
-            color: white;
-            padding: 30px;
+            background: transparent;
+            color: var(--header-text);
+            padding: 40px 30px 0 30px;
             text-align: center;
-            transition: background 0.5s ease;
+            transition: background 0.5s ease, color 0.5s ease;
+            box-shadow: none;
+            border-bottom: none;
+            margin-bottom: 0;
+            margin-top: 0;
+            min-height: 180px;
         }
 
         .header h1 {
             font-size: 2.5em;
             margin-bottom: 10px;
+            margin-top: 0;
+            color: var(--header-text);
+        }
+        
+        .header p {
+            color: var(--subheader-text);
+            margin-bottom: 20px;
+            margin-top: 0;
+        }
+
+        .nav {
+            background: transparent;
+            padding: 0 30px 20px 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            transition: background 0.5s ease;
+            box-shadow: none;
+            border-bottom: none;
+            border-top: none;
+            margin-top: 0;
         }
 
         .sync-status {
@@ -256,10 +499,15 @@
             border-bottom: 2px solid #e9ecef;
         }
 
+        .nav {
+            background: transparent;
+            transition: background 0.5s ease;
+        }
+        
         .nav button {
             padding: 12px 24px;
             border: none;
-            background: #667eea;
+            background: var(--button-bg);
             color: white;
             border-radius: 8px;
             cursor: pointer;
@@ -269,13 +517,13 @@
         }
 
         .nav button:hover {
-            background: #764ba2;
+            background: var(--button-hover);
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
         .nav button.active {
-            background: #764ba2;
+            background: var(--button-hover);
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
@@ -303,12 +551,12 @@
         }
 
         .vinyl-record {
-            width: 153px;
-            height: 153px;
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            width: 130px;
+            height: 130px;
+            background: radial-gradient(circle at 30% 30%, #2a2a2a 0%, #0a0a0a 100%);
             border-radius: 50%;
             position: relative;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4), inset 0 2px 5px rgba(255,255,255,0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6), inset 0 1px 3px rgba(255,255,255,0.05);
             animation: spin 4s linear infinite;
         }
 
@@ -321,17 +569,81 @@
             to { transform: rotate(360deg); }
         }
 
+        /* Vinyl grooves - concentric circles for realistic texture */
+        .vinyl-groove {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            pointer-events: none;
+        }
+
+        .vinyl-groove-1 {
+            width: 95%;
+            height: 95%;
+        }
+
+        .vinyl-groove-2 {
+            width: 85%;
+            height: 85%;
+            border-color: rgba(255, 255, 255, 0.04);
+        }
+
+        .vinyl-groove-3 {
+            width: 75%;
+            height: 75%;
+            border-color: rgba(255, 255, 255, 0.03);
+        }
+
+        .vinyl-groove-4 {
+            width: 65%;
+            height: 65%;
+            border-color: rgba(255, 255, 255, 0.04);
+        }
+
+        .vinyl-groove-5 {
+            width: 55%;
+            height: 55%;
+            border-color: rgba(255, 255, 255, 0.03);
+        }
+
+        /* Record label (center sticker) */
+        .vinyl-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0,0,0,0.4);
+            transition: background 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .label-center-text {
+            font-size: 20px;
+            z-index: 2;
+            position: relative;
+        }
+
+        /* Center hole */
         .vinyl-center {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+            width: 12px;
+            height: 12px;
+            background: #000;
             border-radius: 50%;
-            box-shadow: 0 0 0 3px #1a1a1a, 0 2px 5px rgba(0,0,0,0.3);
-            transition: background 0.5s ease;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.1);
+            z-index: 3;
         }
 
         .vinyl-text {
@@ -345,10 +657,11 @@
 
         .vinyl-text text {
             fill: white;
-            font-size: 15px;
+            font-size: 8px;
             font-weight: 600;
-            letter-spacing: 3px;
+            letter-spacing: 1.5px;
             text-transform: uppercase;
+            opacity: 0.9;
         }
 
         /* Mobile optimization for header */
@@ -370,18 +683,27 @@
             }
 
             .vinyl-record {
-                width: 128px;
-                height: 128px;
+                width: 109px;
+                height: 109px;
+            }
+
+            .vinyl-label {
+                width: 42px;
+                height: 42px;
+            }
+
+            .label-center-text {
+                font-size: 17px;
             }
 
             .vinyl-center {
-                width: 39px;
-                height: 39px;
+                width: 10px;
+                height: 10px;
             }
 
             .vinyl-text text {
-                font-size: 14px;
-                letter-spacing: 2.5px;
+                font-size: 6.5px;
+                letter-spacing: 1.2px;
             }
         }
 
@@ -401,18 +723,27 @@
             }
 
             .vinyl-record {
-                width: 111px;
-                height: 111px;
+                width: 94px;
+                height: 94px;
+            }
+
+            .vinyl-label {
+                width: 36px;
+                height: 36px;
+            }
+
+            .label-center-text {
+                font-size: 14px;
             }
 
             .vinyl-center {
-                width: 34px;
-                height: 34px;
+                width: 8px;
+                height: 8px;
             }
 
             .vinyl-text text {
-                font-size: 12px;
-                letter-spacing: 2px;
+                font-size: 5.5px;
+                letter-spacing: 1px;
             }
         }
 
@@ -661,7 +992,7 @@
         }
 
         .settings-btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--button-bg) 0%, var(--button-hover) 100%);
             color: white;
         }
 
@@ -770,7 +1101,7 @@
             position: absolute;
             top: 8px;
             right: 8px;
-            background: #667eea;
+            background: var(--button-bg);
             color: white;
             width: 24px;
             height: 24px;
@@ -817,7 +1148,7 @@
         }
 
         .instructions-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--button-bg) 0%, var(--button-hover) 100%);
             color: white;
             padding: 25px 30px;
             border-radius: 20px 20px 0 0;
@@ -842,7 +1173,7 @@
         }
 
         .instruction-number {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--button-bg) 0%, var(--button-hover) 100%);
             color: white;
             width: 35px;
             height: 35px;
@@ -868,7 +1199,7 @@
             display: inline-block;
             margin-top: 10px;
             padding: 10px 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--button-bg) 0%, var(--button-hover) 100%);
             color: white;
             text-decoration: none;
             border-radius: 8px;
@@ -952,7 +1283,7 @@
         .discogs-result-button {
             align-self: center;
             padding: 8px 16px;
-            background: #667eea;
+            background: var(--button-bg);
             color: white;
             border: none;
             border-radius: 6px;
@@ -962,7 +1293,7 @@
         }
 
         .discogs-result-button:hover {
-            background: #5568d3;
+            background: var(--button-hover);
             transform: scale(1.05);
         }
 
@@ -985,6 +1316,8 @@
 
         .section {
             display: none;
+            background: var(--content-bg);
+            padding: 30px;
         }
 
         .section.active {
@@ -1034,7 +1367,7 @@
         .btn {
             padding: 12px 24px;
             border: none;
-            background: #667eea;
+            background: var(--button-bg);
             color: white;
             border-radius: 8px;
             cursor: pointer;
@@ -1044,7 +1377,7 @@
         }
 
         .btn:hover {
-            background: #764ba2;
+            background: var(--button-hover);
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
@@ -1074,7 +1407,7 @@
         }
 
         .random-album-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--button-bg) 0%, var(--button-hover) 100%);
             border-radius: 16px;
             padding: 30px;
             color: white;
@@ -1284,8 +1617,9 @@
         }
 
         .album-card {
-            background: white;
-            border: 2px solid #e9ecef;
+            background: var(--card-bg);
+            color: var(--card-text);
+            border: 2px solid var(--border-color);
             border-radius: 12px;
             overflow: hidden;
             transition: all 0.3s;
@@ -1295,7 +1629,7 @@
         .album-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            border-color: #667eea;
+            border-color: var(--border-hover);
         }
 
         .album-card img {
@@ -1357,10 +1691,11 @@
         }
 
         .stat-card {
-            background: #f8f9fa;
+            background: var(--chart-bg);
+            color: var(--chart-text);
             padding: 20px;
             border-radius: 12px;
-            border: 2px solid #e9ecef;
+            border: 2px solid var(--border-color);
         }
 
         .stat-card h3 {
@@ -1381,15 +1716,17 @@
         }
 
         .chart {
-            background: white;
+            background: var(--chart-bg);
+            color: var(--chart-text);
             padding: 20px;
             border-radius: 12px;
             margin-top: 20px;
-            border: 2px solid #e9ecef;
+            border: 2px solid var(--border-color);
         }
 
         .score-albums-section {
-            background: white;
+            background: var(--chart-bg);
+            color: var(--chart-text);
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -1409,7 +1746,7 @@
 
         .chart-bar-fill {
             height: 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--button-bg) 0%, var(--button-hover) 100%);
             border-radius: 4px;
             display: flex;
             align-items: center;
@@ -1439,7 +1776,8 @@
         }
 
         .modal-content {
-            background: white;
+            background: var(--modal-bg);
+            color: var(--modal-text);
             border-radius: 16px;
             max-width: 800px;
             width: 100%;
@@ -1578,7 +1916,7 @@
         }
 
         .badge-master {
-            background: #764ba2;
+            background: var(--button-hover);
             color: white;
         }
 
@@ -1673,22 +2011,45 @@
 </head>
 <body>
     <div class="container">
+        <!-- Header wrapper with gradient -->
+        <div class="header-nav-wrapper">
         <div class="header" style="position: relative;">
             <!-- Random Album Button (Vinyl Record Style) -->
             <button onclick="pickRandomAlbum()" class="vinyl-button" title="Pick an Album">
                 <div class="vinyl-record">
+                    <!-- Vinyl grooves (multiple circles for realistic look) -->
+                    <div class="vinyl-groove vinyl-groove-1"></div>
+                    <div class="vinyl-groove vinyl-groove-2"></div>
+                    <div class="vinyl-groove vinyl-groove-3"></div>
+                    <div class="vinyl-groove vinyl-groove-4"></div>
+                    <div class="vinyl-groove vinyl-groove-5"></div>
+                    
+                    <!-- Text on vinyl body -->
                     <svg class="vinyl-text" viewBox="0 0 100 100">
                         <defs>
-                            <path id="circlePath" d="M 50, 50 m -35, 0 a 35,35 0 1,1 70,0 a 35,35 0 1,1 -70,0"/>
+                            <path id="circlePath" d="M 50, 50 m -40, 0 a 40,40 0 1,1 80,0 a 40,40 0 1,1 -80,0"/>
                         </defs>
+                        <!-- First text at top -->
                         <text>
                             <textPath href="#circlePath" startOffset="0%">
-                                PICK AN ALBUM • PICK AN ALBUM • 
+                                PICK AN ALBUM
+                            </textPath>
+                        </text>
+                        <!-- Second text at bottom (opposite side) -->
+                        <text>
+                            <textPath href="#circlePath" startOffset="50%">
+                                PICK AN ALBUM
                             </textPath>
                         </text>
                     </svg>
+                    
+                    <!-- Record label (center sticker) -->
+                    <div class="vinyl-label">
+                        <div class="label-center-text">🎵</div>
+                    </div>
+                    
+                    <!-- Center hole -->
                     <div class="vinyl-center"></div>
-                    <div class="vinyl-groove"></div>
                 </div>
             </button>
             
@@ -1711,6 +2072,7 @@
             <button onclick="showSection('import', event)">Import/Export Data</button>
             <button onclick="showSection('stats', event)">Statistics</button>
         </div>
+        </div> <!-- End header-nav-wrapper -->
 
         <div class="content">
             <!-- Random Album Section -->
@@ -2198,33 +2560,170 @@
                     <div class="custom-theme-creator" style="margin-top: 30px; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <h4 style="margin-bottom: 10px; color: #212529;">🎨 Create Custom Theme</h4>
                         <p style="color: #6c757d; margin-bottom: 20px; font-size: 14px;">
-                            Choose your own gradient colors to create a unique theme.
+                            Choose your own colors to create a unique theme.
                         </p>
                         
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
-                            <div>
-                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #212529;">Gradient Start</label>
-                                <input type="color" id="customColorStart" value="#667eea" oninput="updateCustomPreview()"
+                        <!-- Header Section -->
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            <h5 style="color: #495057; margin-bottom: 15px; font-size: 14px; font-weight: 600;">🎨 Header Colors</h5>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #212529;">Gradient Start (Left)</label>
+                                <input type="color" id="customGradientStart" value="#134E5E"
                                        style="width: 100%; height: 50px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer;">
                             </div>
-                            <div>
-                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #212529;">Gradient End</label>
-                                <input type="color" id="customColorEnd" value="#764ba2" oninput="updateCustomPreview()"
+                            
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #212529;">Gradient End (Right)</label>
+                                <input type="color" id="customGradientEnd" value="#71B280"
+                                       style="width: 100%; height: 50px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer;">
+                            </div>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #212529;">Header Text</label>
+                                <input type="color" id="customHeaderText" value="#ffffff"
+                                       style="width: 100%; height: 50px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer;">
+                            </div>
+                            
+                            <div style="margin-bottom: 0;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #212529;">Subheader Text</label>
+                                <input type="color" id="customSubheaderText" value="#e0e0e0"
                                        style="width: 100%; height: 50px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer;">
                             </div>
                         </div>
                         
-                        <div id="customThemePreview" style="height: 60px; border-radius: 8px; margin-bottom: 15px; 
-                                                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                                                            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);"></div>
+                        <!-- Content Section -->
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            <h5 style="color: #495057; margin-bottom: 15px; font-size: 14px; font-weight: 600;">📄 Content Colors</h5>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #212529;">Background</label>
+                                <input type="color" id="customContentBg" value="#ffffff"
+                                       style="width: 100%; height: 50px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer;">
+                            </div>
+                            
+                            <div style="margin-bottom: 0;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #212529;">Text</label>
+                                <input type="color" id="customContentText" value="#333333"
+                                       style="width: 100%; height: 50px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer;">
+                            </div>
+                        </div>
                         
-                        <div style="display: flex; gap: 10px;">
+                        <!-- Card Section -->
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            <h5 style="color: #495057; margin-bottom: 15px; font-size: 14px; font-weight: 600;">🎴 Card Colors</h5>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #212529;">Background</label>
+                                <input type="color" id="customCardBg" value="#f8f9ff"
+                                       style="width: 100%; height: 50px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer;">
+                            </div>
+                            
+                            <div style="margin-bottom: 0;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #212529;">Text</label>
+                                <input type="color" id="customCardText" value="#333333"
+                                       style="width: 100%; height: 50px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer;">
+                            </div>
+                        </div>
+                        
+                        <!-- Modal Section -->
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            <h5 style="color: #495057; margin-bottom: 15px; font-size: 14px; font-weight: 600;">💬 Modal Colors</h5>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #212529;">Background</label>
+                                <input type="color" id="customModalBg" value="#ffffff"
+                                       style="width: 100%; height: 50px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer;">
+                            </div>
+                            
+                            <div style="margin-bottom: 0;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #212529;">Text</label>
+                                <input type="color" id="customModalText" value="#333333"
+                                       style="width: 100%; height: 50px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer;">
+                            </div>
+                        </div>
+                        
+                        <!-- Chart Section -->
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            <h5 style="color: #495057; margin-bottom: 15px; font-size: 14px; font-weight: 600;">📊 Chart Colors</h5>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #212529;">Background</label>
+                                <input type="color" id="customChartBg" value="#fafbff"
+                                       style="width: 100%; height: 50px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer;">
+                            </div>
+                            
+                            <div style="margin-bottom: 0;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #212529;">Text</label>
+                                <input type="color" id="customChartText" value="#333333"
+                                       style="width: 100%; height: 50px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer;">
+                            </div>
+                        </div>
+                        
+                        <!-- Button Section -->
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            <h5 style="color: #495057; margin-bottom: 15px; font-size: 14px; font-weight: 600;">🔘 Button Colors</h5>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #212529;">Background</label>
+                                <input type="color" id="customButtonBg" value="#667eea"
+                                       style="width: 100%; height: 50px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer;">
+                            </div>
+                            
+                            <div style="margin-bottom: 0;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #212529;">Hover</label>
+                                <input type="color" id="customButtonHover" value="#764ba2"
+                                       style="width: 100%; height: 50px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer;">
+                            </div>
+                        </div>
+                        
+                        <!-- Border Section -->
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            <h5 style="color: #495057; margin-bottom: 15px; font-size: 14px; font-weight: 600;">🔲 Border Colors</h5>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #212529;">Normal</label>
+                                <input type="color" id="customBorderColor" value="#e0e0e0"
+                                       style="width: 100%; height: 50px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer;">
+                            </div>
+                            
+                            <div style="margin-bottom: 0;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #212529;">Hover</label>
+                                <input type="color" id="customBorderHover" value="#667eea"
+                                       style="width: 100%; height: 50px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer;">
+                            </div>
+                        </div>
+                        
+                        </div>
+                        
+                        <div style="display: flex; gap: 10px; margin-top: 20px;">
                             <button onclick="applyCustomTheme()" class="settings-btn settings-btn-primary" style="flex: 1;">
                                 ✨ Apply Custom Theme
                             </button>
                             <button onclick="resetToDefault()" class="settings-btn settings-btn-secondary">
                                 🔄 Reset
                             </button>
+                        </div>
+                        
+                        <!-- Save Custom Theme Section -->
+                        <div style="margin-top: 30px; padding-top: 30px; border-top: 2px solid #e0e0e0;">
+                            <h4 style="margin-bottom: 10px; color: #212529;">💾 Save Custom Theme</h4>
+                            <p style="color: #6c757d; margin-bottom: 15px; font-size: 14px;">
+                                Save your custom theme with a name (up to 3 saved themes)
+                            </p>
+                            
+                            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                                <input type="text" id="customThemeName" placeholder="Enter theme name..." 
+                                       maxlength="20"
+                                       style="flex: 1; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px;">
+                                <button onclick="saveNamedCustomTheme()" class="settings-btn settings-btn-primary">
+                                    💾 Save
+                                </button>
+                            </div>
+                            
+                            <div id="savedThemesList" style="display: grid; gap: 10px;">
+                                <!-- Saved themes will appear here -->
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -3561,6 +4060,11 @@
             modal.classList.add('active');
             loadSettingsData();
             initializeCustomThemeCreator();
+            
+            // Populate color pickers with current theme colors
+            setTimeout(() => {
+                populateColorPickersFromTheme();
+            }, 100);
         }
 
         function closeSettings() {
@@ -3582,8 +4086,113 @@
             // Save theme preference
             saveThemePreference(themeName);
             
+            // Populate color pickers with theme colors (with small delay to ensure CSS is applied)
+            setTimeout(() => {
+                populateColorPickersFromTheme();
+            }, 100);
+            
             // Show success message
             showMessage(`Theme changed to ${themeName}!`, 'success');
+        }
+        
+        function populateColorPickersFromTheme() {
+            console.log('🎨 Populating color pickers from theme...');
+            
+            // Get computed CSS variable values from body (where data-theme is applied)
+            const body = document.body;
+            const computedStyle = getComputedStyle(body);
+            const currentTheme = body.getAttribute('data-theme') || 'forest';
+            
+            console.log('Current theme:', currentTheme);
+            
+            // Helper function to convert RGB to Hex
+            function rgbToHex(rgb) {
+                // Handle rgb() format
+                const match = rgb.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+                if (match) {
+                    const r = parseInt(match[1]).toString(16).padStart(2, '0');
+                    const g = parseInt(match[2]).toString(16).padStart(2, '0');
+                    const b = parseInt(match[3]).toString(16).padStart(2, '0');
+                    return `#${r}${g}${b}`;
+                }
+                // If already hex, return as is
+                if (rgb.startsWith('#')) {
+                    return rgb;
+                }
+                return rgb;
+            }
+            
+            // Get all CSS variable values
+            const gradientStart = computedStyle.getPropertyValue('--gradient-start').trim();
+            const gradientEnd = computedStyle.getPropertyValue('--gradient-end').trim();
+            
+            console.log('Gradient start (raw):', gradientStart);
+            console.log('Gradient end (raw):', gradientEnd);
+            const contentBg = computedStyle.getPropertyValue('--content-bg').trim();
+            const cardBg = computedStyle.getPropertyValue('--card-bg').trim();
+            const modalBg = computedStyle.getPropertyValue('--modal-bg').trim();
+            const chartBg = computedStyle.getPropertyValue('--chart-bg').trim();
+            const contentText = computedStyle.getPropertyValue('--content-text').trim();
+            const cardText = computedStyle.getPropertyValue('--card-text').trim();
+            const modalText = computedStyle.getPropertyValue('--modal-text').trim();
+            const chartText = computedStyle.getPropertyValue('--chart-text').trim();
+            const headerText = computedStyle.getPropertyValue('--header-text').trim();
+            const subheaderText = computedStyle.getPropertyValue('--subheader-text').trim();
+            const buttonBg = computedStyle.getPropertyValue('--button-bg').trim();
+            const buttonHover = computedStyle.getPropertyValue('--button-hover').trim();
+            const borderColor = computedStyle.getPropertyValue('--border-color').trim();
+            const borderHover = computedStyle.getPropertyValue('--border-hover').trim();
+            
+            // Populate color pickers
+            const customGradientStart = document.getElementById('customGradientStart');
+            const customGradientEnd = document.getElementById('customGradientEnd');
+            const customContentBg = document.getElementById('customContentBg');
+            const customCardBg = document.getElementById('customCardBg');
+            const customModalBg = document.getElementById('customModalBg');
+            const customChartBg = document.getElementById('customChartBg');
+            const customContentText = document.getElementById('customContentText');
+            const customCardText = document.getElementById('customCardText');
+            const customModalText = document.getElementById('customModalText');
+            const customChartText = document.getElementById('customChartText');
+            const customHeaderText = document.getElementById('customHeaderText');
+            const customSubheaderText = document.getElementById('customSubheaderText');
+            const customButtonBg = document.getElementById('customButtonBg');
+            const customButtonHover = document.getElementById('customButtonHover');
+            const customBorderColor = document.getElementById('customBorderColor');
+            const customBorderHover = document.getElementById('customBorderHover');
+            
+            if (customGradientStart) {
+                const hexValue = rgbToHex(gradientStart);
+                customGradientStart.value = hexValue;
+                console.log('✅ Set gradient start to:', hexValue);
+            } else {
+                console.log('❌ customGradientStart element not found');
+            }
+            
+            if (customGradientEnd) {
+                const hexValue = rgbToHex(gradientEnd);
+                customGradientEnd.value = hexValue;
+                console.log('✅ Set gradient end to:', hexValue);
+            } else {
+                console.log('❌ customGradientEnd element not found');
+            }
+            
+            if (customContentBg) customContentBg.value = rgbToHex(contentBg);
+            if (customCardBg) customCardBg.value = rgbToHex(cardBg);
+            if (customModalBg) customModalBg.value = rgbToHex(modalBg);
+            if (customChartBg) customChartBg.value = rgbToHex(chartBg);
+            if (customContentText) customContentText.value = rgbToHex(contentText);
+            if (customCardText) customCardText.value = rgbToHex(cardText);
+            if (customModalText) customModalText.value = rgbToHex(modalText);
+            if (customChartText) customChartText.value = rgbToHex(chartText);
+            if (customHeaderText) customHeaderText.value = rgbToHex(headerText);
+            if (customSubheaderText) customSubheaderText.value = rgbToHex(subheaderText);
+            if (customButtonBg) customButtonBg.value = rgbToHex(buttonBg);
+            if (customButtonHover) customButtonHover.value = rgbToHex(buttonHover);
+            if (customBorderColor) customBorderColor.value = rgbToHex(borderColor);
+            if (customBorderHover) customBorderHover.value = rgbToHex(borderHover);
+            
+            console.log('🎨 Color pickers populated successfully!');
         }
 
         function saveThemePreference(themeName) {
@@ -3596,7 +4205,7 @@
             localStorage.setItem('onedrive_sync_data', JSON.stringify(syncData));
             
             // Trigger OneDrive sync if connected
-            if (oneDriveManager && oneDriveManager.isAuthenticated()) {
+            if (typeof oneDriveManager !== 'undefined' && oneDriveManager && oneDriveManager.isAuthenticated()) {
                 oneDriveManager.syncToOneDrive();
             }
         }
@@ -3611,9 +4220,9 @@
                 theme = localStorage.getItem('app_theme');
             }
             
-            // Default to purple if no preference
+            // Default to forest green if no preference
             if (!theme) {
-                theme = 'purple';
+                theme = 'forest';
             }
             
             // Apply theme
@@ -3632,47 +4241,93 @@
         }
 
         // Custom Theme Functions
-        function updateCustomPreview() {
-            const startColor = document.getElementById('customColorStart').value;
-            const endColor = document.getElementById('customColorEnd').value;
-            const preview = document.getElementById('customThemePreview');
-            
-            if (preview) {
-                preview.style.background = `linear-gradient(135deg, ${startColor} 0%, ${endColor} 100%)`;
-            }
-        }
-
         function applyCustomTheme() {
-            const startColor = document.getElementById('customColorStart').value;
-            const endColor = document.getElementById('customColorEnd').value;
+            const gradientStart = document.getElementById('customGradientStart').value;
+            const gradientEnd = document.getElementById('customGradientEnd').value;
+            const contentBg = document.getElementById('customContentBg').value;
+            const cardBg = document.getElementById('customCardBg').value;
+            const modalBg = document.getElementById('customModalBg').value;
+            const chartBg = document.getElementById('customChartBg').value;
+            const contentText = document.getElementById('customContentText').value;
+            const cardText = document.getElementById('customCardText').value;
+            const modalText = document.getElementById('customModalText').value;
+            const chartText = document.getElementById('customChartText').value;
+            const headerText = document.getElementById('customHeaderText').value;
+            const subheaderText = document.getElementById('customSubheaderText').value;
+            const buttonBg = document.getElementById('customButtonBg').value;
+            const buttonHover = document.getElementById('customButtonHover').value;
+            const borderColor = document.getElementById('customBorderColor').value;
+            const borderHover = document.getElementById('customBorderHover').value;
             
             // Set CSS variables
-            document.documentElement.style.setProperty('--custom-start', startColor);
-            document.documentElement.style.setProperty('--custom-end', endColor);
+            document.documentElement.style.setProperty('--custom-gradient-start', gradientStart);
+            document.documentElement.style.setProperty('--custom-gradient-end', gradientEnd);
+            document.documentElement.style.setProperty('--custom-content-bg', contentBg);
+            document.documentElement.style.setProperty('--custom-card-bg', cardBg);
+            document.documentElement.style.setProperty('--custom-modal-bg', modalBg);
+            document.documentElement.style.setProperty('--custom-chart-bg', chartBg);
+            document.documentElement.style.setProperty('--custom-content-text', contentText);
+            document.documentElement.style.setProperty('--custom-card-text', cardText);
+            document.documentElement.style.setProperty('--custom-modal-text', modalText);
+            document.documentElement.style.setProperty('--custom-chart-text', chartText);
+            document.documentElement.style.setProperty('--custom-header-text', headerText);
+            document.documentElement.style.setProperty('--custom-subheader-text', subheaderText);
+            document.documentElement.style.setProperty('--custom-button-bg', buttonBg);
+            document.documentElement.style.setProperty('--custom-button-hover', buttonHover);
+            document.documentElement.style.setProperty('--custom-border-color', borderColor);
+            document.documentElement.style.setProperty('--custom-border-hover', borderHover);
             
             // Apply custom theme
             selectTheme('custom');
             
             // Save custom colors
-            saveCustomThemeColors(startColor, endColor);
+            saveCustomThemeColors(gradientStart, gradientEnd, contentBg, cardBg, modalBg, chartBg, contentText, cardText, modalText, chartText, headerText, subheaderText, buttonBg, buttonHover, borderColor, borderHover);
             
             showMessage('Custom theme applied! 🎨', 'success');
         }
 
-        function saveCustomThemeColors(startColor, endColor) {
-            localStorage.setItem('customThemeStart', startColor);
-            localStorage.setItem('customThemeEnd', endColor);
+        function saveCustomThemeColors(gradientStart, gradientEnd, contentBg, cardBg, modalBg, chartBg, contentText, cardText, modalText, chartText, headerText, subheaderText, buttonBg, buttonHover, borderColor, borderHover) {
+            localStorage.setItem('customGradientStart', gradientStart);
+            localStorage.setItem('customGradientEnd', gradientEnd);
+            localStorage.setItem('customContentBg', contentBg);
+            localStorage.setItem('customCardBg', cardBg);
+            localStorage.setItem('customModalBg', modalBg);
+            localStorage.setItem('customChartBg', chartBg);
+            localStorage.setItem('customContentText', contentText);
+            localStorage.setItem('customCardText', cardText);
+            localStorage.setItem('customModalText', modalText);
+            localStorage.setItem('customChartText', chartText);
+            localStorage.setItem('customHeaderText', headerText);
+            localStorage.setItem('customSubheaderText', subheaderText);
+            localStorage.setItem('customButtonBg', buttonBg);
+            localStorage.setItem('customButtonHover', buttonHover);
+            localStorage.setItem('customBorderColor', borderColor);
+            localStorage.setItem('customBorderHover', borderHover);
             
             // Also save to OneDrive
             const syncData = JSON.parse(localStorage.getItem('onedrive_sync_data') || '{}');
             syncData.customTheme = {
-                start: startColor,
-                end: endColor
+                gradientStart: gradientStart,
+                gradientEnd: gradientEnd,
+                contentBg: contentBg,
+                cardBg: cardBg,
+                modalBg: modalBg,
+                chartBg: chartBg,
+                contentText: contentText,
+                cardText: cardText,
+                modalText: modalText,
+                chartText: chartText,
+                headerText: headerText,
+                subheaderText: subheaderText,
+                buttonBg: buttonBg,
+                buttonHover: buttonHover,
+                borderColor: borderColor,
+                borderHover: borderHover
             };
             localStorage.setItem('onedrive_sync_data', JSON.stringify(syncData));
             
             // Trigger OneDrive sync if connected
-            if (oneDriveManager && oneDriveManager.isAuthenticated()) {
+            if (typeof oneDriveManager !== 'undefined' && oneDriveManager && oneDriveManager.isAuthenticated()) {
                 oneDriveManager.syncToOneDrive();
             }
         }
@@ -3685,21 +4340,65 @@
             }
             
             // Fall back to localStorage
-            const start = localStorage.getItem('customThemeStart');
-            const end = localStorage.getItem('customThemeEnd');
+            const gradientStart = localStorage.getItem('customGradientStart');
+            const gradientEnd = localStorage.getItem('customGradientEnd');
+            const contentBg = localStorage.getItem('customContentBg');
+            const cardBg = localStorage.getItem('customCardBg');
+            const modalBg = localStorage.getItem('customModalBg');
+            const chartBg = localStorage.getItem('customChartBg');
+            const contentText = localStorage.getItem('customContentText');
+            const cardText = localStorage.getItem('customCardText');
+            const modalText = localStorage.getItem('customModalText');
+            const chartText = localStorage.getItem('customChartText');
+            const headerText = localStorage.getItem('customHeaderText');
+            const subheaderText = localStorage.getItem('customSubheaderText');
+            const buttonBg = localStorage.getItem('customButtonBg');
+            const buttonHover = localStorage.getItem('customButtonHover');
+            const borderColor = localStorage.getItem('customBorderColor');
+            const borderHover = localStorage.getItem('customBorderHover');
             
-            if (start && end) {
-                return { start, end };
+            if (gradientStart) {
+                return { 
+                    gradientStart, 
+                    gradientEnd: gradientEnd || '#71B280',
+                    contentBg: contentBg || '#ffffff',
+                    cardBg: cardBg || '#f8f9ff',
+                    modalBg: modalBg || '#ffffff',
+                    chartBg: chartBg || '#fafbff',
+                    contentText: contentText || '#333333',
+                    cardText: cardText || '#333333',
+                    modalText: modalText || '#333333',
+                    chartText: chartText || '#333333',
+                    headerText: headerText || '#ffffff',
+                    subheaderText: subheaderText || '#ffffff',
+                    buttonBg: buttonBg || '#667eea',
+                    buttonHover: buttonHover || '#764ba2',
+                    borderColor: borderColor || '#667eea',
+                    borderHover: borderHover || '#764ba2'
+                };
             }
             
             return null;
         }
 
         function resetToDefault() {
-            document.getElementById('customColorStart').value = '#667eea';
-            document.getElementById('customColorEnd').value = '#764ba2';
-            updateCustomPreview();
-            selectTheme('purple');
+            document.getElementById('customGradientStart').value = '#134E5E';
+            document.getElementById('customGradientEnd').value = '#71B280';
+            document.getElementById('customContentBg').value = '#ffffff';
+            document.getElementById('customCardBg').value = '#f8f9ff';
+            document.getElementById('customModalBg').value = '#ffffff';
+            document.getElementById('customChartBg').value = '#fafbff';
+            document.getElementById('customContentText').value = '#333333';
+            document.getElementById('customCardText').value = '#333333';
+            document.getElementById('customModalText').value = '#333333';
+            document.getElementById('customChartText').value = '#333333';
+            document.getElementById('customHeaderText').value = '#ffffff';
+            document.getElementById('customSubheaderText').value = '#ffffff';
+            document.getElementById('customButtonBg').value = '#667eea';
+            document.getElementById('customButtonHover').value = '#764ba2';
+            document.getElementById('customBorderColor').value = '#667eea';
+            document.getElementById('customBorderHover').value = '#764ba2';
+            selectTheme('forest');
             showMessage('Reset to default theme', 'success');
         }
 
@@ -3707,27 +4406,232 @@
             // Load saved custom colors
             const customColors = loadCustomThemeColors();
             if (customColors) {
-                const startInput = document.getElementById('customColorStart');
-                const endInput = document.getElementById('customColorEnd');
+                const gradientStartInput = document.getElementById('customGradientStart');
+                const gradientEndInput = document.getElementById('customGradientEnd');
+                const contentBgInput = document.getElementById('customContentBg');
+                const cardBgInput = document.getElementById('customCardBg');
+                const modalBgInput = document.getElementById('customModalBg');
+                const chartBgInput = document.getElementById('customChartBg');
+                const contentTextInput = document.getElementById('customContentText');
+                const cardTextInput = document.getElementById('customCardText');
+                const modalTextInput = document.getElementById('customModalText');
+                const chartTextInput = document.getElementById('customChartText');
+                const headerTextInput = document.getElementById('customHeaderText');
+                const subheaderTextInput = document.getElementById('customSubheaderText');
+                const buttonBgInput = document.getElementById('customButtonBg');
+                const buttonHoverInput = document.getElementById('customButtonHover');
                 
-                if (startInput && endInput) {
-                    startInput.value = customColors.start;
-                    endInput.value = customColors.end;
-                    updateCustomPreview();
+                if (gradientStartInput && gradientEndInput && contentBgInput && cardBgInput && modalBgInput && chartBgInput && 
+                    contentTextInput && cardTextInput && modalTextInput && chartTextInput &&
+                    headerTextInput && subheaderTextInput && buttonBgInput && buttonHoverInput) {
+                    gradientStartInput.value = customColors.gradientStart || '#134E5E';
+                    gradientEndInput.value = customColors.gradientEnd || '#71B280';
+                    contentBgInput.value = customColors.contentBg || '#ffffff';
+                    cardBgInput.value = customColors.cardBg || '#f8f9ff';
+                    modalBgInput.value = customColors.modalBg || '#ffffff';
+                    chartBgInput.value = customColors.chartBg || '#fafbff';
+                    contentTextInput.value = customColors.contentText || '#333333';
+                    cardTextInput.value = customColors.cardText || '#333333';
+                    modalTextInput.value = customColors.modalText || '#333333';
+                    chartTextInput.value = customColors.chartText || '#333333';
+                    headerTextInput.value = customColors.headerText || '#ffffff';
+                    subheaderTextInput.value = customColors.subheaderText || '#ffffff';
+                    buttonBgInput.value = customColors.buttonBg || '#667eea';
+                    buttonHoverInput.value = customColors.buttonHover || '#764ba2';
                     
                     // Apply if custom theme is active
                     const currentTheme = document.body.getAttribute('data-theme');
                     if (currentTheme === 'custom') {
-                        document.documentElement.style.setProperty('--custom-start', customColors.start);
-                        document.documentElement.style.setProperty('--custom-end', customColors.end);
+                        document.documentElement.style.setProperty('--custom-gradient-start', customColors.gradientStart || '#134E5E');
+                        document.documentElement.style.setProperty('--custom-gradient-end', customColors.gradientEnd || '#71B280');
+                        document.documentElement.style.setProperty('--custom-content-bg', customColors.contentBg || '#ffffff');
+                        document.documentElement.style.setProperty('--custom-card-bg', customColors.cardBg || '#f8f9ff');
+                        document.documentElement.style.setProperty('--custom-modal-bg', customColors.modalBg || '#ffffff');
+                        document.documentElement.style.setProperty('--custom-chart-bg', customColors.chartBg || '#fafbff');
+                        document.documentElement.style.setProperty('--custom-content-text', customColors.contentText || '#333333');
+                        document.documentElement.style.setProperty('--custom-card-text', customColors.cardText || '#333333');
+                        document.documentElement.style.setProperty('--custom-modal-text', customColors.modalText || '#333333');
+                        document.documentElement.style.setProperty('--custom-chart-text', customColors.chartText || '#333333');
+                        document.documentElement.style.setProperty('--custom-header-text', customColors.headerText || '#ffffff');
+                        document.documentElement.style.setProperty('--custom-subheader-text', customColors.subheaderText || '#ffffff');
+                        document.documentElement.style.setProperty('--custom-button-bg', customColors.buttonBg || '#667eea');
+                        document.documentElement.style.setProperty('--custom-button-hover', customColors.buttonHover || '#764ba2');
                     }
                 }
             }
         }
 
+        // Save a named custom theme
+        function saveNamedCustomTheme() {
+            const nameInput = document.getElementById('customThemeName');
+            const themeName = nameInput.value.trim();
+            
+            if (!themeName) {
+                showMessage('Please enter a theme name', 'error');
+                return;
+            }
+            
+            // Get current color values
+            const themeData = {
+                name: themeName,
+                colors: {
+                    start: document.getElementById('customGradientStart').value,
+                    end: document.getElementById('customGradientEnd').value,
+                    contentBg: document.getElementById('customContentBg').value,
+                    cardBg: document.getElementById('customCardBg').value,
+                    modalBg: document.getElementById('customModalBg').value,
+                    chartBg: document.getElementById('customChartBg').value,
+                    contentText: document.getElementById('customContentText').value,
+                    cardText: document.getElementById('customCardText').value,
+                    modalText: document.getElementById('customModalText').value,
+                    chartText: document.getElementById('customChartText').value,
+                    headerText: document.getElementById('customHeaderText').value,
+                    subheaderText: document.getElementById('customSubheaderText').value,
+                    buttonBg: document.getElementById('customButtonBg').value,
+                    buttonHover: document.getElementById('customButtonHover').value,
+                    borderColor: document.getElementById('customBorderColor').value,
+                    borderHover: document.getElementById('customBorderHover').value
+                }
+            };
+            
+            // Load existing saved themes
+            let savedThemes = JSON.parse(localStorage.getItem('saved_custom_themes') || '[]');
+            
+            // Check if we already have 3 themes
+            if (savedThemes.length >= 3) {
+                // Check if we're updating an existing theme
+                const existingIndex = savedThemes.findIndex(t => t.name === themeName);
+                if (existingIndex === -1) {
+                    showMessage('Maximum 3 saved themes. Delete one to save a new theme.', 'error');
+                    return;
+                } else {
+                    // Update existing theme
+                    savedThemes[existingIndex] = themeData;
+                }
+            } else {
+                // Check if theme name already exists
+                const existingIndex = savedThemes.findIndex(t => t.name === themeName);
+                if (existingIndex !== -1) {
+                    // Update existing theme
+                    savedThemes[existingIndex] = themeData;
+                } else {
+                    // Add new theme
+                    savedThemes.push(themeData);
+                }
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('saved_custom_themes', JSON.stringify(savedThemes));
+            
+            // Save to OneDrive sync data
+            const syncData = JSON.parse(localStorage.getItem('onedrive_sync_data') || '{}');
+            syncData.savedThemes = savedThemes;
+            localStorage.setItem('onedrive_sync_data', JSON.stringify(syncData));
+            
+            // Trigger OneDrive sync if connected
+            if (typeof oneDriveManager !== 'undefined' && oneDriveManager && oneDriveManager.isAuthenticated()) {
+                oneDriveManager.syncToOneDrive();
+            }
+            
+            // Clear input and refresh list
+            nameInput.value = '';
+            loadSavedThemesList();
+            showMessage(`Theme "${themeName}" saved successfully!`, 'success');
+        }
+
+        // Load and display saved themes
+        function loadSavedThemesList() {
+            const savedThemes = JSON.parse(localStorage.getItem('saved_custom_themes') || '[]');
+            const listContainer = document.getElementById('savedThemesList');
+            
+            if (savedThemes.length === 0) {
+                listContainer.innerHTML = '<p style="color: #6c757d; font-size: 13px; text-align: center; padding: 20px;">No saved themes yet</p>';
+                return;
+            }
+            
+            listContainer.innerHTML = savedThemes.map(theme => `
+                <div style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #f8f9fa; border-radius: 8px; border: 2px solid #e0e0e0;">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: #212529; margin-bottom: 4px;">${theme.name}</div>
+                        <div style="height: 20px; border-radius: 4px; background: linear-gradient(135deg, ${theme.colors.start} 0%, ${theme.colors.end} 100%);"></div>
+                    </div>
+                    <button onclick="loadSavedTheme('${theme.name}')" class="settings-btn settings-btn-secondary" style="padding: 8px 12px; font-size: 13px;">
+                        📂 Load
+                    </button>
+                    <button onclick="deleteSavedTheme('${theme.name}')" class="settings-btn settings-btn-secondary" style="padding: 8px 12px; font-size: 13px; background: #dc3545; color: white;">
+                        🗑️
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Load a saved theme into the color pickers
+        function loadSavedTheme(themeName) {
+            const savedThemes = JSON.parse(localStorage.getItem('saved_custom_themes') || '[]');
+            const theme = savedThemes.find(t => t.name === themeName);
+            
+            if (!theme) {
+                showMessage('Theme not found', 'error');
+                return;
+            }
+            
+            // Populate color pickers
+            document.getElementById('customGradientStart').value = theme.colors.start;
+            document.getElementById('customGradientEnd').value = theme.colors.end;
+            document.getElementById('customContentBg').value = theme.colors.contentBg;
+            document.getElementById('customCardBg').value = theme.colors.cardBg;
+            document.getElementById('customModalBg').value = theme.colors.modalBg;
+            document.getElementById('customChartBg').value = theme.colors.chartBg;
+            document.getElementById('customContentText').value = theme.colors.contentText;
+            document.getElementById('customCardText').value = theme.colors.cardText;
+            document.getElementById('customModalText').value = theme.colors.modalText;
+            document.getElementById('customChartText').value = theme.colors.chartText;
+            document.getElementById('customHeaderText').value = theme.colors.headerText;
+            document.getElementById('customSubheaderText').value = theme.colors.subheaderText;
+            document.getElementById('customButtonBg').value = theme.colors.buttonBg;
+            document.getElementById('customButtonHover').value = theme.colors.buttonHover;
+            document.getElementById('customBorderColor').value = theme.colors.borderColor;
+            document.getElementById('customBorderHover').value = theme.colors.borderHover;
+            
+            // Update preview
+            updateCustomPreview();
+            
+            showMessage(`Theme "${themeName}" loaded into editor`, 'success');
+        }
+
+        // Delete a saved theme
+        function deleteSavedTheme(themeName) {
+            if (!confirm(`Delete theme "${themeName}"?`)) {
+                return;
+            }
+            
+            let savedThemes = JSON.parse(localStorage.getItem('saved_custom_themes') || '[]');
+            savedThemes = savedThemes.filter(t => t.name !== themeName);
+            
+            // Save to localStorage
+            localStorage.setItem('saved_custom_themes', JSON.stringify(savedThemes));
+            
+            // Save to OneDrive sync data
+            const syncData = JSON.parse(localStorage.getItem('onedrive_sync_data') || '{}');
+            syncData.savedThemes = savedThemes;
+            localStorage.setItem('onedrive_sync_data', JSON.stringify(syncData));
+            
+            // Trigger OneDrive sync if connected
+            if (typeof oneDriveManager !== 'undefined' && oneDriveManager && oneDriveManager.isAuthenticated()) {
+                oneDriveManager.syncToOneDrive();
+            }
+            
+            // Refresh list
+            loadSavedThemesList();
+            showMessage(`Theme "${themeName}" deleted`, 'success');
+        }
+
         function loadSettingsData() {
             // Load theme preference
             loadThemePreference();
+            
+            // Load saved themes list
+            loadSavedThemesList();
             
             // Load Discogs token
             const token = localStorage.getItem('discogs_api_token');
@@ -6147,15 +7051,17 @@
 
             // Listening Timeline Graph
             const timelineFilter = window.listeningTimelineFilter || 'all';
+            const chartBg = getComputedStyle(document.documentElement).getPropertyValue('--chart-bg').trim();
+            const chartTextColor = getComputedStyle(document.body).getPropertyValue('--chart-text').trim();
             html += `
-                <div style="background: white; padding: 25px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <div style="background: var(--chart-bg); padding: 25px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
-                        <h3 style="margin: 0; color: #333;">📈 Listening Timeline</h3>
+                        <h3 style="margin: 0; color: var(--chart-text);">📈 Listening Timeline</h3>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                            <button onclick="changeTimelineFilter('all')" style="padding: 8px 16px; border-radius: 8px; border: 2px solid ${timelineFilter === 'all' ? '#667eea' : '#ddd'}; background: ${timelineFilter === 'all' ? '#667eea' : 'white'}; color: ${timelineFilter === 'all' ? 'white' : '#333'}; cursor: pointer; font-weight: 600; transition: all 0.3s;">All Time</button>
-                            <button onclick="changeTimelineFilter('5years')" style="padding: 8px 16px; border-radius: 8px; border: 2px solid ${timelineFilter === '5years' ? '#667eea' : '#ddd'}; background: ${timelineFilter === '5years' ? '#667eea' : 'white'}; color: ${timelineFilter === '5years' ? 'white' : '#333'}; cursor: pointer; font-weight: 600; transition: all 0.3s;">5 Years</button>
-                            <button onclick="changeTimelineFilter('3years')" style="padding: 8px 16px; border-radius: 8px; border: 2px solid ${timelineFilter === '3years' ? '#667eea' : '#ddd'}; background: ${timelineFilter === '3years' ? '#667eea' : 'white'}; color: ${timelineFilter === '3years' ? 'white' : '#333'}; cursor: pointer; font-weight: 600; transition: all 0.3s;">3 Years</button>
-                            <button onclick="changeTimelineFilter('1year')" style="padding: 8px 16px; border-radius: 8px; border: 2px solid ${timelineFilter === '1year' ? '#667eea' : '#ddd'}; background: ${timelineFilter === '1year' ? '#667eea' : 'white'}; color: ${timelineFilter === '1year' ? 'white' : '#333'}; cursor: pointer; font-weight: 600; transition: all 0.3s;">1 Year</button>
+                            <button onclick="changeTimelineFilter('all')" style="padding: 8px 16px; border-radius: 8px; border: 2px solid ${timelineFilter === 'all' ? 'var(--button-bg)' : '#ddd'}; background: ${timelineFilter === 'all' ? 'var(--button-bg)' : 'var(--chart-bg)'}; color: ${timelineFilter === 'all' ? 'white' : 'var(--chart-text)'}; cursor: pointer; font-weight: 600; transition: all 0.3s;">All Time</button>
+                            <button onclick="changeTimelineFilter('5years')" style="padding: 8px 16px; border-radius: 8px; border: 2px solid ${timelineFilter === '5years' ? 'var(--button-bg)' : '#ddd'}; background: ${timelineFilter === '5years' ? 'var(--button-bg)' : 'var(--chart-bg)'}; color: ${timelineFilter === '5years' ? 'white' : 'var(--chart-text)'}; cursor: pointer; font-weight: 600; transition: all 0.3s;">5 Years</button>
+                            <button onclick="changeTimelineFilter('3years')" style="padding: 8px 16px; border-radius: 8px; border: 2px solid ${timelineFilter === '3years' ? 'var(--button-bg)' : '#ddd'}; background: ${timelineFilter === '3years' ? 'var(--button-bg)' : 'var(--chart-bg)'}; color: ${timelineFilter === '3years' ? 'white' : 'var(--chart-text)'}; cursor: pointer; font-weight: 600; transition: all 0.3s;">3 Years</button>
+                            <button onclick="changeTimelineFilter('1year')" style="padding: 8px 16px; border-radius: 8px; border: 2px solid ${timelineFilter === '1year' ? 'var(--button-bg)' : '#ddd'}; background: ${timelineFilter === '1year' ? 'var(--button-bg)' : 'var(--chart-bg)'}; color: ${timelineFilter === '1year' ? 'white' : 'var(--chart-text)'}; cursor: pointer; font-weight: 600; transition: all 0.3s;">1 Year</button>
                         </div>
                     </div>
                     <div style="position: relative; height: 400px;">
@@ -6259,7 +7165,7 @@
             }
 
             html += '</div>';
-
+            
             // Top Artists by Average Score
             if (Object.keys(artistAvg).length > 0) {
                 const globalMean = getGlobalMean(albums);
@@ -6291,7 +7197,7 @@
                         <h3>🎤 Top Artists by Average Score (${rankingMethod === 'weighted' ? 'Weighted' : 'Raw Score'})</h3>
                         ${artistData.slice(0, 10).map(data => `
                             <div class="chart-bar" style="cursor: pointer; display: flex; align-items: center; margin-bottom: 8px;" onclick="showArtistDrilldown('${data.artist.replace(/'/g, "\\'")}')">
-                                <div style="min-width: 150px; max-width: 150px; padding-right: 10px; color: #333; font-weight: 600; font-size: 13px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${data.artist}">${data.artist}</div>
+                                <div style="min-width: 150px; max-width: 150px; padding-right: 10px; color: ${chartTextColor}; font-weight: 600; font-size: 13px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${data.artist}">${data.artist}</div>
                                 <div style="flex: 1; display: flex; align-items: center;">
                                     <div class="chart-bar-fill" style="width: ${(data.displayScore / 10) * 100}%; background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%); color: white; padding: 8px 12px; border-radius: 4px; font-weight: 600; min-width: 100px;">
                                         ${rankingMethod === 'weighted' 
@@ -6314,10 +7220,10 @@
                         <h3>🎸 Top Genres by Album Count</h3>
                         ${Object.entries(genreCounts).slice(0, 15).map(([genre, count]) => `
                             <div class="chart-bar" style="cursor: pointer; display: flex; align-items: center; margin-bottom: 8px;" onclick="showGenreDrilldown('${genre.replace(/'/g, "\\'")}')">
-                                <div style="min-width: 150px; max-width: 150px; padding-right: 10px; color: #333; font-weight: 600; font-size: 13px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${genre}">${genre}</div>
+                                <div style="min-width: 150px; max-width: 150px; padding-right: 10px; color: ${chartTextColor}; font-weight: 600; font-size: 13px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${genre}">${genre}</div>
                                 <div style="flex: 1; display: flex; align-items: center; position: relative;">
                                     <div class="chart-bar-fill" style="width: ${(count / maxCount) * 100}%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); padding: 8px 12px; border-radius: 4px; min-height: 32px; min-width: 80px;"></div>
-                                    <div style="position: absolute; left: ${(count / maxCount) * 100 < 20 ? ((count / maxCount) * 100) + 2 : 12}%; color: ${(count / maxCount) * 100 < 20 ? '#333' : 'white'}; font-weight: 600; font-size: 14px; white-space: nowrap;">
+                                    <div style="position: absolute; left: ${(count / maxCount) * 100 < 20 ? ((count / maxCount) * 100) + 2 : 12}%; color: ${(count / maxCount) * 100 < 20 ? chartTextColor : 'white'}; font-weight: 600; font-size: 14px; white-space: nowrap;">
                                         ${count} album${count !== 1 ? 's' : ''}
                                     </div>
                                 </div>
@@ -6361,10 +7267,10 @@
                         <h3>🎸 Top Genres by Average Score (${rankingMethod === 'weighted' ? 'Weighted' : 'Raw Score'})</h3>
                         ${genreData.slice(0, 10).map(data => `
                             <div class="chart-bar" style="cursor: pointer; display: flex; align-items: center; margin-bottom: 8px;" onclick="showGenreDrilldown('${data.genre.replace(/'/g, "\\'")}')">
-                                <div style="min-width: 150px; max-width: 150px; padding-right: 10px; color: #333; font-weight: 600; font-size: 13px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${data.genre}">${data.genre}</div>
+                                <div style="min-width: 150px; max-width: 150px; padding-right: 10px; color: ${chartTextColor}; font-weight: 600; font-size: 13px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${data.genre}">${data.genre}</div>
                                 <div style="flex: 1; display: flex; align-items: center; position: relative;">
                                     <div class="chart-bar-fill" style="width: ${(data.displayScore / 10) * 100}%; background: linear-gradient(90deg, #28a745 0%, #20c997 100%); padding: 8px 12px; border-radius: 4px; min-height: 32px;"></div>
-                                    <div style="position: absolute; left: 12px; color: #333; font-weight: 600; font-size: 14px; text-shadow: 1px 1px 2px rgba(255,255,255,0.8);">
+                                    <div style="position: absolute; left: 12px; color: white; font-weight: 600; font-size: 14px; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
                                         ${rankingMethod === 'weighted' 
                                             ? `${data.weightedScore.toFixed(2)} <span style="opacity: 0.7; font-size: 0.85em;">(Raw: ${data.rawScore.toFixed(2)})</span>`
                                             : data.rawScore.toFixed(2)
@@ -6591,7 +7497,8 @@
                                     weight: '600'
                                 },
                                 padding: 15,
-                                usePointStyle: true
+                                usePointStyle: true,
+                                color: getComputedStyle(document.body).getPropertyValue('--chart-text').trim()
                             }
                         },
                         tooltip: {
@@ -6627,13 +7534,15 @@
                                 font: {
                                     size: 12,
                                     weight: '600'
-                                }
+                                },
+                                color: getComputedStyle(document.body).getPropertyValue('--chart-text').trim()
                             },
                             ticks: {
                                 stepSize: 1,
                                 font: {
                                     size: 11
-                                }
+                                },
+                                color: getComputedStyle(document.body).getPropertyValue('--chart-text').trim()
                             },
                             grid: {
                                 color: 'rgba(0, 0, 0, 0.05)'
@@ -6649,13 +7558,15 @@
                                 font: {
                                     size: 12,
                                     weight: '600'
-                                }
+                                },
+                                color: getComputedStyle(document.body).getPropertyValue('--chart-text').trim()
                             },
                             ticks: {
                                 stepSize: 5,
                                 font: {
                                     size: 11
-                                }
+                                },
+                                color: getComputedStyle(document.body).getPropertyValue('--chart-text').trim()
                             },
                             grid: {
                                 drawOnChartArea: false,
@@ -6667,7 +7578,8 @@
                                     size: 11
                                 },
                                 maxRotation: 45,
-                                minRotation: 45
+                                minRotation: 45,
+                                color: getComputedStyle(document.body).getPropertyValue('--chart-text').trim()
                             },
                             grid: {
                                 display: false
@@ -6723,24 +7635,26 @@
             const container = document.getElementById('scoreFilteredAlbums');
             if (!container) return;
 
+            const chartTextColor = getComputedStyle(document.body).getPropertyValue('--chart-text').trim();
+            
             container.innerHTML = `
                 <div class="chart" style="margin: 0;">
                     <h4 style="color: #28a745;">⭐ Highest Scoring Albums (≥8)</h4>
                     ${highScoring.length > 0 ? highScoring.map(album => `
                         <div class="stat-item" style="cursor: pointer;" onclick="showAlbumDetail(${album.id})">
-                            <span>${album.albumName} - ${album.artist}</span>
+                            <span style="color: ${chartTextColor};">${album.albumName} - ${album.artist}</span>
                             <strong style="color: #28a745;">${album.score}/10</strong>
                         </div>
-                    `).join('') : '<p style="color: #999; padding: 20px; text-align: center;">No albums found</p>'}
+                    `).join('') : `<p style="color: ${chartTextColor}; opacity: 0.6; padding: 20px; text-align: center;">No albums found</p>`}
                 </div>
                 <div class="chart" style="margin: 0;">
                     <h4 style="color: #dc3545;">📉 Lowest Scoring Albums (≤4)</h4>
                     ${lowScoring.length > 0 ? lowScoring.map(album => `
                         <div class="stat-item" style="cursor: pointer;" onclick="showAlbumDetail(${album.id})">
-                            <span>${album.albumName} - ${album.artist}</span>
+                            <span style="color: ${chartTextColor};">${album.albumName} - ${album.artist}</span>
                             <strong style="color: #dc3545;">${album.score}/10</strong>
                         </div>
-                    `).join('') : '<p style="color: #999; padding: 20px; text-align: center;">No albums found</p>'}
+                    `).join('') : `<p style="color: ${chartTextColor}; opacity: 0.6; padding: 20px; text-align: center;">No albums found</p>`}
                 </div>
             `;
 
@@ -6784,36 +7698,43 @@
                 const bottom10Lists = sortedLists.slice(-10).reverse();
 
                 const filterLabel = document.getElementById('scoreFilterSelect')?.selectedOptions[0]?.text || 'All Time';
+                const chartBgColor = getComputedStyle(document.body).getPropertyValue('--chart-bg').trim();
+                const chartTextColor = getComputedStyle(document.body).getPropertyValue('--chart-text').trim();
+                
+                console.log('🎨 Top & Bottom Lists - Chart BG Color:', chartBgColor);
+                console.log('🎨 Top & Bottom Lists - Chart Text Color:', chartTextColor);
 
                 listsContainer.innerHTML = `
-                    <h3 style="margin-bottom: 20px;">📚 Top & Bottom 10 Lists (${filterLabel}) (${useWeighted ? 'Weighted' : 'Raw Score'})</h3>
+                    <div style="background: ${chartBgColor}; color: ${chartTextColor}; padding: 20px; border-radius: 8px; margin-top: 30px;">
+                    <h3 style="margin-bottom: 20px; color: ${chartTextColor};">📚 Top & Bottom 10 Lists (${filterLabel}) (${useWeighted ? 'Weighted' : 'Raw Score'})</h3>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div class="chart">
                             <h4 style="color: #28a745; margin-bottom: 15px;">🥇 Top 10 Lists</h4>
                             ${top10Lists.length > 0 ? top10Lists.map((item, index) => `
-                                <div class="chart-bar" style="cursor: pointer; display: flex; align-items: center; margin-bottom: 8px; padding: 10px; background: ${index === 0 ? 'linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)' : '#f8f9fa'}; border-radius: 8px;" onclick="showSourceDrilldown('${item.list.replace(/'/g, "\\'")}')">
-                                    <div style="min-width: 30px; font-weight: 700; font-size: 18px; color: ${index === 0 ? '#000' : '#667eea'};">#${index + 1}</div>
+                                <div class="chart-bar" style="cursor: pointer; display: flex; align-items: center; margin-bottom: 8px; padding: 10px; background: ${index === 0 ? 'linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)' : 'rgba(255,255,255,0.1)'}; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1);" onclick="showSourceDrilldown('${item.list.replace(/'/g, "\\'")}')">
+                                    <div style="min-width: 30px; font-weight: 700; font-size: 18px; color: ${index === 0 ? '#000' : chartTextColor};">#${index + 1}</div>
                                     <div style="flex: 1; padding: 0 10px;">
-                                        <div style="font-weight: 600; color: #333; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${item.list}">${item.list}</div>
-                                        <div style="font-size: 12px; color: #6c757d;">${item.count} album${item.count !== 1 ? 's' : ''}</div>
+                                        <div style="font-weight: 600; color: ${chartTextColor}; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${item.list}">${item.list}</div>
+                                        <div style="font-size: 12px; color: ${chartTextColor}; opacity: 0.7;">${item.count} album${item.count !== 1 ? 's' : ''}</div>
                                     </div>
                                     <div style="min-width: 50px; text-align: right; font-weight: 700; font-size: 16px; color: #28a745;">${item.avgScore.toFixed(1)}</div>
                                 </div>
-                            `).join('') : '<p style="color: #999; padding: 20px; text-align: center;">No lists found</p>'}
+                            `).join('') : `<p style="color: ${chartTextColor}; opacity: 0.6; padding: 20px; text-align: center;">No lists found</p>`}
                         </div>
                         <div class="chart">
                             <h4 style="color: #dc3545; margin-bottom: 15px;">📉 Bottom 10 Lists</h4>
                             ${bottom10Lists.length > 0 ? bottom10Lists.map((item, index) => `
-                                <div class="chart-bar" style="cursor: pointer; display: flex; align-items: center; margin-bottom: 8px; padding: 10px; background: #f8f9fa; border-radius: 8px;" onclick="showSourceDrilldown('${item.list.replace(/'/g, "\\'")}')">
+                                <div class="chart-bar" style="cursor: pointer; display: flex; align-items: center; margin-bottom: 8px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px; border: 1px solid rgba(0,0,0,0.1);" onclick="showSourceDrilldown('${item.list.replace(/'/g, "\\'")}')">
                                     <div style="min-width: 30px; font-weight: 700; font-size: 18px; color: #dc3545;">#${sortedLists.length - index}</div>
                                     <div style="flex: 1; padding: 0 10px;">
-                                        <div style="font-weight: 600; color: #333; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${item.list}">${item.list}</div>
-                                        <div style="font-size: 12px; color: #6c757d;">${item.count} album${item.count !== 1 ? 's' : ''}</div>
+                                        <div style="font-weight: 600; color: ${chartTextColor}; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${item.list}">${item.list}</div>
+                                        <div style="font-size: 12px; color: ${chartTextColor}; opacity: 0.7;">${item.count} album${item.count !== 1 ? 's' : ''}</div>
                                     </div>
                                     <div style="min-width: 50px; text-align: right; font-weight: 700; font-size: 16px; color: #dc3545;">${item.avgScore.toFixed(1)}</div>
                                 </div>
-                            `).join('') : '<p style="color: #999; padding: 20px; text-align: center;">No lists found</p>'}
+                            `).join('') : `<p style="color: ${chartTextColor}; opacity: 0.6; padding: 20px; text-align: center;">No lists found</p>`}
                         </div>
+                    </div>
                     </div>
                 `;
             }
