@@ -6487,20 +6487,41 @@
             loadStatsSection();
         }
 
-        // Bayesian weighted scoring
-        function calculateWeightedScore(scores, globalMean, confidenceWeight) {
+        // Bayesian weighted scoring with improved sample size handling
+        function calculateWeightedScore(scores, globalMean, baseConfidence) {
             if (!scores || scores.length === 0) return 0;
             const n = scores.length;
             const sum = scores.reduce((a, b) => a + parseFloat(b), 0);
-            return (confidenceWeight * globalMean + sum) / (confidenceWeight + n);
+            
+            // Use dynamic confidence that decreases with sample size
+            // This gives more weight to actual data as sample size increases
+            const dynamicConfidence = getDynamicConfidence(n, baseConfidence);
+            
+            return (dynamicConfidence * globalMean + sum) / (dynamicConfidence + n);
         }
 
-        // Get adaptive confidence weight based on collection size
+        // Get dynamic confidence weight that adapts to sample size
+        // Smaller samples get less shrinkage, larger samples get more reliable weighting
+        function getDynamicConfidence(sampleSize, baseConfidence) {
+            // For very small samples (1-2 albums), use minimal shrinkage
+            if (sampleSize === 1) return baseConfidence * 0.3;  // 30% of base
+            if (sampleSize === 2) return baseConfidence * 0.5;  // 50% of base
+            if (sampleSize === 3) return baseConfidence * 0.7;  // 70% of base
+            
+            // For medium samples (4-6 albums), use moderate shrinkage
+            if (sampleSize <= 6) return baseConfidence * 0.85; // 85% of base
+            
+            // For larger samples (7+ albums), use full shrinkage
+            return baseConfidence;
+        }
+
+        // Get base confidence weight based on collection size
         function getConfidenceWeight(totalAlbums) {
-            if (totalAlbums < 50) return 3;
-            if (totalAlbums < 200) return 5;
-            if (totalAlbums < 500) return 10;
-            return 15;
+            // Reduced base values since we now apply dynamic scaling
+            if (totalAlbums < 50) return 2;
+            if (totalAlbums < 200) return 3;
+            if (totalAlbums < 500) return 5;
+            return 8;
         }
 
         // Calculate global mean score
@@ -6540,13 +6561,19 @@
                         <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
                         
                         <h3 style="color: #667eea;">Weighted Score (Bayesian)</h3>
-                        <p>Adjusts scores based on sample size. Small samples are pulled toward the global average, while large samples remain closer to their true average.</p>
+                        <p>Adjusts scores based on sample size using <strong>adaptive shrinkage</strong>. Small samples get minimal adjustment to preserve their high scores, while still accounting for uncertainty.</p>
+                        <p><strong>How it works:</strong></p>
+                        <ul>
+                            <li>1-2 albums: <strong>Minimal shrinkage</strong> (30-50% adjustment) - preserves exceptional ratings</li>
+                            <li>3-6 albums: <strong>Moderate shrinkage</strong> (70-85% adjustment) - balances data and uncertainty</li>
+                            <li>7+ albums: <strong>Full confidence</strong> - relies heavily on actual data</li>
+                        </ul>
                         <p><strong>Same Example:</strong></p>
                         <ul>
-                            <li>Artist A: 1 album, score 10.0 → Weighted: <strong>8.2</strong> (adjusted down)</li>
+                            <li>Artist A: 1 album, score 10.0 → Weighted: <strong>9.4</strong> (lightly adjusted)</li>
                             <li>Artist B: 50 albums, average 9.2 → Weighted: <strong>9.1</strong> (barely adjusted)</li>
                         </ul>
-                        <p style="color: #28a745;"><strong>Result:</strong> Artist B ranks higher, which is more reliable!</p>
+                        <p style="color: #28a745;"><strong>Result:</strong> Both artists can rank high, but with appropriate confidence levels!</p>
                         
                         <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
                         
