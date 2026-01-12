@@ -6,12 +6,58 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob:;">
     <title>Album Tracker</title>
     
-    <!-- Favicon - Record Icon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23667eea'/><circle cx='50' cy='50' r='38' fill='%23764ba2'/><circle cx='50' cy='50' r='20' fill='%23667eea'/><circle cx='50' cy='50' r='8' fill='%23fff'/></svg>">
+    <!-- Favicon - Simple Black Record Icon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23000'/><circle cx='50' cy='50' r='38' fill='%23000' stroke='%23fff' stroke-width='1'/><circle cx='50' cy='50' r='28' fill='%23000' stroke='%23fff' stroke-width='0.5'/><circle cx='50' cy='50' r='18' fill='%23000' stroke='%23fff' stroke-width='0.5'/><circle cx='50' cy='50' r='6' fill='%23fff'/></svg>">
     
     <!-- Chart.js for graphs -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
+        :root {
+            --gradient-start: #667eea;
+            --gradient-end: #764ba2;
+        }
+
+        /* Theme color schemes */
+        body[data-theme="purple"] {
+            --gradient-start: #667eea;
+            --gradient-end: #764ba2;
+        }
+
+        body[data-theme="ocean"] {
+            --gradient-start: #2E3192;
+            --gradient-end: #1BFFFF;
+        }
+
+        body[data-theme="sunset"] {
+            --gradient-start: #FF512F;
+            --gradient-end: #F09819;
+        }
+
+        body[data-theme="forest"] {
+            --gradient-start: #134E5E;
+            --gradient-end: #71B280;
+        }
+
+        body[data-theme="rose"] {
+            --gradient-start: #C94B4B;
+            --gradient-end: #4B134F;
+        }
+
+        body[data-theme="midnight"] {
+            --gradient-start: #232526;
+            --gradient-end: #414345;
+        }
+
+        body[data-theme="cherry"] {
+            --gradient-start: #EB3349;
+            --gradient-end: #F45C43;
+        }
+
+        body[data-theme="lavender"] {
+            --gradient-start: #868F96;
+            --gradient-end: #596164;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -20,9 +66,10 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
             min-height: 100vh;
             padding: 20px;
+            transition: background 0.5s ease;
         }
 
         .container {
@@ -35,10 +82,11 @@
         }
 
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
             color: white;
             padding: 30px;
             text-align: center;
+            transition: background 0.5s ease;
         }
 
         .header h1 {
@@ -230,8 +278,8 @@
         }
 
         .vinyl-record {
-            width: 70px;
-            height: 70px;
+            width: 90px;
+            height: 90px;
             background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
             border-radius: 50%;
             position: relative;
@@ -253,11 +301,12 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 22px;
-            height: 22px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
             border-radius: 50%;
             box-shadow: 0 0 0 2px #1a1a1a, 0 2px 5px rgba(0,0,0,0.3);
+            transition: background 0.5s ease;
         }
 
         .vinyl-text {
@@ -296,13 +345,13 @@
             }
 
             .vinyl-record {
-                width: 60px;
-                height: 60px;
+                width: 75px;
+                height: 75px;
             }
 
             .vinyl-center {
-                width: 18px;
-                height: 18px;
+                width: 23px;
+                height: 23px;
             }
 
             .vinyl-text text {
@@ -327,13 +376,13 @@
             }
 
             .vinyl-record {
-                width: 50px;
-                height: 50px;
+                width: 65px;
+                height: 65px;
             }
 
             .vinyl-center {
-                width: 16px;
-                height: 16px;
+                width: 20px;
+                height: 20px;
             }
 
             .vinyl-text text {
@@ -474,13 +523,14 @@
         }
 
         .settings-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
             color: white;
             padding: 25px 30px;
             border-radius: 20px 20px 0 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            transition: background 0.5s ease;
         }
 
         .settings-header h2 {
@@ -640,6 +690,76 @@
         .settings-status.error {
             background: #f8d7da;
             color: #721c24;
+        }
+
+        /* Theme Customization */
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .theme-option {
+            position: relative;
+            cursor: pointer;
+            border: 3px solid transparent;
+            border-radius: 12px;
+            padding: 12px;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+
+        .theme-option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .theme-option.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .theme-preview {
+            width: 100%;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .theme-color {
+            width: 100%;
+            height: 100%;
+        }
+
+        .theme-name {
+            text-align: center;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9em;
+        }
+
+        .theme-check {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #667eea;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .theme-option.selected .theme-check {
+            display: flex;
         }
 
         /* Instructions Modal */
@@ -1944,6 +2064,78 @@
                     <button onclick="showDiscogsInstructions()" class="settings-btn settings-btn-link">
                         📖 How to get your Discogs API token
                     </button>
+                </div>
+                
+                <!-- Theme Customization Section -->
+                <div class="settings-section">
+                    <h3>🎨 Theme Customization</h3>
+                    <p>Choose your preferred color scheme for the app.</p>
+                    
+                    <div class="theme-grid">
+                        <div class="theme-option" data-theme="purple" onclick="selectTheme('purple')">
+                            <div class="theme-preview">
+                                <div class="theme-color" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                            </div>
+                            <div class="theme-name">Purple Haze</div>
+                            <div class="theme-check" id="check-purple">✓</div>
+                        </div>
+                        
+                        <div class="theme-option" data-theme="ocean" onclick="selectTheme('ocean')">
+                            <div class="theme-preview">
+                                <div class="theme-color" style="background: linear-gradient(135deg, #2E3192 0%, #1BFFFF 100%);"></div>
+                            </div>
+                            <div class="theme-name">Ocean Blue</div>
+                            <div class="theme-check" id="check-ocean">✓</div>
+                        </div>
+                        
+                        <div class="theme-option" data-theme="sunset" onclick="selectTheme('sunset')">
+                            <div class="theme-preview">
+                                <div class="theme-color" style="background: linear-gradient(135deg, #FF512F 0%, #F09819 100%);"></div>
+                            </div>
+                            <div class="theme-name">Sunset Orange</div>
+                            <div class="theme-check" id="check-sunset">✓</div>
+                        </div>
+                        
+                        <div class="theme-option" data-theme="forest" onclick="selectTheme('forest')">
+                            <div class="theme-preview">
+                                <div class="theme-color" style="background: linear-gradient(135deg, #134E5E 0%, #71B280 100%);"></div>
+                            </div>
+                            <div class="theme-name">Forest Green</div>
+                            <div class="theme-check" id="check-forest">✓</div>
+                        </div>
+                        
+                        <div class="theme-option" data-theme="rose" onclick="selectTheme('rose')">
+                            <div class="theme-preview">
+                                <div class="theme-color" style="background: linear-gradient(135deg, #C94B4B 0%, #4B134F 100%);"></div>
+                            </div>
+                            <div class="theme-name">Rose Garden</div>
+                            <div class="theme-check" id="check-rose">✓</div>
+                        </div>
+                        
+                        <div class="theme-option" data-theme="midnight" onclick="selectTheme('midnight')">
+                            <div class="theme-preview">
+                                <div class="theme-color" style="background: linear-gradient(135deg, #232526 0%, #414345 100%);"></div>
+                            </div>
+                            <div class="theme-name">Midnight</div>
+                            <div class="theme-check" id="check-midnight">✓</div>
+                        </div>
+                        
+                        <div class="theme-option" data-theme="cherry" onclick="selectTheme('cherry')">
+                            <div class="theme-preview">
+                                <div class="theme-color" style="background: linear-gradient(135deg, #EB3349 0%, #F45C43 100%);"></div>
+                            </div>
+                            <div class="theme-name">Cherry Red</div>
+                            <div class="theme-check" id="check-cherry">✓</div>
+                        </div>
+                        
+                        <div class="theme-option" data-theme="lavender" onclick="selectTheme('lavender')">
+                            <div class="theme-preview">
+                                <div class="theme-color" style="background: linear-gradient(135deg, #868F96 0%, #596164 100%);"></div>
+                            </div>
+                            <div class="theme-name">Lavender Gray</div>
+                            <div class="theme-check" id="check-lavender">✓</div>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- OneDrive Sync Section -->
@@ -3284,7 +3476,73 @@
             modal.classList.remove('active');
         }
 
+        // Theme Management
+        function selectTheme(themeName) {
+            // Update body data-theme attribute
+            document.body.setAttribute('data-theme', themeName);
+            
+            // Update UI to show selected theme
+            document.querySelectorAll('.theme-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            document.querySelector(`[data-theme="${themeName}"]`).classList.add('selected');
+            
+            // Save theme preference
+            saveThemePreference(themeName);
+            
+            // Show success message
+            showMessage(`Theme changed to ${themeName}!`, 'success');
+        }
+
+        function saveThemePreference(themeName) {
+            // Save to localStorage
+            localStorage.setItem('app_theme', themeName);
+            
+            // Save to OneDrive sync data
+            const syncData = JSON.parse(localStorage.getItem('onedrive_sync_data') || '{}');
+            syncData.theme = themeName;
+            localStorage.setItem('onedrive_sync_data', JSON.stringify(syncData));
+            
+            // Trigger OneDrive sync if connected
+            if (oneDriveManager && oneDriveManager.isAuthenticated()) {
+                oneDriveManager.syncToOneDrive();
+            }
+        }
+
+        function loadThemePreference() {
+            // Try to load from OneDrive sync data first
+            const syncData = JSON.parse(localStorage.getItem('onedrive_sync_data') || '{}');
+            let theme = syncData.theme;
+            
+            // Fall back to localStorage if not in sync data
+            if (!theme) {
+                theme = localStorage.getItem('app_theme');
+            }
+            
+            // Default to purple if no preference
+            if (!theme) {
+                theme = 'purple';
+            }
+            
+            // Apply theme
+            document.body.setAttribute('data-theme', theme);
+            
+            // Update UI if settings are open
+            const themeOption = document.querySelector(`[data-theme="${theme}"]`);
+            if (themeOption) {
+                document.querySelectorAll('.theme-option').forEach(option => {
+                    option.classList.remove('selected');
+                });
+                themeOption.classList.add('selected');
+            }
+            
+            return theme;
+        }
+
         function loadSettingsData() {
+            // Load theme preference
+            loadThemePreference();
+            
             // Load Discogs token
             const token = localStorage.getItem('discogs_api_token');
             const tokenInput = document.getElementById('discogsToken');
@@ -6888,6 +7146,9 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            // Load theme preference first
+            loadThemePreference();
+            
             // Restore view mode preference
             const savedViewMode = localStorage.getItem('viewMode');
             const viewportMeta = document.getElementById('viewport-meta');
