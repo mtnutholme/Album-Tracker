@@ -8321,6 +8321,14 @@
             // Setup auto-sync
             setupAutoSync();
             
+            // Auto-sync from OneDrive on page load if connected
+            if (syncManager.isConnected()) {
+                console.log('Connected to OneDrive - syncing data...');
+                syncManager.syncFromOneDrive().catch(err => {
+                    console.error('Auto-sync from OneDrive failed:', err);
+                });
+            }
+            
             // Load initial section
             loadBrowseSection();
             
