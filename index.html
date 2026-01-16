@@ -331,14 +331,15 @@
         .header {
             background: transparent;
             color: var(--header-text);
-            padding: 40px 30px 0 30px;
+            padding: 20px 30px 0 30px;
             text-align: center;
             transition: background 0.5s ease, color 0.5s ease;
             box-shadow: none;
             border-bottom: none;
             margin-bottom: 0;
             margin-top: 0;
-            min-height: 180px;
+            min-height: 280px;
+            position: relative;
         }
 
         .header h1 {
@@ -533,27 +534,45 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
+        /* Record Player Container */
+        .record-player-container {
+            position: absolute;
+            left: 40px;
+            top: 60px;
+            z-index: 10;
+        }
+
+        .turntable-deck {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, #3a3a3a 0%, #1a1a1a 100%);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.6), inset 0 2px 4px rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         /* Vinyl Record Button */
         .vinyl-button {
             background: transparent;
             border: none;
             cursor: pointer;
-            padding: 5px;
+            padding: 0;
             transition: transform 0.3s;
             display: flex;
             flex-direction: column;
             align-items: center;
             color: white;
             font-weight: 600;
-            position: absolute;
-            left: 60px;
-            top: 50%;
-            transform: translateY(-10%);
-            z-index: 10;
+            position: relative;
+            z-index: 2;
         }
 
         .vinyl-button:hover {
-            transform: translateY(-10%) scale(1.1);
+            transform: scale(1.05);
         }
 
         .vinyl-record {
@@ -566,13 +585,356 @@
             animation: spin 4s linear infinite;
         }
 
+        .vinyl-record.rpm-45 {
+            animation: spin 2.96s linear infinite; /* 45/33.3 = 1.35x faster */
+        }
+
+        .vinyl-record.rpm-78 {
+            animation: spin 1.69s linear infinite; /* 78/33.3 = 2.34x faster */
+        }
+
         .vinyl-button:hover .vinyl-record {
-            animation: spin 2s linear infinite;
+            animation-duration: 2s;
+        }
+
+        .vinyl-button:hover .vinyl-record.rpm-45 {
+            animation-duration: 1.48s;
+        }
+
+        .vinyl-button:hover .vinyl-record.rpm-78 {
+            animation-duration: 0.85s;
         }
 
         @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
+        }
+
+        /* Tonearm */
+        .tonearm {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 70px;
+            height: 3px;
+            background: linear-gradient(90deg, #666 0%, #999 50%, #666 100%);
+            border-radius: 2px;
+            transform-origin: right center;
+            transform: rotate(-90deg);
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            z-index: 5;
+        }
+
+        .tonearm::before {
+            content: '';
+            position: absolute;
+            right: -8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            background: #444;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.6);
+        }
+
+        .tonearm::after {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            background: #888;
+            border-radius: 50%;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.4);
+        }
+
+        .tonearm.playing {
+            transform: rotate(-35deg);
+        }
+
+        /* Power Switch (Top Left - Remove Album) */
+        .power-switch {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 40px;
+            height: 20px;
+            cursor: pointer;
+            z-index: 6;
+        }
+
+        .switch-track {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+            border: 2px solid #444;
+            border-radius: 10px;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.6);
+        }
+
+        .switch-indicator {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 12px;
+            height: 12px;
+            background: linear-gradient(135deg, #666 0%, #444 100%);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+        }
+
+        .switch-indicator.on {
+            left: calc(100% - 14px);
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+            box-shadow: 0 0 8px rgba(74, 222, 128, 0.6), 0 2px 4px rgba(0,0,0,0.4);
+        }
+
+        .power-switch:hover .switch-track {
+            border-color: #666;
+        }
+
+        /* Volume Control (Bottom Left - Pick New) */
+        .volume-control {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            width: 31.5px;
+            height: 31.5px;
+            cursor: pointer;
+            z-index: 6;
+        }
+
+        .volume-knob {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #4a4a4a 0%, #2a2a2a 100%);
+            border: 2px solid #555;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.6), inset 0 2px 4px rgba(255,255,255,0.05);
+            transition: all 0.2s;
+        }
+
+        .knob-indicator {
+            position: absolute;
+            top: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 8px;
+            background: #fff;
+            border-radius: 2px;
+            box-shadow: 0 0 4px rgba(255,255,255,0.6);
+        }
+
+        .volume-label {
+            display: none;
+        }
+
+        .volume-control:hover .volume-knob {
+            border-color: #777;
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.8), inset 0 2px 4px rgba(255,255,255,0.05);
+        }
+
+        .volume-control:active .volume-knob {
+            transform: scale(0.95);
+        }
+
+        /* Speed Slider (Bottom Right) */
+        .speed-slider {
+            position: absolute;
+            bottom: 0px;
+            right: 0px;
+            width: 70px;
+            height: 50px;
+            cursor: pointer;
+            z-index: 6;
+        }
+
+        .slider-track {
+            position: absolute;
+            top: 15px;
+            left: 10px;
+            right: 10px;
+            height: 4px;
+            background: linear-gradient(90deg, #2a2a2a 0%, #1a1a1a 100%);
+            border: 1px solid #444;
+            border-radius: 2px;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.6);
+        }
+
+        .slider-notch {
+            position: absolute;
+            top: -2px;
+            width: 2px;
+            height: 8px;
+            background: #666;
+            border-radius: 1px;
+        }
+
+        .slider-notch[data-speed="33"] {
+            left: 0;
+        }
+
+        .slider-notch[data-speed="45"] {
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .slider-notch[data-speed="78"] {
+            right: 0;
+        }
+
+        .slider-handle {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 12px;
+            height: 14px;
+            background: linear-gradient(135deg, #5a5a5a 0%, #3a3a3a 100%);
+            border: 2px solid #666;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.6);
+        }
+
+        .slider-handle.speed-45 {
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .slider-handle.speed-78 {
+            left: calc(100% - 22px);
+        }
+
+        .speed-labels {
+            position: absolute;
+            top: 30px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 8px;
+        }
+
+        .speed-labels span {
+            font-size: 8px;
+            font-weight: 700;
+            color: #999;
+        }
+
+        .speed-slider:hover .slider-handle {
+            border-color: #888;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.8);
+        }
+
+        /* Tooltip for all controls */
+        .volume-control::before {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            margin-bottom: 8px;
+            z-index: 100;
+        }
+
+        .volume-control:hover::before {
+            opacity: 1;
+        }
+        
+        /* Hide tooltips for power switch and speed slider */
+        .power-switch::before,
+        .speed-slider::before {
+            display: none !important;
+        }
+
+        /* Now Playing Display */
+        .now-playing-display {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            z-index: 10;
+        }
+        
+        .now-playing-display.visible.scrolling {
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        
+        .now-playing-display.visible.scrolling::before {
+            content: attr(data-text);
+            display: inline-block;
+            padding-right: 50px;
+            animation: scroll-text 15s linear infinite;
+        }
+        
+        @keyframes scroll-text {
+            0% {
+                transform: translateX(100%);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        .now-playing-display.visible {
+            opacity: 1;
+        }
+
+        /* Album Art in Label */
+        .vinyl-label img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .vinyl-label img.visible {
+            display: block;
+        }
+
+        .vinyl-label .label-center-text.hidden {
+            display: none;
+        }
+        
+        #albumArtwork {
+            z-index: 1;
         }
 
         /* Custom radio button styling */
@@ -709,6 +1071,78 @@
 
         /* Mobile optimization for header */
         @media (max-width: 768px) {
+            .record-player-container {
+                left: 10px;
+            }
+            
+            .turntable-deck {
+                width: 170px;
+                height: 170px;
+                padding: 15px;
+            }
+            
+            .tonearm {
+                width: 60px;
+                height: 2.5px;
+                top: 15px;
+                right: 15px;
+            }
+            
+            .power-switch {
+                width: 35px;
+                height: 18px;
+                top: 8px;
+                left: 8px;
+            }
+            
+            .switch-indicator {
+                width: 10px;
+                height: 10px;
+            }
+            
+            .volume-control {
+                width: 26.6px;
+                height: 26.6px;
+                bottom: 12px;
+                left: 12px;
+            }
+            
+            .volume-knob {
+                border-width: 2px;
+            }
+            
+            .knob-indicator {
+                top: 4px;
+                height: 7px;
+                width: 1.5px;
+            }
+            
+            .volume-label {
+                display: none;
+            }
+            
+            .speed-slider {
+                width: 60px;
+                height: 45px;
+                bottom: 0px;
+                right: 0px;
+            }
+            
+            .slider-handle {
+                width: 10px;
+                height: 12px;
+            }
+            
+            .speed-labels span {
+                font-size: 7px;
+            }
+            
+            .now-playing-display {
+                font-size: 10px;
+                padding: 5px 10px;
+                max-width: 170px;
+            }
+            
             .header h1 {
                 font-size: 1.5em;
                 margin-left: 90px;
@@ -719,10 +1153,6 @@
                 font-size: 0.85em;
                 margin-left: 90px;
                 margin-right: 10px;
-            }
-
-            .vinyl-button {
-                left: 10px;
             }
 
             .vinyl-record {
@@ -751,6 +1181,78 @@
         }
 
         @media (max-width: 480px) {
+            .record-player-container {
+                left: 5px;
+            }
+            
+            .turntable-deck {
+                width: 150px;
+                height: 150px;
+                padding: 12px;
+            }
+            
+            .tonearm {
+                width: 50px;
+                height: 2px;
+                top: 12px;
+                right: 12px;
+            }
+            
+            .power-switch {
+                width: 32px;
+                height: 16px;
+                top: 6px;
+                left: 6px;
+            }
+            
+            .switch-indicator {
+                width: 9px;
+                height: 9px;
+            }
+            
+            .volume-control {
+                width: 24.5px;
+                height: 24.5px;
+                bottom: 10px;
+                left: 10px;
+            }
+            
+            .volume-knob {
+                border-width: 1.5px;
+            }
+            
+            .knob-indicator {
+                top: 3px;
+                height: 6px;
+                width: 1.5px;
+            }
+            
+            .volume-label {
+                display: none;
+            }
+            
+            .speed-slider {
+                width: 55px;
+                height: 42px;
+                bottom: 0px;
+                right: 0px;
+            }
+            
+            .slider-handle {
+                width: 9px;
+                height: 11px;
+            }
+            
+            .speed-labels span {
+                font-size: 6px;
+            }
+            
+            .now-playing-display {
+                font-size: 9px;
+                padding: 4px 8px;
+                max-width: 150px;
+            }
+            
             .header h1 {
                 font-size: 1.3em;
                 margin-left: 75px;
@@ -759,10 +1261,6 @@
             .header p {
                 font-size: 0.75em;
                 margin-left: 75px;
-            }
-
-            .vinyl-button {
-                left: 5px;
             }
 
             .vinyl-record {
@@ -2186,44 +2684,87 @@
         <!-- Header wrapper with gradient -->
         <div class="header-nav-wrapper">
         <div class="header" style="position: relative;">
-            <!-- Random Album Button (Vinyl Record Style) -->
-            <button onclick="pickRandomAlbum()" class="vinyl-button" title="Pick an Album">
-                <div class="vinyl-record">
-                    <!-- Vinyl grooves (multiple circles for realistic look) -->
-                    <div class="vinyl-groove vinyl-groove-1"></div>
-                    <div class="vinyl-groove vinyl-groove-2"></div>
-                    <div class="vinyl-groove vinyl-groove-3"></div>
-                    <div class="vinyl-groove vinyl-groove-4"></div>
-                    <div class="vinyl-groove vinyl-groove-5"></div>
+            <!-- Record Player Interface -->
+            <div class="record-player-container">
+                <!-- Turntable Deck Background -->
+                <div class="turntable-deck">
+                    <!-- Random Album Button (Vinyl Record Style) -->
+                    <button onclick="pickRandomAlbum()" class="vinyl-button" title="Pick an Album">
+                        <div class="vinyl-record" id="vinylRecord">
+                            <!-- Vinyl grooves (multiple circles for realistic look) -->
+                            <div class="vinyl-groove vinyl-groove-1"></div>
+                            <div class="vinyl-groove vinyl-groove-2"></div>
+                            <div class="vinyl-groove vinyl-groove-3"></div>
+                            <div class="vinyl-groove vinyl-groove-4"></div>
+                            <div class="vinyl-groove vinyl-groove-5"></div>
+                            
+                            <!-- Text on vinyl body -->
+                            <svg class="vinyl-text" id="vinylText" viewBox="0 0 100 100">
+                                <defs>
+                                    <path id="circlePath" d="M 50, 50 m -40, 0 a 40,40 0 1,1 80,0 a 40,40 0 1,1 -80,0"/>
+                                </defs>
+                                <!-- First text at top -->
+                                <text>
+                                    <textPath href="#circlePath" startOffset="0%">
+                                        PICK AN ALBUM
+                                    </textPath>
+                                </text>
+                                <!-- Second text at bottom (opposite side) -->
+                                <text>
+                                    <textPath href="#circlePath" startOffset="50%">
+                                        PICK AN ALBUM
+                                    </textPath>
+                                </text>
+                            </svg>
+                            
+                            <!-- Record label (center sticker) -->
+                            <div class="vinyl-label" id="vinylLabel">
+                                <div class="label-center-text" id="labelCenterText">🎵</div>
+                                <img id="albumArtwork" src="" alt="Album Art" style="display: none;">
+                            </div>
+                            
+                            <!-- Center hole -->
+                            <div class="vinyl-center"></div>
+                        </div>
+                    </button>
                     
-                    <!-- Text on vinyl body -->
-                    <svg class="vinyl-text" viewBox="0 0 100 100">
-                        <defs>
-                            <path id="circlePath" d="M 50, 50 m -40, 0 a 40,40 0 1,1 80,0 a 40,40 0 1,1 -80,0"/>
-                        </defs>
-                        <!-- First text at top -->
-                        <text>
-                            <textPath href="#circlePath" startOffset="0%">
-                                PICK AN ALBUM
-                            </textPath>
-                        </text>
-                        <!-- Second text at bottom (opposite side) -->
-                        <text>
-                            <textPath href="#circlePath" startOffset="50%">
-                                PICK AN ALBUM
-                            </textPath>
-                        </text>
-                    </svg>
+                    <!-- Tonearm -->
+                    <div class="tonearm" id="tonearm"></div>
                     
-                    <!-- Record label (center sticker) -->
-                    <div class="vinyl-label">
-                        <div class="label-center-text">🎵</div>
+                    <!-- Power Switch (Top Left - Remove Album) -->
+                    <div class="power-switch" id="powerSwitch" data-tooltip="Power Off" onclick="removeAlbum()">
+                        <div class="switch-track">
+                            <div class="switch-indicator" id="switchIndicator"></div>
+                        </div>
                     </div>
                     
-                    <!-- Center hole -->
-                    <div class="vinyl-center"></div>
+                    <!-- Volume Control (Bottom Left - Pick New) -->
+                    <div class="volume-control" data-tooltip="Pick New Album" onclick="pickRandomAlbum()">
+                        <div class="volume-knob">
+                            <div class="knob-indicator"></div>
+                        </div>
+                        <div class="volume-label">VOL</div>
+                    </div>
+                    
+                    <!-- Speed Slider (Bottom Right) -->
+                    <div class="speed-slider" data-tooltip="Speed: 33⅓ RPM" id="speedSlider" onclick="cycleRPM()">
+                        <div class="slider-track">
+                            <div class="slider-notch" data-speed="33"></div>
+                            <div class="slider-notch" data-speed="45"></div>
+                            <div class="slider-notch" data-speed="78"></div>
+                        </div>
+                        <div class="slider-handle" id="sliderHandle"></div>
+                        <div class="speed-labels">
+                            <span>33</span>
+                            <span>45</span>
+                            <span>78</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Now Playing Display -->
+                    <div class="now-playing-display" id="nowPlayingDisplay"></div>
                 </div>
-            </button>
+            </div>
             
             <h1>🎵 Album Tracker</h1>
             <p>Track, Rate, and Discover Your Music Journey</p>
@@ -2313,6 +2854,9 @@
                         </button>
                         <button class="btn btn-primary" onclick="generateRandomList()" style="font-size: 1.2em; padding: 15px 40px;">
                             📋 Generate List of 10
+                        </button>
+                        <button id="randomNowPlayingBtn" class="btn btn-primary" onclick="playRandomAlbum()" style="font-size: 0.9em; padding: 10px 20px; display: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            🎵 Play This Record
                         </button>
                     </div>
                     <div id="randomAlbumDisplay"></div>
@@ -5956,6 +6500,10 @@
             XLSX.writeFile(wb, 'album_import_template.xlsx');
         }
 
+        // Record Player State Management
+        let currentPlayingAlbum = null;
+        let currentRPM = 33.3;
+
         // Pick Random Album (from vinyl button)
         function pickRandomAlbum() {
             // Navigate to random section and automatically select an album
@@ -5964,6 +6512,147 @@
             setTimeout(() => {
                 selectRandomAlbum();
             }, 100);
+        }
+
+        // Play Album on Record Player
+        function playAlbum(albumId, albumName, artist, artworkUrl) {
+            currentPlayingAlbum = { id: albumId, name: albumName, artist: artist, artwork: artworkUrl };
+            
+            // Update vinyl label with album artwork
+            const albumArtwork = document.getElementById('albumArtwork');
+            const labelCenterText = document.getElementById('labelCenterText');
+            const vinylText = document.getElementById('vinylText');
+            
+            albumArtwork.src = artworkUrl;
+            albumArtwork.style.display = 'block';
+            labelCenterText.style.display = 'none';
+            vinylText.style.display = 'none';
+            
+            // Move tonearm to playing position
+            const tonearm = document.getElementById('tonearm');
+            tonearm.classList.add('playing');
+            
+            // Update power switch to ON state
+            const switchIndicator = document.getElementById('switchIndicator');
+            const powerSwitch = document.getElementById('powerSwitch');
+            switchIndicator.classList.add('on');
+            powerSwitch.setAttribute('data-tooltip', 'Power On - Click to Remove');
+            
+            // Show now playing display
+            const nowPlayingDisplay = document.getElementById('nowPlayingDisplay');
+            const displayText = `Now Playing: ${artist} - ${albumName}`;
+            nowPlayingDisplay.textContent = displayText;
+            nowPlayingDisplay.setAttribute('data-text', displayText);
+            nowPlayingDisplay.classList.add('visible');
+            
+            // Add scrolling animation if text is too long
+            setTimeout(() => {
+                if (nowPlayingDisplay.scrollWidth > nowPlayingDisplay.clientWidth) {
+                    nowPlayingDisplay.classList.add('scrolling');
+                    nowPlayingDisplay.textContent = ''; // Clear text content, use ::before instead
+                }
+            }, 100);
+            
+            // Update vinyl button title
+            const vinylButton = document.querySelector('.vinyl-button');
+            vinylButton.title = 'Now Playing';
+            
+            // Save state to localStorage
+            localStorage.setItem('recordPlayerState', JSON.stringify({
+                albumId: albumId,
+                albumName: albumName,
+                artist: artist,
+                artworkUrl: artworkUrl,
+                rpm: currentRPM
+            }));
+        }
+
+        // Remove Album from Record Player
+        function removeAlbum() {
+            currentPlayingAlbum = null;
+            
+            // Reset vinyl label
+            const albumArtwork = document.getElementById('albumArtwork');
+            const labelCenterText = document.getElementById('labelCenterText');
+            const vinylText = document.getElementById('vinylText');
+            
+            albumArtwork.style.display = 'none';
+            labelCenterText.style.display = 'block';
+            vinylText.style.display = 'block';
+            
+            // Move tonearm back to rest position
+            const tonearm = document.getElementById('tonearm');
+            tonearm.classList.remove('playing');
+            
+            // Update power switch to OFF state
+            const switchIndicator = document.getElementById('switchIndicator');
+            const powerSwitch = document.getElementById('powerSwitch');
+            switchIndicator.classList.remove('on');
+            powerSwitch.setAttribute('data-tooltip', 'Power Off');
+            
+            // Hide now playing display
+            const nowPlayingDisplay = document.getElementById('nowPlayingDisplay');
+            nowPlayingDisplay.classList.remove('visible');
+            nowPlayingDisplay.classList.remove('scrolling');
+            nowPlayingDisplay.removeAttribute('data-text');
+            nowPlayingDisplay.textContent = '';
+            
+            // Reset vinyl button title
+            const vinylButton = document.querySelector('.vinyl-button');
+            vinylButton.title = 'Pick an Album';
+            
+            // Reset RPM to default
+            currentRPM = 33.3;
+            updateRPMSpeed();
+            
+            // Clear saved state from localStorage
+            localStorage.removeItem('recordPlayerState');
+        }
+
+        // Cycle RPM Speed
+        function cycleRPM() {
+            if (currentRPM === 33.3) {
+                currentRPM = 45;
+            } else if (currentRPM === 45) {
+                currentRPM = 78;
+            } else {
+                currentRPM = 33.3;
+            }
+            updateRPMSpeed();
+            
+            // Update saved state if album is playing
+            if (currentPlayingAlbum) {
+                const savedState = localStorage.getItem('recordPlayerState');
+                if (savedState) {
+                    const state = JSON.parse(savedState);
+                    state.rpm = currentRPM;
+                    localStorage.setItem('recordPlayerState', JSON.stringify(state));
+                }
+            }
+        }
+
+        // Update RPM Speed
+        function updateRPMSpeed() {
+            const vinylRecord = document.getElementById('vinylRecord');
+            const speedSlider = document.getElementById('speedSlider');
+            const sliderHandle = document.getElementById('sliderHandle');
+            
+            // Remove existing RPM classes
+            vinylRecord.classList.remove('rpm-45', 'rpm-78');
+            sliderHandle.classList.remove('speed-45', 'speed-78');
+            
+            // Add appropriate class and update slider position
+            if (currentRPM === 45) {
+                vinylRecord.classList.add('rpm-45');
+                sliderHandle.classList.add('speed-45');
+                speedSlider.setAttribute('data-tooltip', 'Speed: 45 RPM');
+            } else if (currentRPM === 78) {
+                vinylRecord.classList.add('rpm-78');
+                sliderHandle.classList.add('speed-78');
+                speedSlider.setAttribute('data-tooltip', 'Speed: 78 RPM');
+            } else {
+                speedSlider.setAttribute('data-tooltip', 'Speed: 33⅓ RPM');
+            }
         }
 
         // Random Album Selection
@@ -6001,9 +6690,13 @@
             </svg>`;
         }
 
+        // Store current random album data
+        let currentRandomAlbum = null;
+
         function selectRandomAlbum() {
             const album = db.getRandomUnscoredAlbum();
             const display = document.getElementById('randomAlbumDisplay');
+            const nowPlayingBtn = document.getElementById('randomNowPlayingBtn');
 
             if (!album) {
                 display.innerHTML = `
@@ -6012,8 +6705,21 @@
                         <p>You've completed your collection. Add more albums or browse your ratings.</p>
                     </div>
                 `;
+                nowPlayingBtn.style.display = 'none';
+                currentRandomAlbum = null;
                 return;
             }
+
+            // Store current album data
+            currentRandomAlbum = {
+                id: album.id,
+                albumName: album.albumName,
+                artist: album.artist,
+                artworkUrl: album.artworkUrl
+            };
+
+            // Show the Now Playing button
+            nowPlayingBtn.style.display = 'inline-block';
 
             const genres = db.parseMultiValue(album.genre, true);
             const styles = db.parseMultiValue(album.style);
@@ -6053,6 +6759,17 @@
                     </div>
                 </div>
             `;
+        }
+
+        function playRandomAlbum() {
+            if (currentRandomAlbum) {
+                playAlbum(
+                    currentRandomAlbum.id,
+                    currentRandomAlbum.albumName,
+                    currentRandomAlbum.artist,
+                    currentRandomAlbum.artworkUrl
+                );
+            }
         }
 
         function rateAlbum(event, albumId) {
@@ -6777,9 +7494,14 @@
                         ` : ''}
                         
                         <div style="margin-top: 30px;">
-                            <button class="btn" onclick="scoreAlbum(${album.id})" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">Score Album</button>
-                            <button class="btn" onclick="editAlbum(${album.id})" style="margin-left: 10px;">Edit Album</button>
-                            <button class="btn btn-danger" onclick="deleteAlbumConfirm(${album.id})" style="margin-left: 10px;">Delete</button>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                                <button class="btn btn-primary" onclick="playAlbum(${album.id}, '${album.albumName.replace(/'/g, "\\'")}', '${album.artist.replace(/'/g, "\\'")}', '${album.artworkUrl}'); closeModal();" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-size: 0.95em; padding: 10px;">🎵 Play This Record</button>
+                                <button class="btn" onclick="scoreAlbum(${album.id})" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-size: 0.95em; padding: 10px;">Score Album</button>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <button class="btn" onclick="editAlbum(${album.id})" style="font-size: 0.95em; padding: 10px;">Edit Album</button>
+                                <button class="btn btn-danger" onclick="deleteAlbumConfirm(${album.id})" style="font-size: 0.95em; padding: 10px;">Delete</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -8101,10 +8823,16 @@
                         return '';
                     };
                     
+                    // Get theme colors from CSS variables
+                    const gradientStart = getComputedStyle(document.documentElement).getPropertyValue('--gradient-start').trim();
+                    const gradientEnd = getComputedStyle(document.documentElement).getPropertyValue('--gradient-end').trim();
+                    const chartBg = getComputedStyle(document.documentElement).getPropertyValue('--chart-bg').trim();
+                    const chartText = getComputedStyle(document.documentElement).getPropertyValue('--chart-text').trim();
+                    
                     grid.innerHTML = `
-                        <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden;">
+                        <table style="width: 100%; border-collapse: collapse; background: ${chartBg}; border-radius: 8px; overflow: hidden;">
                             <thead>
-                                <tr style="background: #667eea; color: white;">
+                                <tr style="background: ${chartBg}; color: ${chartText}; border-bottom: 2px solid rgba(0,0,0,0.2);">
                                     <th style="padding: 12px; text-align: left; font-weight: 600; cursor: pointer; user-select: none;" onclick="sortSourceListTable('name')" title="Click to sort">
                                         Source List${getSortIndicator('name')}
                                     </th>
@@ -8126,7 +8854,7 @@
                                 ${sourceData.map(data => {
                                     const percentComplete = data.percentComplete.toFixed(0);
                                     return `
-                                        <tr style="cursor: pointer; border-bottom: 1px solid #eee; transition: background 0.2s;" onclick="showSourceDrilldown('${data.source.replace(/'/g, "\\'")}')">
+                                        <tr style="cursor: pointer; border-bottom: 1px solid rgba(0,0,0,0.1); transition: background 0.2s; color: ${chartText};" onclick="showSourceDrilldown('${data.source.replace(/'/g, "\\'")}')">
                                             <td style="padding: 12px; font-weight: 500;">${data.source}</td>
                                             <td style="padding: 12px; text-align: center;">${data.total}</td>
                                             <td style="padding: 12px; text-align: center;">${data.listened}</td>
@@ -8141,10 +8869,10 @@
                         </table>
                         <style>
                             #sourceListsGrid tbody tr:hover {
-                                background: #f8f9fa !important;
+                                background: rgba(0, 0, 0, 0.05) !important;
                             }
                             #sourceListsGrid thead th:hover {
-                                background: #5568d3 !important;
+                                filter: brightness(0.85) !important;
                             }
                         </style>
                     `;
@@ -8499,6 +9227,23 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Load theme preference first
             loadThemePreference();
+            
+            // Initialize RPM speed slider to default (33.3 RPM)
+            updateRPMSpeed();
+            
+            // Restore record player state from localStorage
+            const savedState = localStorage.getItem('recordPlayerState');
+            if (savedState) {
+                try {
+                    const state = JSON.parse(savedState);
+                    currentRPM = state.rpm || 33.3;
+                    updateRPMSpeed();
+                    playAlbum(state.albumId, state.albumName, state.artist, state.artworkUrl);
+                } catch (e) {
+                    console.error('Failed to restore record player state:', e);
+                    localStorage.removeItem('recordPlayerState');
+                }
+            }
             
             // Restore view mode preference
             const savedViewMode = localStorage.getItem('viewMode');
