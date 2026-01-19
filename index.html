@@ -6552,7 +6552,7 @@
                     if (currentTime - lastBackupTime >= BACKUP_INTERVAL) {
                         console.log('⏰ 2-minute interval backup triggered');
                         progressText.textContent = `💾 Backing up to OneDrive... (${i + 1}/${unsyncedAlbums.length} synced)`;
-                        await syncToOneDrive();
+                        await syncManager.syncToOneDrive();
                         lastBackupTime = currentTime;
                         progressText.textContent = `Syncing ${i + 1} of ${unsyncedAlbums.length}: ${album.albumName}`;
                     }
@@ -6570,7 +6570,7 @@
             progressBar.style.width = '100%';
             progressText.textContent = `💾 Final backup to OneDrive...`;
             console.log('💾 Triggering final OneDrive backup after sync completion');
-            await syncToOneDrive();
+            await syncManager.syncToOneDrive();
             
             progressText.textContent = `✅ Complete! Synced: ${synced}, Not Found: ${notFound}, Errors: ${errors}`;
             
