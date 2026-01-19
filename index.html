@@ -6528,10 +6528,19 @@
                             
                             try {
                                 const releaseResponse = await fetch(releaseUrl);
+                                
+                                // Check response status first
+                                if (!releaseResponse.ok) {
+                                    // 404, 500, etc - release doesn't exist, skip delay
+                                    db.updateAlbum(album.id, { discogsStatus: 'not_found' });
+                                    notFound++;
+                                    continue; // Skip to next album immediately
+                                }
+                                
                                 const releaseData = await releaseResponse.json();
 
                                 // Check if the release exists and has valid data
-                                if (releaseResponse.ok && releaseData && !releaseData.message) {
+                                if (releaseData && !releaseData.message) {
                                     // Update album with Discogs data
                                     const updates = {
                                         discogsStatus: 'synced',
@@ -6551,19 +6560,24 @@
                                     // Release not found or deleted
                                     db.updateAlbum(album.id, { discogsStatus: 'not_found' });
                                     notFound++;
+                                    continue; // Skip delay for not found
                                 }
                             } catch (error) {
                                 // Network error or other issue - silently mark as not found
                                 db.updateAlbum(album.id, { discogsStatus: 'not_found' });
                                 notFound++;
+                                continue; // Skip delay for errors
                             }
                         } else {
-                            // Not found in Discogs
+                            // Not found in Discogs search
                             db.updateAlbum(album.id, { discogsStatus: 'not_found' });
                             notFound++;
+                            continue; // Skip delay for not found
                         }
                     } else {
+                        // Search request failed
                         errors++;
+                        continue; // Skip delay for errors
                     }
 
                     // Rate limiting - wait 2 seconds between requests
@@ -10539,7 +10553,6 @@
             // Schedule sync for 30 seconds from now
             autoSyncTimeout = setTimeout(() => {
                 if (syncManager && syncManager.isConnected()) {
-                    console.log('Auto-syncing to OneDrive...');
                     syncManager.syncToOneDrive();
                 }
             }, 30000); // 30 seconds
