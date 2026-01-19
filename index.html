@@ -2516,6 +2516,188 @@
             border: 1px solid #bee5eb;
         }
 
+        /* Lists Section Styles */
+        .list-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .list-card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            border-color: var(--gradient-start);
+        }
+
+        .list-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+
+        .list-card-title {
+            flex: 1;
+            margin-right: 15px;
+        }
+
+        .list-card-title h3 {
+            margin: 0 0 5px 0;
+            color: var(--card-text);
+            font-size: 1.3em;
+        }
+
+        .list-card-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .list-card-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .badge-category {
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+            color: white;
+        }
+
+        .badge-source {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .badge-genre {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-count {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .list-status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .status-added {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-partial {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .list-card-content {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e9ecef;
+            display: none;
+        }
+
+        .list-card-content.expanded {
+            display: block;
+        }
+
+        .list-description {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .list-albums-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .list-album-item {
+            background: var(--chart-bg);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .list-album-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: var(--gradient-start);
+        }
+
+        .list-album-item.in-library {
+            border-color: #28a745;
+            background: #f0fff4;
+        }
+
+        .list-album-item.missing {
+            opacity: 0.6;
+        }
+
+        .list-album-artwork {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .list-album-title {
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-bottom: 3px;
+            color: var(--card-text);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .list-album-artist {
+            font-size: 0.75em;
+            color: #666;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .list-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .expand-icon {
+            transition: transform 0.3s;
+            font-size: 1.5em;
+            color: var(--gradient-start);
+        }
+
+        .expand-icon.expanded {
+            transform: rotate(180deg);
+        }
+
         /* Duplicate Cleanup Styles */
         .duplicate-group {
             background: #f8f9fa;
@@ -2689,7 +2871,7 @@
                 <!-- Turntable Deck Background -->
                 <div class="turntable-deck">
                     <!-- Random Album Button (Vinyl Record Style) -->
-                    <button onclick="pickRandomAlbum()" class="vinyl-button" title="Pick an Album">
+                    <button onclick="handleVinylClick()" class="vinyl-button" title="Pick an Album">
                         <div class="vinyl-record" id="vinylRecord">
                             <!-- Vinyl grooves (multiple circles for realistic look) -->
                             <div class="vinyl-groove vinyl-groove-1"></div>
@@ -2838,6 +3020,7 @@
 
         <div class="nav">
             <button onclick="showSection('browse', event)" class="active">Browse Albums</button>
+            <button onclick="showSection('lists', event)">Lists</button>
             <button onclick="showSection('import', event)">Import/Export Data</button>
             <button onclick="showSection('stats', event)">Statistics</button>
         </div>
@@ -3131,6 +3314,42 @@
                     <button class="btn btn-secondary" onclick="downloadImportTemplate()" style="font-size: 1.1em; padding: 12px 30px;">
                         📄 Download Import Template
                     </button>
+                </div>
+            </div>
+
+            <!-- Lists Section -->
+            <div id="lists" class="section">
+                <h2>📚 Curated Album Lists</h2>
+                <p style="color: #666; margin-bottom: 20px;">Discover and import notable album lists from critics, publications, and awards</p>
+                
+                <!-- Filters -->
+                <div style="margin-bottom: 30px; padding: 20px; background: var(--card-bg); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <h3 style="margin-bottom: 15px;">🔍 Filter Lists</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                        <div class="form-group">
+                            <label for="categoryFilter">Category</label>
+                            <select id="categoryFilter" onchange="filterLists()" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ddd;">
+                                <option value="">All Categories</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="sourceFilter">Source/Organization</label>
+                            <select id="sourceFilter" onchange="filterLists()" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ddd;">
+                                <option value="">All Sources</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="genreFilter">Primary Genre(s)</label>
+                            <input type="text" id="genreFilter" placeholder="e.g., Rock, Jazz, Hip-Hop" oninput="filterLists()" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ddd;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lists Display -->
+                <div id="listsContainer" style="display: grid; gap: 20px;">
+                    <div style="text-align: center; padding: 40px; color: #999;">
+                        <p style="font-size: 1.2em;">Loading curated lists...</p>
+                    </div>
                 </div>
             </div>
 
@@ -4816,6 +5035,381 @@
         // Initialize OneDrive sync
         const syncManager = new OneDriveSyncManager();
 
+        // Lists Management
+        let allCuratedLists = [];
+        let filteredLists = [];
+        let listsData = {}; // Store album data for each list
+
+        // Selected curated lists (10 most suitable)
+
+
+        async function loadCuratedLists() {
+            try {
+                const response = await fetch('public/album_lists.csv');
+                const csvText = await response.text();
+                
+                // Parse CSV - format: list_name,album_name,artist_name
+                const lines = csvText.split('\n');
+                const headers = lines[0].split(','); // list_name, album_name, artist_name
+                
+                // Group albums by list
+                const listAlbumsMap = new Map();
+                
+                for (let i = 1; i < lines.length; i++) {
+                    if (!lines[i].trim()) continue;
+                    
+                    const values = parseCSVLine(lines[i]);
+                    if (values.length < 3) continue;
+                    
+                    const listName = values[0].trim();
+                    const albumName = values[1].trim();
+                    const artistName = values[2].trim();
+                    
+                    if (!listAlbumsMap.has(listName)) {
+                        listAlbumsMap.set(listName, []);
+                    }
+                    
+                    listAlbumsMap.get(listName).push({
+                        albumName: albumName,
+                        artist: artistName
+                    });
+                }
+                
+                // Create list metadata
+                allCuratedLists = [];
+                listsData = {};
+                
+                // Define metadata for each list
+                const listMetadata = {
+                    "Rolling Stone's 500 Greatest Albums": {
+                        category: "Critical Acclaim Lists",
+                        source: "Rolling Stone Magazine",
+                        genres: "All Genres"
+                    },
+                    "NME's 500 Greatest Albums": {
+                        category: "Critical Acclaim Lists",
+                        source: "NME Magazine",
+                        genres: "Rock, Alternative, Indie"
+                    },
+                    "Pitchfork's Top 200 Albums of the 2000s": {
+                        category: "Critical Acclaim Lists",
+                        source: "Pitchfork",
+                        genres: "Indie, Alternative, Electronic"
+                    },
+                    "Grammy Album of the Year Winners": {
+                        category: "Major Music Awards",
+                        source: "The Recording Academy",
+                        genres: "All Genres"
+                    },
+                    "Mercury Prize Winners": {
+                        category: "Major Music Awards",
+                        source: "Mercury Prize",
+                        genres: "All Genres (UK Focus)"
+                    },
+                    "Pitchfork's Top 200 Albums of the 1990s": {
+                        category: "Critical Acclaim Lists",
+                        source: "Pitchfork",
+                        genres: "Alternative, Indie, Hip-Hop"
+                    },
+                    "Acclaimed Music's Top 3000 Albums": {
+                        category: "Critical Acclaim Lists",
+                        source: "Acclaimed Music",
+                        genres: "All Genres"
+                    },
+                    "Rolling Stone's 200 Greatest Hip-Hop Albums": {
+                        category: "Genre-Specific Lists",
+                        source: "Rolling Stone Magazine",
+                        genres: "Hip-Hop, Rap"
+                    },
+                    "Mojo's 100 Greatest Albums of Soul and R&B": {
+                        category: "Genre-Specific Lists",
+                        source: "Mojo Magazine",
+                        genres: "Soul, R&B"
+                    },
+                    "Rolling Stone's 100 Greatest Metal Albums": {
+                        category: "Genre-Specific Lists",
+                        source: "Rolling Stone Magazine",
+                        genres: "Metal, Hard Rock"
+                    }
+                };
+                
+                // Create list objects
+                for (const [listName, albums] of listAlbumsMap.entries()) {
+                    const metadata = listMetadata[listName] || {
+                        category: "Music Lists",
+                        source: "Various",
+                        genres: "All Genres"
+                    };
+                    
+                    allCuratedLists.push({
+                        name: listName,
+                        category: metadata.category,
+                        source: metadata.source,
+                        genres: metadata.genres,
+                        albumCount: albums.length.toString()
+                    });
+                    
+                    // Store album data
+                    listsData[listName] = albums.map((album, index) => ({
+                        id: `${listName}-${index}`,
+                        albumName: album.albumName,
+                        artist: album.artist,
+                        year: null, // Will be fetched from Discogs API later
+                        artworkUrl: 'https://via.placeholder.com/150?text=' + encodeURIComponent(album.albumName.substring(0, 20)),
+                        sourceLists: [listName]
+                    }));
+                }
+                
+                // Populate filters
+                populateFilters();
+                
+                // Display lists
+                filteredLists = [...allCuratedLists];
+                displayLists();
+                
+            } catch (error) {
+                console.error('Error loading curated lists:', error);
+                document.getElementById('listsContainer').innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #dc3545;">
+                        <p style="font-size: 1.2em;">❌ Error loading lists</p>
+                        <p style="color: #666;">Please ensure album_lists.csv is in the public folder</p>
+                    </div>
+                `;
+            }
+        }
+
+        function parseCSVLine(line) {
+            const values = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    values.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            values.push(current.trim());
+            
+            return values;
+        }
+
+
+
+        function populateFilters() {
+            const categories = [...new Set(allCuratedLists.map(l => l.category))];
+            const sources = [...new Set(allCuratedLists.map(l => l.source))];
+            
+            const categoryFilter = document.getElementById('categoryFilter');
+            const sourceFilter = document.getElementById('sourceFilter');
+            
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                categoryFilter.appendChild(option);
+            });
+            
+            sources.forEach(src => {
+                const option = document.createElement('option');
+                option.value = src;
+                option.textContent = src;
+                sourceFilter.appendChild(option);
+            });
+        }
+
+        function filterLists() {
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const sourceFilter = document.getElementById('sourceFilter').value;
+            const genreFilter = document.getElementById('genreFilter').value.toLowerCase();
+            
+            filteredLists = allCuratedLists.filter(list => {
+                if (categoryFilter && list.category !== categoryFilter) return false;
+                if (sourceFilter && list.source !== sourceFilter) return false;
+                if (genreFilter && !list.genres.toLowerCase().includes(genreFilter)) return false;
+                return true;
+            });
+            
+            displayLists();
+        }
+
+        function displayLists() {
+            const container = document.getElementById('listsContainer');
+            
+            if (filteredLists.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #999;">
+                        <p style="font-size: 1.2em;">No lists match your filters</p>
+                        <p style="color: #666;">Try adjusting your filter criteria</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = filteredLists.map((list, index) => {
+                const status = getListStatus(list.name);
+                const statusBadge = status.type === 'added' ? 
+                    `<span class="list-status-badge status-added">✓ Added</span>` :
+                    status.type === 'partial' ?
+                    `<span class="list-status-badge status-partial">⚡ Partial (${status.count}/${status.total})</span>` :
+                    '';
+                
+                return `
+                    <div class="list-card" data-list-index="${index}">
+                        <div class="list-card-header" onclick="toggleListExpand(${index})">
+                            <div class="list-card-title">
+                                <h3>${list.name}</h3>
+                                <div class="list-card-meta">
+                                    <span class="list-card-badge badge-category">${list.category}</span>
+                                    <span class="list-card-badge badge-source">${list.source}</span>
+                                    <span class="list-card-badge badge-genre">${list.genres}</span>
+                                    <span class="list-card-badge badge-count">${list.albumCount} albums</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                ${statusBadge}
+                                <span class="expand-icon" id="expand-icon-${index}">▼</span>
+                            </div>
+                        </div>
+                        <div class="list-card-content" id="list-content-${index}">
+                            <div class="list-description">
+                                <strong>Time Period:</strong> ${list.timePeriod}<br>
+                                <strong>Geographic Focus:</strong> ${list.geographicFocus}<br>
+                                ${list.notes ? `<strong>Notes:</strong> ${list.notes}` : ''}
+                            </div>
+                            <div class="list-actions">
+                                ${status.type !== 'added' ? `
+                                    <button class="btn btn-primary" onclick="addListToLibrary('${list.name.replace(/'/g, "\\'")}', event)">
+                                        📥 ${status.type === 'partial' ? 'Add Missing Albums' : 'Add List to Library'}
+                                    </button>
+                                ` : ''}
+                                <button class="btn btn-secondary" onclick="viewListAlbums('${list.name.replace(/'/g, "\\'")}', event)">
+                                    👁️ View Albums
+                                </button>
+                            </div>
+                            <div id="list-albums-${index}" style="display: none;"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleListExpand(index) {
+            const content = document.getElementById(`list-content-${index}`);
+            const icon = document.getElementById(`expand-icon-${index}`);
+            
+            content.classList.toggle('expanded');
+            icon.classList.toggle('expanded');
+        }
+
+        function getListStatus(listName) {
+            const listAlbums = listsData[listName] || [];
+            const userAlbums = db.getAllAlbums();
+            
+            let addedCount = 0;
+            listAlbums.forEach(listAlbum => {
+                const inLibrary = userAlbums.some(userAlbum => {
+                    const nameMatch = userAlbum.albumName?.toLowerCase() === listAlbum.name.toLowerCase();
+                    const artistMatch = userAlbum.artist?.toLowerCase() === listAlbum.artist.toLowerCase();
+                    const hasSourceList = userAlbum.sourceLists?.includes(listName);
+                    return nameMatch && artistMatch && hasSourceList;
+                });
+                if (inLibrary) addedCount++;
+            });
+            
+            if (addedCount === listAlbums.length && listAlbums.length > 0) {
+                return { type: 'added', count: addedCount, total: listAlbums.length };
+            } else if (addedCount > 0) {
+                return { type: 'partial', count: addedCount, total: listAlbums.length };
+            }
+            return { type: 'none', count: 0, total: listAlbums.length };
+        }
+
+        async function addListToLibrary(listName, event) {
+            event.stopPropagation();
+            
+            const listAlbums = listsData[listName] || [];
+            const userAlbums = db.getAllAlbums();
+            
+            let added = 0;
+            let updated = 0;
+            
+            for (const listAlbum of listAlbums) {
+                const existing = userAlbums.find(a => 
+                    a.albumName?.toLowerCase() === listAlbum.name.toLowerCase() &&
+                    a.artist?.toLowerCase() === listAlbum.artist.toLowerCase()
+                );
+                
+                if (existing) {
+                    // Update source lists
+                    const sourceLists = existing.sourceLists || [];
+                    if (!sourceLists.includes(listName)) {
+                        sourceLists.push(listName);
+                        db.updateAlbum(existing.id, { sourceLists });
+                        updated++;
+                    }
+                } else {
+                    // Add new album
+                    db.addAlbum({
+                        albumName: listAlbum.name,
+                        artist: listAlbum.artist,
+                        year: listAlbum.year,
+                        artworkUrl: listAlbum.artwork,
+                        sourceLists: [listName],
+                        reason: `From ${listName}`
+                    });
+                    added++;
+                }
+            }
+            
+            alert(`✅ Import complete!\n\nAdded: ${added} albums\nUpdated: ${updated} albums`);
+            displayLists();
+            displayAlbums();
+        }
+
+        function viewListAlbums(listName, event) {
+            event.stopPropagation();
+            
+            const index = filteredLists.findIndex(l => l.name === listName);
+            const container = document.getElementById(`list-albums-${index}`);
+            
+            if (container.style.display === 'none') {
+                const listAlbums = listsData[listName] || [];
+                const userAlbums = db.getAllAlbums();
+                
+                container.innerHTML = `
+                    <div class="list-albums-grid">
+                        ${listAlbums.slice(0, 20).map(album => {
+                            const inLibrary = userAlbums.some(a => 
+                                a.albumName?.toLowerCase() === album.name.toLowerCase() &&
+                                a.artist?.toLowerCase() === album.artist.toLowerCase() &&
+                                a.sourceLists?.includes(listName)
+                            );
+                            
+                            return `
+                                <div class="list-album-item ${inLibrary ? 'in-library' : 'missing'}">
+                                    <img src="${album.artwork}" alt="${album.name}" class="list-album-artwork" onerror="this.src='https://via.placeholder.com/150?text=No+Image'">
+                                    <div class="list-album-title">${album.name}</div>
+                                    <div class="list-album-artist">${album.artist}</div>
+                                    ${inLibrary ? '<div style="color: #28a745; font-size: 0.8em; margin-top: 5px;">✓ In Library</div>' : ''}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                    ${listAlbums.length > 20 ? `<p style="text-align: center; color: #666; margin-top: 15px;">Showing first 20 of ${listAlbums.length} albums</p>` : ''}
+                `;
+                container.style.display = 'block';
+            } else {
+                container.style.display = 'none';
+            }
+        }
+
         // Settings Functions
         function toggleViewMode() {
             const viewportMeta = document.getElementById('viewport-meta');
@@ -6429,6 +7023,10 @@
                 loadBrowseSection();
             } else if (sectionId === 'stats') {
                 loadStatsSection();
+            } else if (sectionId === 'lists') {
+                if (allCuratedLists.length === 0) {
+                    loadCuratedLists();
+                }
             }
         }
 
@@ -6504,6 +7102,17 @@
         let currentPlayingAlbum = null;
         let currentRPM = 33.3;
 
+        // Handle Vinyl Click (opens album modal if playing, otherwise picks random album)
+        function handleVinylClick() {
+            if (currentPlayingAlbum && currentPlayingAlbum.id) {
+                // Album is playing - open the album detail modal
+                showAlbumDetail(currentPlayingAlbum.id);
+            } else {
+                // No album playing - pick a random album
+                pickRandomAlbum();
+            }
+        }
+
         // Pick Random Album (from vinyl button)
         function pickRandomAlbum() {
             // Navigate to random section and automatically select an album
@@ -6555,7 +7164,7 @@
             
             // Update vinyl button title
             const vinylButton = document.querySelector('.vinyl-button');
-            vinylButton.title = 'Now Playing';
+            vinylButton.title = 'Now Playing - Click to View Album Details';
             
             // Save state to localStorage
             localStorage.setItem('recordPlayerState', JSON.stringify({
