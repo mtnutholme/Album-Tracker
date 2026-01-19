@@ -5192,7 +5192,7 @@
                         albumName: album.name || 'Unknown Album',
                         artist: album.artist || 'Unknown Artist',
                         year: null, // Will be fetched from Discogs API later
-                        artworkUrl: 'https://via.placeholder.com/150?text=' + encodeURIComponent((album.name || 'Unknown').substring(0, 20)),
+                        artworkUrl: `https://via.placeholder.com/150/667eea/ffffff?text=${encodeURIComponent((album.name || 'Unknown').substring(0, 20))}`,
                         sourceLists: [listName]
                     }));
                 }
@@ -5382,7 +5382,8 @@
             let addedCount = 0;
             listAlbums.forEach(listAlbum => {
                 // Skip if album data is incomplete
-                if (!listAlbum || !listAlbum.name || !listAlbum.artist) {
+                const albumName = listAlbum.albumName || listAlbum.name;
+                if (!listAlbum || !albumName || !listAlbum.artist) {
                     return;
                 }
                 
@@ -5390,9 +5391,9 @@
                     if (!userAlbum || !userAlbum.albumName || !userAlbum.artist) {
                         return false;
                     }
-                    const nameMatch = userAlbum.albumName.toLowerCase() === listAlbum.name.toLowerCase();
-                    const artistMatch = userAlbum.artist.toLowerCase() === listAlbum.artist.toLowerCase();
-                    const hasSourceList = userAlbum.sourceLists?.includes(listName);
+                    const nameMatch = (userAlbum.albumName || '').toString().toLowerCase() === (albumName || '').toString().toLowerCase();
+                    const artistMatch = (userAlbum.artist || '').toString().toLowerCase() === (listAlbum.artist || '').toString().toLowerCase();
+                    const hasSourceList = Array.isArray(userAlbum.sourceLists) && userAlbum.sourceLists.includes(listName);
                     return nameMatch && artistMatch && hasSourceList;
                 });
                 if (inLibrary) addedCount++;
@@ -5416,10 +5417,14 @@
             let updated = 0;
             
             for (const listAlbum of listAlbums) {
-                const existing = userAlbums.find(a => 
-                    a.albumName?.toLowerCase() === listAlbum.name.toLowerCase() &&
-                    a.artist?.toLowerCase() === listAlbum.artist.toLowerCase()
-                );
+                const existing = userAlbums.find(a => {
+                    const aAlbumName = (a.albumName || '').toString().toLowerCase();
+                    const aArtist = (a.artist || '').toString().toLowerCase();
+                    const listAlbumName = (listAlbum.albumName || listAlbum.name || '').toString().toLowerCase();
+                    const listAlbumArtist = (listAlbum.artist || '').toString().toLowerCase();
+                    
+                    return aAlbumName === listAlbumName && aArtist === listAlbumArtist;
+                });
                 
                 if (existing) {
                     // Update source lists
@@ -5432,10 +5437,10 @@
                 } else {
                     // Add new album
                     db.addAlbum({
-                        albumName: listAlbum.name,
-                        artist: listAlbum.artist,
-                        year: listAlbum.year,
-                        artworkUrl: listAlbum.artwork,
+                        albumName: listAlbum.albumName || listAlbum.name || 'Unknown Album',
+                        artist: listAlbum.artist || 'Unknown Artist',
+                        year: listAlbum.year || null,
+                        artworkUrl: listAlbum.artworkUrl || listAlbum.artwork || `https://via.placeholder.com/150/667eea/ffffff?text=${encodeURIComponent((listAlbum.albumName || listAlbum.name || 'Unknown').substring(0, 20))}`,
                         sourceLists: [listName],
                         reason: `From ${listName}`
                     });
