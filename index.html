@@ -3260,6 +3260,38 @@
             <!-- Add Album Section (Hidden - replaced by inline form) -->
             <div id="add" class="section">
                 <h2>Add New Album</h2>
+                
+                <!-- Discogs Quick Search -->
+                <div style="margin-bottom: 30px; padding: 20px; background: var(--card-bg); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <h3 style="margin-bottom: 15px;">🔍 Find Album on Discogs</h3>
+                    <p style="color: #666; margin-bottom: 15px; font-size: 0.95em;">Search Discogs to auto-fill album details</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: end;">
+                        <div class="form-group" style="margin: 0;">
+                            <label>Artist Name</label>
+                            <input type="text" id="editSearchArtist" placeholder="e.g., Muse">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label>Album Name</label>
+                            <input type="text" id="editSearchAlbum" placeholder="e.g., Absolution">
+                        </div>
+                        <button type="button" class="btn" onclick="searchDiscogsForEdit()" style="background: #667eea; margin: 0;">
+                            🔍 Find on Discogs
+                        </button>
+                    </div>
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
+                        <div class="form-group" style="margin: 0;">
+                            <label>Or paste Discogs URL</label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="url" id="editDiscogsUrl" placeholder="https://www.discogs.com/release/..." style="flex: 1;">
+                                <button type="button" class="btn" onclick="fetchFromDiscogsUrlForEdit()" style="background: #667eea;">
+                                    📥 Import from URL
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="editDiscogsSearchStatus" style="margin-top: 10px; padding: 8px; border-radius: 4px; display: none;"></div>
+                </div>
+                
                 <form id="addAlbumForm" onsubmit="addAlbum(event)">
                     <div class="form-group">
                         <label>Album Name *</label>
@@ -3508,9 +3540,18 @@
                                 <div style="font-size: 12px; color: #666; margin-top: 5px;">✗ Not Found</div>
                             </div>
                         </div>
-                        <button onclick="syncNext10Albums()" class="settings-btn settings-btn-primary" id="syncNext10Btn" style="width: 100%;">
-                            🔄 Sync Next 10 Albums
-                        </button>
+                        <div style="display: flex; gap: 10px; align-items: center; margin-top: 15px;">
+                            <label for="syncCountInput" style="font-weight: 500; white-space: nowrap;">Sync next:</label>
+                            <input type="number" id="syncCountInput" min="1" max="1000" value="10" 
+                                   style="flex: 1; padding: 8px 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;"
+                                   placeholder="Enter number">
+                            <button onclick="syncCustomCount()" class="settings-btn settings-btn-primary" id="syncCustomBtn" style="white-space: nowrap;">
+                                🔄 Sync Albums
+                            </button>
+                        </div>
+                        <div style="margin-top: 8px; font-size: 12px; color: #666; text-align: center;">
+                            Enter the number of albums to sync (1-1000)
+                        </div>
                         <div id="syncProgress" style="margin-top: 10px; display: none;">
                             <div style="background: #f0f0f0; border-radius: 4px; height: 8px; overflow: hidden;">
                                 <div id="syncProgressBar" style="background: linear-gradient(90deg, #667eea, #764ba2); height: 100%; width: 0%; transition: width 0.3s;"></div>
@@ -6392,10 +6433,25 @@
             if (notFoundEl) notFoundEl.textContent = notFoundCount;
         }
 
-        async function syncNext10Albums() {
+        async function syncCustomCount() {
             const apiToken = localStorage.getItem('discogs_api_token');
             if (!apiToken) {
                 alert('⚠️ Please configure your Discogs API token in Settings first.');
+                return;
+            }
+
+            // Get the count from input
+            const countInput = document.getElementById('syncCountInput');
+            let count = parseInt(countInput.value);
+            
+            // Validate input
+            if (isNaN(count) || count < 1) {
+                alert('⚠️ Please enter a valid number (minimum 1).');
+                return;
+            }
+            
+            if (count > 1000) {
+                alert('⚠️ Maximum 1000 albums per sync. Please enter a smaller number.');
                 return;
             }
 
@@ -6404,25 +6460,37 @@
             const unsyncedAlbums = albums
                 .filter(a => !a.discogsStatus || a.discogsStatus === 'not_synced')
                 .sort((a, b) => b.id - a.id)
-                .slice(0, 10);
+                .slice(0, count);
 
             if (unsyncedAlbums.length === 0) {
                 alert('✅ All albums are already synced!');
                 return;
             }
 
-            const syncBtn = document.getElementById('syncNext10Btn');
+            const actualCount = unsyncedAlbums.length;
+            if (actualCount < count) {
+                if (!confirm(`Only ${actualCount} unsynced album${actualCount > 1 ? 's' : ''} available. Continue with ${actualCount}?`)) {
+                    return;
+                }
+            }
+
+            const syncBtn = document.getElementById('syncCustomBtn');
             const progressDiv = document.getElementById('syncProgress');
             const progressBar = document.getElementById('syncProgressBar');
             const progressText = document.getElementById('syncProgressText');
 
             syncBtn.disabled = true;
+            countInput.disabled = true;
             syncBtn.textContent = '⏳ Syncing...';
             progressDiv.style.display = 'block';
 
             let synced = 0;
             let notFound = 0;
             let errors = 0;
+            let lastBackupTime = Date.now();
+            const BACKUP_INTERVAL = 2 * 60 * 1000; // 2 minutes in milliseconds
+
+            console.log(`🔄 Starting sync of ${actualCount} albums...`);
 
             for (let i = 0; i < unsyncedAlbums.length; i++) {
                 const album = unsyncedAlbums[i];
@@ -6479,6 +6547,16 @@
                         errors++;
                     }
 
+                    // Check if 2 minutes have passed since last backup
+                    const currentTime = Date.now();
+                    if (currentTime - lastBackupTime >= BACKUP_INTERVAL) {
+                        console.log('⏰ 2-minute interval backup triggered');
+                        progressText.textContent = `💾 Backing up to OneDrive... (${i + 1}/${unsyncedAlbums.length} synced)`;
+                        await syncToOneDrive();
+                        lastBackupTime = currentTime;
+                        progressText.textContent = `Syncing ${i + 1} of ${unsyncedAlbums.length}: ${album.albumName}`;
+                    }
+
                     // Rate limiting - wait 1 second between requests
                     await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -6488,14 +6566,19 @@
                 }
             }
 
-            // Complete
+            // Complete - Final OneDrive backup
             progressBar.style.width = '100%';
+            progressText.textContent = `💾 Final backup to OneDrive...`;
+            console.log('💾 Triggering final OneDrive backup after sync completion');
+            await syncToOneDrive();
+            
             progressText.textContent = `✅ Complete! Synced: ${synced}, Not Found: ${notFound}, Errors: ${errors}`;
             
             setTimeout(() => {
                 progressDiv.style.display = 'none';
                 syncBtn.disabled = false;
-                syncBtn.textContent = '🔄 Sync Next 10 Albums';
+                countInput.disabled = false;
+                syncBtn.textContent = '🔄 Sync Albums';
                 updateDiscogsSyncStats();
                 
                 // Refresh the browse view if we're on that section
@@ -6517,10 +6600,14 @@
             if (unsyncedCount > 0) {
                 const message = `${unsyncedCount} album${unsyncedCount > 1 ? 's have' : ' has'} not been synced with Discogs. Would you like to update them now?`;
                 if (confirm(message)) {
-                    // Open settings and trigger sync
+                    // Open settings and set the input to the number of new albums
                     openSettings();
                     setTimeout(() => {
-                        syncNext10Albums();
+                        const countInput = document.getElementById('syncCountInput');
+                        if (countInput) {
+                            countInput.value = Math.min(newAlbumsCount, unsyncedCount);
+                        }
+                        // Don't auto-trigger sync, let user click the button
                     }, 500);
                 }
             }
@@ -8503,8 +8590,12 @@
         }
 
         let previousSection = 'browse'; // Track which section we were in before editing
+        let isEditingAlbum = false; // Track if we're in edit mode
+        let editAlbumFromDiscogs = false; // Track if edit data came from Discogs
 
         function editAlbum(albumId) {
+            isEditingAlbum = true;
+            editAlbumFromDiscogs = false;
             const album = db.getAlbum(albumId);
             if (!album) return;
 
@@ -8519,6 +8610,11 @@
 
             closeModal();
             showSection('add');
+            
+            // Populate Discogs search fields
+            document.getElementById('editSearchArtist').value = album.artist;
+            document.getElementById('editSearchAlbum').value = album.albumName;
+            document.getElementById('editDiscogsUrl').value = album.discogsUrl || '';
             
             // Populate form
             document.getElementById('albumName').value = album.albumName;
@@ -8559,22 +8655,231 @@
                 notes: document.getElementById('notes').value
             };
 
+            // If data came from Discogs, mark as synced
+            if (editAlbumFromDiscogs) {
+                updates.discogsStatus = 'synced';
+            }
+
             db.updateAlbum(albumId, updates);
             autoSyncToOneDrive();
-            showAlert('success', 'Album updated successfully!');
+            showAlert('success', 'Album updated successfully!' + (editAlbumFromDiscogs ? ' (Synced with Discogs)' : ''));
             
-            // Reset form
+            // Reset form and flags
+            isEditingAlbum = false;
+            editAlbumFromDiscogs = false;
             document.getElementById('addAlbumForm').reset();
             document.getElementById('addAlbumForm').onsubmit = addAlbum;
             document.querySelector('#add h2').textContent = 'Add New Album';
             document.querySelector('#add button[type="submit"]').textContent = 'Add Album';
             document.getElementById('reason').value = 'Manual';
             
+            // Clear Discogs search fields
+            document.getElementById('editSearchArtist').value = '';
+            document.getElementById('editSearchAlbum').value = '';
+            document.getElementById('editDiscogsUrl').value = '';
+            
             // Return to the section we were in before editing
             showSection(previousSection);
             if (previousSection === 'browse') {
                 loadBrowseSection();
             }
+        }
+
+        // Discogs search for Edit Album section
+        async function searchDiscogsForEdit() {
+            const artist = document.getElementById('editSearchArtist').value.trim();
+            const album = document.getElementById('editSearchAlbum').value.trim();
+            const statusDiv = document.getElementById('editDiscogsSearchStatus');
+            
+            if (!artist || !album) {
+                showEditDiscogsStatus('Please enter both artist and album name.', 'error');
+                return;
+            }
+            
+            // Check if API token is configured
+            const apiToken = localStorage.getItem('discogs_api_token');
+            if (!apiToken) {
+                showEditDiscogsStatus('⚠️ Discogs API not configured. Please add your API token in Settings.', 'error');
+                setTimeout(() => {
+                    if (confirm('Would you like to open Settings to add your Discogs API token?')) {
+                        openSettings();
+                    }
+                }, 500);
+                return;
+            }
+            
+            showEditDiscogsStatus('🔍 Searching Discogs...', 'loading');
+            
+            try {
+                const query = `${artist} ${album}`;
+                
+                // Search for releases
+                const url = `https://api.discogs.com/database/search?q=${encodeURIComponent(query)}&type=release&token=${apiToken}`;
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'User-Agent': 'AlbumTracker/1.0'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Discogs API error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (!data.results || data.results.length === 0) {
+                    showEditDiscogsStatus('❌ No results found. Try different search terms.', 'error');
+                    return;
+                }
+                
+                // If single result, auto-fill
+                if (data.results.length === 1) {
+                    await fetchAlbumDetailsForEdit(data.results[0].id, false);
+                } else {
+                    // Multiple results - show selection UI
+                    showDiscogsResultsForEdit(data.results.slice(0, 10));
+                }
+                
+            } catch (error) {
+                console.error('Discogs search error:', error);
+                showEditDiscogsStatus('❌ Error searching Discogs. Please try again.', 'error');
+            }
+        }
+
+        async function fetchFromDiscogsUrlForEdit() {
+            const url = document.getElementById('editDiscogsUrl').value.trim();
+            
+            if (!url) {
+                showEditDiscogsStatus('Please enter a Discogs URL.', 'error');
+                return;
+            }
+            
+            // Extract release ID from URL
+            const match = url.match(/discogs\.com\/(master|release)\/(\d+)/);
+            if (!match) {
+                showEditDiscogsStatus('Invalid Discogs URL format.', 'error');
+                return;
+            }
+            
+            const isMaster = match[1] === 'master';
+            const releaseId = match[2];
+            
+            await fetchAlbumDetailsForEdit(releaseId, isMaster);
+        }
+
+        async function fetchAlbumDetailsForEdit(releaseId, isMaster = false) {
+            const apiToken = localStorage.getItem('discogs_api_token');
+            
+            showEditDiscogsStatus('📥 Loading album details...', 'loading');
+            
+            try {
+                const endpoint = isMaster ? 'masters' : 'releases';
+                const url = `https://api.discogs.com/${endpoint}/${releaseId}?token=${apiToken}`;
+                const response = await fetch(url, {
+                    headers: {
+                        'User-Agent': 'AlbumTracker/1.0'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Discogs API error: ${response.status}`);
+                }
+                
+                const album = await response.json();
+                
+                // Fill form with Discogs data
+                fillEditFormFromDiscogs(album);
+                
+                showEditDiscogsStatus('✅ Album details loaded from Discogs! Review and save below.', 'success');
+                
+            } catch (error) {
+                console.error('Error fetching album details:', error);
+                showEditDiscogsStatus('❌ Error loading album details. Please try again.', 'error');
+            }
+        }
+
+        function fillEditFormFromDiscogs(album) {
+            // Extract data from Discogs response
+            const albumName = album.title || '';
+            const artist = album.artists && album.artists.length > 0 
+                ? album.artists.map(a => a.name).join('; ') 
+                : '';
+            const year = album.year || new Date().getFullYear();
+            const genres = album.genres ? album.genres.join('; ') : '';
+            const styles = album.styles ? album.styles.join('; ') : '';
+            const artworkUrl = album.images && album.images.length > 0 ? album.images[0].uri : '';
+            const discogsUrl = album.uri || '';
+            
+            // Fill form fields
+            document.getElementById('albumName').value = albumName;
+            document.getElementById('artist').value = artist;
+            document.getElementById('year').value = year;
+            document.getElementById('genre').value = genres;
+            document.getElementById('style').value = styles;
+            document.getElementById('artworkUrl').value = artworkUrl;
+            document.getElementById('discogsUrl').value = discogsUrl;
+            
+            // Mark that data came from Discogs
+            editAlbumFromDiscogs = true;
+        }
+
+        function showEditDiscogsStatus(message, type) {
+            const statusDiv = document.getElementById('editDiscogsSearchStatus');
+            statusDiv.textContent = message;
+            statusDiv.style.display = 'block';
+            
+            if (type === 'error') {
+                statusDiv.style.background = '#fee';
+                statusDiv.style.color = '#c33';
+            } else if (type === 'success') {
+                statusDiv.style.background = '#efe';
+                statusDiv.style.color = '#3c3';
+            } else if (type === 'loading') {
+                statusDiv.style.background = '#fef8e7';
+                statusDiv.style.color = '#856404';
+            }
+        }
+
+        function showDiscogsResultsForEdit(results) {
+            // Create a modal to show results
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+            
+            const content = document.createElement('div');
+            content.style.cssText = 'background: white; padding: 30px; border-radius: 12px; max-width: 600px; max-height: 80vh; overflow-y: auto;';
+            
+            content.innerHTML = `
+                <h3 style="margin-bottom: 20px;">Select Album from Discogs</h3>
+                <div style="display: grid; gap: 15px;">
+                    ${results.map(result => `
+                        <div style="display: flex; gap: 15px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; transition: all 0.2s;" 
+                             onclick="selectDiscogsResultForEdit(${result.id}, ${result.type === 'master'}); this.closest('[style*=fixed]').remove();"
+                             onmouseover="this.style.background='#f0f0f0'; this.style.borderColor='#667eea';"
+                             onmouseout="this.style.background='white'; this.style.borderColor='#ddd';">
+                            <img src="${result.thumb || result.cover_image || ''}" 
+                                 style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;"
+                                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22%3E%3Crect fill=%22%23ddd%22 width=%2260%22 height=%2260%22/%3E%3C/svg%3E'">
+                            <div style="flex: 1;">
+                                <div style="font-weight: bold;">${result.title}</div>
+                                <div style="color: #666; font-size: 0.9em;">${result.year || 'Unknown year'}</div>
+                                <div style="color: #999; font-size: 0.85em;">${result.label ? result.label.join(', ') : ''}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                <button onclick="this.closest('[style*=fixed]').remove();" 
+                        style="margin-top: 20px; padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                    Cancel
+                </button>
+            `;
+            
+            modal.appendChild(content);
+            document.body.appendChild(modal);
+        }
+
+        async function selectDiscogsResultForEdit(releaseId, isMaster) {
+            await fetchAlbumDetailsForEdit(releaseId, isMaster);
         }
 
         let currentScoringAlbumId = null;
