@@ -6299,12 +6299,9 @@
             updateDiscogsStatus('disconnected', 'Testing token...');
             
             try {
-                const response = await fetch('https://api.discogs.com/database/search?q=test&per_page=1', {
-                    headers: {
-                        'Authorization': `Discogs token=${token}`,
-                        'User-Agent': 'AlbumTracker/1.0'
-                    }
-                });
+                const discogsTestUrl = `https://api.discogs.com/database/search?q=test&per_page=1&token=${token}`;
+                const testUrl = `https://corsproxy.io/?${encodeURIComponent(discogsTestUrl)}`;
+                const response = await fetch(testUrl);
                 
                 if (response.ok) {
                     updateDiscogsStatus('connected', '✅ Token saved and verified successfully!');
@@ -6518,21 +6515,19 @@
 
                 try {
                     const query = `${album.artist} ${album.albumName}`;
-                    const searchUrl = `https://api.discogs.com/database/search?q=${encodeURIComponent(query)}&type=release&token=${apiToken}`;
+                    const discogsSearchUrl = `https://api.discogs.com/database/search?q=${encodeURIComponent(query)}&type=release&token=${apiToken}`;
+                    const searchUrl = `https://corsproxy.io/?${encodeURIComponent(discogsSearchUrl)}`;
 
-                    const response = await fetch(searchUrl, {
-                        headers: { 'User-Agent': 'AlbumTracker/1.0' }
-                    });
+                    const response = await fetch(searchUrl);
 
                     if (response.ok) {
                         const data = await response.json();
                         if (data.results && data.results.length > 0) {
                             // Found on Discogs - fetch full details
                             const releaseId = data.results[0].id;
-                            const releaseUrl = `https://api.discogs.com/releases/${releaseId}?token=${apiToken}`;
-                            const releaseResponse = await fetch(releaseUrl, {
-                                headers: { 'User-Agent': 'AlbumTracker/1.0' }
-                            });
+                            const discogsReleaseUrl = `https://api.discogs.com/releases/${releaseId}?token=${apiToken}`;
+                            const releaseUrl = `https://corsproxy.io/?${encodeURIComponent(discogsReleaseUrl)}`;
+                            const releaseResponse = await fetch(releaseUrl);
 
                             if (releaseResponse.ok) {
                                 const releaseData = await releaseResponse.json();
@@ -6680,13 +6675,10 @@
                 const query = `${artist} ${album}`;
                 
                 // First, try to find master release
-                const masterUrl = `https://api.discogs.com/database/search?q=${encodeURIComponent(query)}&type=master&token=${apiToken}`;
+                const discogsMasterUrl = `https://api.discogs.com/database/search?q=${encodeURIComponent(query)}&type=master&token=${apiToken}`;
+                const masterUrl = `https://corsproxy.io/?${encodeURIComponent(discogsMasterUrl)}`;
                 
-                const masterResponse = await fetch(masterUrl, {
-                    headers: {
-                        'User-Agent': 'AlbumTracker/1.0'
-                    }
-                });
+                const masterResponse = await fetch(masterUrl);
                 
                 if (!masterResponse.ok) {
                     throw new Error(`Discogs API error: ${masterResponse.status}`);
@@ -6714,13 +6706,10 @@
                 }
                 
                 // If no exact master found, search all releases
-                const url = `https://api.discogs.com/database/search?q=${encodeURIComponent(query)}&type=release&token=${apiToken}`;
+                const discogsReleaseSearchUrl = `https://api.discogs.com/database/search?q=${encodeURIComponent(query)}&type=release&token=${apiToken}`;
+                const url = `https://corsproxy.io/?${encodeURIComponent(discogsReleaseSearchUrl)}`;
                 
-                const response = await fetch(url, {
-                    headers: {
-                        'User-Agent': 'AlbumTracker/1.0'
-                    }
-                });
+                const response = await fetch(url);
                 
                 if (!response.ok) {
                     throw new Error(`Discogs API error: ${response.status}`);
@@ -6804,12 +6793,9 @@
             try {
                 // Use appropriate endpoint based on whether it's a master or release
                 const endpoint = isMaster ? 'masters' : 'releases';
-                const url = `https://api.discogs.com/${endpoint}/${releaseId}?token=${apiToken}`;
-                const response = await fetch(url, {
-                    headers: {
-                        'User-Agent': 'AlbumTracker/1.0'
-                    }
-                });
+                const discogsDetailsUrl = `https://api.discogs.com/${endpoint}/${releaseId}?token=${apiToken}`;
+                const url = `https://corsproxy.io/?${encodeURIComponent(discogsDetailsUrl)}`;
+                const response = await fetch(url);
                 
                 if (!response.ok) {
                     throw new Error(`Discogs API error: ${response.status}`);
@@ -8757,13 +8743,10 @@
                 const query = `${artist} ${album}`;
                 
                 // Search for releases
-                const url = `https://api.discogs.com/database/search?q=${encodeURIComponent(query)}&type=release&token=${apiToken}`;
+                const discogsEditSearchUrl = `https://api.discogs.com/database/search?q=${encodeURIComponent(query)}&type=release&token=${apiToken}`;
+                const url = `https://corsproxy.io/?${encodeURIComponent(discogsEditSearchUrl)}`;
                 
-                const response = await fetch(url, {
-                    headers: {
-                        'User-Agent': 'AlbumTracker/1.0'
-                    }
-                });
+                const response = await fetch(url);
                 
                 if (!response.ok) {
                     throw new Error(`Discogs API error: ${response.status}`);
@@ -8821,12 +8804,9 @@
             
             try {
                 const endpoint = isMaster ? 'masters' : 'releases';
-                const url = `https://api.discogs.com/${endpoint}/${releaseId}?token=${apiToken}`;
-                const response = await fetch(url, {
-                    headers: {
-                        'User-Agent': 'AlbumTracker/1.0'
-                    }
-                });
+                const discogsEditDetailsUrl = `https://api.discogs.com/${endpoint}/${releaseId}?token=${apiToken}`;
+                const url = `https://corsproxy.io/?${encodeURIComponent(discogsEditDetailsUrl)}`;
+                const response = await fetch(url);
                 
                 if (!response.ok) {
                     throw new Error(`Discogs API error: ${response.status}`);
