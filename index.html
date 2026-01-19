@@ -5179,10 +5179,10 @@
                     // Store album data
                     listsData[listName] = albums.map((album, index) => ({
                         id: `${listName}-${index}`,
-                        albumName: album.albumName,
-                        artist: album.artist,
+                        albumName: album.name || 'Unknown Album',
+                        artist: album.artist || 'Unknown Artist',
                         year: null, // Will be fetched from Discogs API later
-                        artworkUrl: 'https://via.placeholder.com/150?text=' + encodeURIComponent(album.albumName.substring(0, 20)),
+                        artworkUrl: 'https://via.placeholder.com/150?text=' + encodeURIComponent((album.name || 'Unknown').substring(0, 20)),
                         sourceLists: [listName]
                     }));
                 }
