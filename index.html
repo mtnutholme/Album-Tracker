@@ -6520,6 +6520,16 @@
 
                     const response = await fetch(searchUrl);
 
+                    // Handle rate limiting (429 Too Many Requests)
+                    if (response.status === 429) {
+                        console.warn(`⚠️ Rate limit hit for album ${album.id}. Waiting 5 seconds...`);
+                        progressText.textContent = `⚠️ Rate limit - waiting 5 seconds... (${i + 1}/${unsyncedAlbums.length})`;
+                        await new Promise(resolve => setTimeout(resolve, 5000));
+                        // Skip this album for now, will need to retry later
+                        errors++;
+                        continue;
+                    }
+
                     if (response.ok) {
                         const data = await response.json();
                         if (data.results && data.results.length > 0) {
@@ -6528,6 +6538,15 @@
                             const discogsReleaseUrl = `https://api.discogs.com/releases/${releaseId}?token=${apiToken}`;
                             const releaseUrl = `https://corsproxy.io/?${encodeURIComponent(discogsReleaseUrl)}`;
                             const releaseResponse = await fetch(releaseUrl);
+
+                            // Handle rate limiting on release details
+                            if (releaseResponse.status === 429) {
+                                console.warn(`⚠️ Rate limit hit fetching details for album ${album.id}. Waiting 5 seconds...`);
+                                progressText.textContent = `⚠️ Rate limit - waiting 5 seconds... (${i + 1}/${unsyncedAlbums.length})`;
+                                await new Promise(resolve => setTimeout(resolve, 5000));
+                                errors++;
+                                continue;
+                            }
 
                             if (releaseResponse.ok) {
                                 const releaseData = await releaseResponse.json();
@@ -6570,8 +6589,10 @@
                         progressText.textContent = `Syncing ${i + 1} of ${unsyncedAlbums.length}: ${album.albumName}`;
                     }
 
-                    // Rate limiting - wait 1 second between requests
-                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    // Rate limiting - wait 2 seconds between requests to avoid 429 errors
+                    // Discogs allows 60 requests/minute, but we make 2 requests per album (search + details)
+                    // So we need 2 seconds per album to stay under the limit
+                    await new Promise(resolve => setTimeout(resolve, 2000));
 
                 } catch (error) {
                     console.error(`Error syncing album ${album.id}:`, error);
