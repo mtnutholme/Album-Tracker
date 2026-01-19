@@ -6502,8 +6502,6 @@
             let synced = 0;
             let notFound = 0;
             let errors = 0;
-            let lastBackupTime = Date.now();
-            const BACKUP_INTERVAL = 2 * 60 * 1000; // 2 minutes in milliseconds
 
             console.log(`🔄 Starting sync of ${actualCount} albums...`);
 
@@ -6555,8 +6553,7 @@
                                     notFound++;
                                 }
                             } catch (error) {
-                                // Network error or other issue
-                                console.warn(`Failed to fetch release ${releaseId}:`, error.message);
+                                // Network error or other issue - silently mark as not found
                                 db.updateAlbum(album.id, { discogsStatus: 'not_found' });
                                 notFound++;
                             }
@@ -6567,16 +6564,6 @@
                         }
                     } else {
                         errors++;
-                    }
-
-                    // Check if 2 minutes have passed since last backup
-                    const currentTime = Date.now();
-                    if (currentTime - lastBackupTime >= BACKUP_INTERVAL) {
-                        console.log('⏰ 2-minute interval backup triggered');
-                        progressText.textContent = `💾 Backing up to OneDrive... (${i + 1}/${unsyncedAlbums.length} synced)`;
-                        await syncManager.syncToOneDrive();
-                        lastBackupTime = currentTime;
-                        progressText.textContent = `Syncing ${i + 1} of ${unsyncedAlbums.length}: ${album.albumName}`;
                     }
 
                     // Rate limiting - wait 2 seconds between requests
