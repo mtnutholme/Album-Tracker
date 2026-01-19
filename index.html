@@ -5045,7 +5045,7 @@
 
         async function loadCuratedLists() {
             try {
-                const response = await fetch('public/album_lists.csv');
+                const response = await fetch('./public/album_lists.csv');
                 const csvText = await response.text();
                 
                 // Parse CSV - format: list_name,album_name,artist_name
@@ -5172,7 +5172,7 @@
                 document.getElementById('listsContainer').innerHTML = `
                     <div style="text-align: center; padding: 40px; color: #dc3545;">
                         <p style="font-size: 1.2em;">❌ Error loading lists</p>
-                        <p style="color: #666;">Please ensure album_lists.csv is in the public folder</p>
+                        <p style="color: #666;">Please ensure album_lists.csv is in the public folder. Check browser console for details.</p>
                     </div>
                 `;
             }
