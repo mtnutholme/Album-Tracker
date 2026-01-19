@@ -5045,8 +5045,35 @@
 
         async function loadCuratedLists() {
             try {
-                const response = await fetch('./public/album_lists.csv');
-                const csvText = await response.text();
+                // Try multiple paths for different hosting scenarios
+                let response;
+                const paths = [
+                    'public/album_lists.csv',           // GitHub Pages with repo name in URL
+                    './public/album_lists.csv',         // Relative path
+                    '/public/album_lists.csv',          // Absolute from root
+                    'album_lists.csv'                   // Same directory as index.html
+                ];
+                
+                let csvText = '';
+                let loadedSuccessfully = false;
+                
+                for (const path of paths) {
+                    try {
+                        response = await fetch(path);
+                        if (response.ok) {
+                            csvText = await response.text();
+                            console.log(`✅ Successfully loaded CSV from: ${path}`);
+                            loadedSuccessfully = true;
+                            break;
+                        }
+                    } catch (e) {
+                        console.log(`❌ Failed to load from ${path}:`, e.message);
+                    }
+                }
+                
+                if (!loadedSuccessfully) {
+                    throw new Error('Could not load CSV from any path');
+                }
                 
                 // Parse CSV - format: list_name,album_name,artist_name
                 const lines = csvText.split('\n');
@@ -5070,7 +5097,7 @@
                     }
                     
                     listAlbumsMap.get(listName).push({
-                        albumName: albumName,
+                        name: albumName,      // Use 'name' to match getListStatus expectations
                         artist: artistName
                     });
                 }
@@ -5172,7 +5199,15 @@
                 document.getElementById('listsContainer').innerHTML = `
                     <div style="text-align: center; padding: 40px; color: #dc3545;">
                         <p style="font-size: 1.2em;">❌ Error loading lists</p>
-                        <p style="color: #666;">Please ensure album_lists.csv is in the public folder. Check browser console for details.</p>
+                        <p style="color: #666;">Could not find album_lists.csv. Tried the following paths:</p>
+                        <ul style="text-align: left; display: inline-block; color: #666; font-size: 0.9em;">
+                            <li>public/album_lists.csv</li>
+                            <li>./public/album_lists.csv</li>
+                            <li>/public/album_lists.csv</li>
+                            <li>album_lists.csv</li>
+                        </ul>
+                        <p style="color: #666; margin-top: 20px;">Please ensure the CSV file exists in one of these locations.</p>
+                        <p style="color: #999; font-size: 0.85em;">Error: ${error.message}</p>
                     </div>
                 `;
             }
@@ -5314,9 +5349,17 @@
             
             let addedCount = 0;
             listAlbums.forEach(listAlbum => {
+                // Skip if album data is incomplete
+                if (!listAlbum || !listAlbum.name || !listAlbum.artist) {
+                    return;
+                }
+                
                 const inLibrary = userAlbums.some(userAlbum => {
-                    const nameMatch = userAlbum.albumName?.toLowerCase() === listAlbum.name.toLowerCase();
-                    const artistMatch = userAlbum.artist?.toLowerCase() === listAlbum.artist.toLowerCase();
+                    if (!userAlbum || !userAlbum.albumName || !userAlbum.artist) {
+                        return false;
+                    }
+                    const nameMatch = userAlbum.albumName.toLowerCase() === listAlbum.name.toLowerCase();
+                    const artistMatch = userAlbum.artist.toLowerCase() === listAlbum.artist.toLowerCase();
                     const hasSourceList = userAlbum.sourceLists?.includes(listName);
                     return nameMatch && artistMatch && hasSourceList;
                 });
