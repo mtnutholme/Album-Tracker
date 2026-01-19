@@ -6527,27 +6527,36 @@
                             const releaseId = data.results[0].id;
                             const discogsReleaseUrl = `https://api.discogs.com/releases/${releaseId}?token=${apiToken}`;
                             const releaseUrl = getDiscogsUrl(discogsReleaseUrl);
-                            const releaseResponse = await fetch(releaseUrl);
-
-                            if (releaseResponse.ok) {
+                            
+                            try {
+                                const releaseResponse = await fetch(releaseUrl);
                                 const releaseData = await releaseResponse.json();
-                                
-                                // Update album with Discogs data
-                                const updates = {
-                                    discogsStatus: 'synced',
-                                    discogsUrl: releaseData.uri || `https://www.discogs.com/release/${releaseId}`,
-                                    artworkUrl: releaseData.images && releaseData.images.length > 0 
-                                        ? releaseData.images[0].uri 
-                                        : album.artworkUrl,
-                                    year: releaseData.year || album.year,
-                                    genre: releaseData.genres && releaseData.genres.length > 0 
-                                        ? releaseData.genres.join(', ') 
-                                        : album.genre
-                                };
 
-                                db.updateAlbum(album.id, updates);
-                                synced++;
-                            } else {
+                                // Check if the release exists and has valid data
+                                if (releaseResponse.ok && releaseData && !releaseData.message) {
+                                    // Update album with Discogs data
+                                    const updates = {
+                                        discogsStatus: 'synced',
+                                        discogsUrl: releaseData.uri || `https://www.discogs.com/release/${releaseId}`,
+                                        artworkUrl: releaseData.images && releaseData.images.length > 0 
+                                            ? releaseData.images[0].uri 
+                                            : album.artworkUrl,
+                                        year: releaseData.year || album.year,
+                                        genre: releaseData.genres && releaseData.genres.length > 0 
+                                            ? releaseData.genres.join(', ') 
+                                            : album.genre
+                                    };
+
+                                    db.updateAlbum(album.id, updates);
+                                    synced++;
+                                } else {
+                                    // Release not found or deleted
+                                    db.updateAlbum(album.id, { discogsStatus: 'not_found' });
+                                    notFound++;
+                                }
+                            } catch (error) {
+                                // Network error or other issue
+                                console.warn(`Failed to fetch release ${releaseId}:`, error.message);
                                 db.updateAlbum(album.id, { discogsStatus: 'not_found' });
                                 notFound++;
                             }
