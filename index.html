@@ -5451,12 +5451,31 @@
         function viewListAlbums(listName, event) {
             event.stopPropagation();
             
-            const index = filteredLists.findIndex(l => l.name === listName);
-            const container = document.getElementById(`list-albums-${index}`);
+            console.log('viewListAlbums called for:', listName);
             
-            if (container.style.display === 'none') {
-                const listAlbums = listsData[listName] || [];
+            const index = filteredLists.findIndex(l => l.name === listName);
+            console.log('List index:', index);
+            
+            const container = document.getElementById(`list-albums-${index}`);
+            console.log('Container found:', container);
+            
+            if (!container) {
+                console.error('Container not found for list-albums-' + index);
+                return;
+            }
+            
+            const listAlbums = listsData[listName] || [];
+            console.log('Number of albums in list:', listAlbums.length);
+            console.log('First album:', listAlbums[0]);
+            
+            if (container.style.display === 'none' || container.style.display === '') {
                 const userAlbums = db.getAllAlbums();
+                
+                if (listAlbums.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; padding: 20px; color: #666;">No albums found in this list.</p>';
+                    container.style.display = 'block';
+                    return;
+                }
                 
                 container.innerHTML = `
                     <div class="list-albums-grid">
@@ -5480,8 +5499,10 @@
                     ${listAlbums.length > 20 ? `<p style="text-align: center; color: #666; margin-top: 15px;">Showing first 20 of ${listAlbums.length} albums</p>` : ''}
                 `;
                 container.style.display = 'block';
+                console.log('Albums displayed successfully');
             } else {
                 container.style.display = 'none';
+                console.log('Albums hidden');
             }
         }
 
