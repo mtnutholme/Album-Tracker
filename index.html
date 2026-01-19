@@ -6300,7 +6300,7 @@
             
             try {
                 const discogsTestUrl = `https://api.discogs.com/database/search?q=test&per_page=1&token=${token}`;
-                const testUrl = `${getNextProxy()}${encodeURIComponent(discogsTestUrl)}`;
+                const testUrl = getDiscogsUrl(discogsTestUrl);
                 const response = await fetch(testUrl);
                 
                 if (response.ok) {
@@ -6516,7 +6516,7 @@
                 try {
                     const query = `${album.artist} ${album.albumName}`;
                     const discogsSearchUrl = `https://api.discogs.com/database/search?q=${encodeURIComponent(query)}&type=release&token=${apiToken}`;
-                    const searchUrl = `${getNextProxy()}${encodeURIComponent(discogsSearchUrl)}`;
+                    const searchUrl = getDiscogsUrl(discogsSearchUrl);
 
                     const response = await fetch(searchUrl);
 
@@ -6536,7 +6536,7 @@
                             // Found on Discogs - fetch full details
                             const releaseId = data.results[0].id;
                             const discogsReleaseUrl = `https://api.discogs.com/releases/${releaseId}?token=${apiToken}`;
-                            const releaseUrl = `${getNextProxy()}${encodeURIComponent(discogsReleaseUrl)}`;
+                            const releaseUrl = getDiscogsUrl(discogsReleaseUrl);
                             const releaseResponse = await fetch(releaseUrl);
 
                             // Handle rate limiting on release details
@@ -6590,9 +6590,10 @@
                     }
 
                     // Rate limiting - wait 2 seconds between requests
-                    // With proxy rotation, we distribute load across 3 proxies
-                    // 2 seconds per album = 30 albums/minute = 60 requests/minute (distributed)
-                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    // Single proxy (corsproxy.io) has ~60 requests/hour limit
+                    // With 2 requests per album, we can do ~30 albums/hour
+                    // 5 seconds per album = 12 albums/minute = 24 requests/minute = safe under limit
+                    await new Promise(resolve => setTimeout(resolve, 5000));
 
                 } catch (error) {
                     console.error(`Error syncing album ${album.id}:`, error);
@@ -6697,7 +6698,7 @@
                 
                 // First, try to find master release
                 const discogsMasterUrl = `https://api.discogs.com/database/search?q=${encodeURIComponent(query)}&type=master&token=${apiToken}`;
-                const masterUrl = `${getNextProxy()}${encodeURIComponent(discogsMasterUrl)}`;
+                const masterUrl = getDiscogsUrl(discogsMasterUrl);
                 
                 const masterResponse = await fetch(masterUrl);
                 
@@ -6728,7 +6729,7 @@
                 
                 // If no exact master found, search all releases
                 const discogsReleaseSearchUrl = `https://api.discogs.com/database/search?q=${encodeURIComponent(query)}&type=release&token=${apiToken}`;
-                const url = `${getNextProxy()}${encodeURIComponent(discogsReleaseSearchUrl)}`;
+                const url = getDiscogsUrl(discogsReleaseSearchUrl);
                 
                 const response = await fetch(url);
                 
@@ -6815,7 +6816,7 @@
                 // Use appropriate endpoint based on whether it's a master or release
                 const endpoint = isMaster ? 'masters' : 'releases';
                 const discogsDetailsUrl = `https://api.discogs.com/${endpoint}/${releaseId}?token=${apiToken}`;
-                const url = `${getNextProxy()}${encodeURIComponent(discogsDetailsUrl)}`;
+                const url = getDiscogsUrl(discogsDetailsUrl);
                 const response = await fetch(url);
                 
                 if (!response.ok) {
@@ -7570,22 +7571,11 @@
         let currentPlayingAlbum = null;
         let currentRPM = 33.3;
 
-        // CORS Proxy Rotation System
-        // Multiple proxies to avoid rate limits (each has ~100 req/hour)
-        // Rotating between 3 proxies gives us ~300 req/hour capacity
-        const corsProxies = [
-            'https://corsproxy.io/?',
-            'https://api.allorigins.win/raw?url=',
-            'https://thingproxy.freeboard.io/fetch/'
-        ];
-        let currentProxyIndex = 0;
-
-        // Get next proxy in rotation
-        function getNextProxy() {
-            const proxy = corsProxies[currentProxyIndex];
-            currentProxyIndex = (currentProxyIndex + 1) % corsProxies.length;
-            console.log(`🔄 Using proxy ${currentProxyIndex}: ${proxy}`);
-            return proxy;
+        // CORS Proxy - Using single reliable proxy with longer delays
+        // corsproxy.io limit: ~60 requests per hour
+        // With 2 requests per album, we can sync ~30 albums per hour
+        function getDiscogsUrl(endpoint) {
+            return `https://corsproxy.io/?${encodeURIComponent(endpoint)}`;
         }
 
         // Handle Vinyl Click (opens album modal if playing, otherwise picks random album)
@@ -8783,7 +8773,7 @@
                 
                 // Search for releases
                 const discogsEditSearchUrl = `https://api.discogs.com/database/search?q=${encodeURIComponent(query)}&type=release&token=${apiToken}`;
-                const url = `${getNextProxy()}${encodeURIComponent(discogsEditSearchUrl)}`;
+                const url = getDiscogsUrl(discogsEditSearchUrl);
                 
                 const response = await fetch(url);
                 
@@ -8844,7 +8834,7 @@
             try {
                 const endpoint = isMaster ? 'masters' : 'releases';
                 const discogsEditDetailsUrl = `https://api.discogs.com/${endpoint}/${releaseId}?token=${apiToken}`;
-                const url = `${getNextProxy()}${encodeURIComponent(discogsEditDetailsUrl)}`;
+                const url = getDiscogsUrl(discogsEditDetailsUrl);
                 const response = await fetch(url);
                 
                 if (!response.ok) {
