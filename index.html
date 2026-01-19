@@ -6520,16 +6520,6 @@
 
                     const response = await fetch(searchUrl);
 
-                    // Handle rate limiting (429 Too Many Requests)
-                    if (response.status === 429) {
-                        console.warn(`⚠️ Rate limit hit for album ${album.id}. Waiting 15 seconds...`);
-                        progressText.textContent = `⚠️ Rate limit - waiting 15 seconds... (${i + 1}/${unsyncedAlbums.length})`;
-                        await new Promise(resolve => setTimeout(resolve, 15000));
-                        // Skip this album for now, will need to retry later
-                        errors++;
-                        continue;
-                    }
-
                     if (response.ok) {
                         const data = await response.json();
                         if (data.results && data.results.length > 0) {
@@ -6538,15 +6528,6 @@
                             const discogsReleaseUrl = `https://api.discogs.com/releases/${releaseId}?token=${apiToken}`;
                             const releaseUrl = getDiscogsUrl(discogsReleaseUrl);
                             const releaseResponse = await fetch(releaseUrl);
-
-                            // Handle rate limiting on release details
-                            if (releaseResponse.status === 429) {
-                                console.warn(`⚠️ Rate limit hit fetching details for album ${album.id}. Waiting 15 seconds...`);
-                                progressText.textContent = `⚠️ Rate limit - waiting 15 seconds... (${i + 1}/${unsyncedAlbums.length})`;
-                                await new Promise(resolve => setTimeout(resolve, 15000));
-                                errors++;
-                                continue;
-                            }
 
                             if (releaseResponse.ok) {
                                 const releaseData = await releaseResponse.json();
@@ -6590,10 +6571,9 @@
                     }
 
                     // Rate limiting - wait 2 seconds between requests
-                    // Single proxy (corsproxy.io) has ~60 requests/hour limit
-                    // With 2 requests per album, we can do ~30 albums/hour
-                    // 5 seconds per album = 12 albums/minute = 24 requests/minute = safe under limit
-                    await new Promise(resolve => setTimeout(resolve, 5000));
+                    // Using your own Vercel proxy - full Discogs API speed (60 req/min)
+                    // With 2 requests per album, we can sync 30 albums/minute
+                    await new Promise(resolve => setTimeout(resolve, 2000));
 
                 } catch (error) {
                     console.error(`Error syncing album ${album.id}:`, error);
@@ -7573,9 +7553,9 @@
 
         // CORS Proxy - Using single reliable proxy with longer delays
         // corsproxy.io limit: ~60 requests per hour
-        // With 2 requests per album, we can sync ~30 albums per hour
+        // Using your own Vercel proxy - no rate limits!
         function getDiscogsUrl(endpoint) {
-            return `https://corsproxy.io/?${encodeURIComponent(endpoint)}`;
+            return `https://discogs-proxy1.vercel.app/api/discogs-proxy?url=${encodeURIComponent(endpoint)}`;
         }
 
         // Handle Vinyl Click (opens album modal if playing, otherwise picks random album)
@@ -9066,8 +9046,8 @@
             statusEl.style.color = '#3498db';
 
             try {
-                // Use CORS proxy to avoid CORS issues
-                const proxyUrl = 'https://corsproxy.io/?';
+                // Use your own Vercel proxy
+                const proxyUrl = 'https://discogs-proxy1.vercel.app/api/discogs-proxy?url=';
                 const response = await fetch(proxyUrl + encodeURIComponent(apiUrl));
 
                 if (!response.ok) {
