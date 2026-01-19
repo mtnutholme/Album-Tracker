@@ -3293,6 +3293,9 @@
                 </div>
                 
                 <form id="addAlbumForm" onsubmit="addAlbum(event)">
+                    <!-- Hidden field to track if data came from Discogs -->
+                    <input type="hidden" id="albumFromDiscogs" value="false">
+                    
                     <div class="form-group">
                         <label>Album Name *</label>
                         <input type="text" id="albumName" required>
@@ -8611,6 +8614,13 @@
         function editAlbum(albumId) {
             isEditingAlbum = true;
             editAlbumFromDiscogs = false;
+            
+            // Reset the hidden field
+            const fromDiscogsField = document.getElementById('albumFromDiscogs');
+            if (fromDiscogsField) {
+                fromDiscogsField.value = 'false';
+            }
+            
             const album = db.getAlbum(albumId);
             if (!album) return;
 
@@ -8674,21 +8684,33 @@
             };
 
             // If data came from Discogs, mark as synced
-            if (editAlbumFromDiscogs) {
+            const fromDiscogsField = document.getElementById('albumFromDiscogs');
+            const fromDiscogs = editAlbumFromDiscogs || (fromDiscogsField && fromDiscogsField.value === 'true');
+            
+            console.log('🔍 editAlbumFromDiscogs flag:', editAlbumFromDiscogs);
+            console.log('🔍 Hidden field value:', fromDiscogsField ? fromDiscogsField.value : 'not found');
+            
+            if (fromDiscogs) {
                 updates.discogsStatus = 'synced';
-                console.log('✅ Marking album as synced with Discogs');
+                console.log('✅ Setting discogsStatus to "synced"');
             } else {
-                console.log('⚠️ editAlbumFromDiscogs is false, NOT marking as synced');
+                console.log('⚠️ Not marking as synced (flag is false)');
             }
 
             db.updateAlbum(albumId, updates);
             autoSyncToOneDrive();
-            showAlert('success', 'Album updated successfully!' + (editAlbumFromDiscogs ? ' (Synced with Discogs)' : ''));
+            showAlert('success', 'Album updated successfully!' + (fromDiscogs ? ' (Synced with Discogs)' : ''));
             
             // Reset form and flags
             isEditingAlbum = false;
             editAlbumFromDiscogs = false;
             document.getElementById('addAlbumForm').reset();
+            
+            // Reset hidden field
+            const resetField = document.getElementById('albumFromDiscogs');
+            if (resetField) {
+                resetField.value = 'false';
+            }
             document.getElementById('addAlbumForm').onsubmit = addAlbum;
             document.querySelector('#add h2').textContent = 'Add New Album';
             document.querySelector('#add button[type="submit"]').textContent = 'Add Album';
@@ -8846,7 +8868,11 @@
             
             // Mark that data came from Discogs
             editAlbumFromDiscogs = true;
-            console.log('✅ fillEditFormFromDiscogs: Set editAlbumFromDiscogs = true');
+            const fromDiscogsField = document.getElementById('albumFromDiscogs');
+            if (fromDiscogsField) {
+                fromDiscogsField.value = 'true';
+            }
+            console.log('✅ fillEditFormFromDiscogs: Set editAlbumFromDiscogs = true and hidden field = true');
         }
 
         function showEditDiscogsStatus(message, type) {
