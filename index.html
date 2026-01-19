@@ -3325,7 +3325,7 @@
                 <!-- Filters -->
                 <div style="margin-bottom: 30px; padding: 20px; background: var(--card-bg); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                     <h3 style="margin-bottom: 15px;">🔍 Filter Lists</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
                         <div class="form-group">
                             <label for="categoryFilter">Category</label>
                             <select id="categoryFilter" onchange="filterLists()" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ddd;">
@@ -3336,6 +3336,16 @@
                             <label for="sourceFilter">Source/Organization</label>
                             <select id="sourceFilter" onchange="filterLists()" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ddd;">
                                 <option value="">All Sources</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="listSizeFilter">List Size</label>
+                            <select id="listSizeFilter" onchange="filterLists()" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ddd;">
+                                <option value="">All Sizes</option>
+                                <option value="<50">< 50 albums</option>
+                                <option value="50-100">50-100 albums</option>
+                                <option value="100-500">100-500 albums</option>
+                                <option value=">500">> 500 albums</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -5262,12 +5272,34 @@
         function filterLists() {
             const categoryFilter = document.getElementById('categoryFilter').value;
             const sourceFilter = document.getElementById('sourceFilter').value;
-            const genreFilter = document.getElementById('genreFilter').value.toLowerCase();
+            const listSizeFilter = document.getElementById('listSizeFilter').value;
+            const genreFilter = document.getElementById('genreFilter').value.toLowerCase().trim();
             
             filteredLists = allCuratedLists.filter(list => {
+                // Category filter
                 if (categoryFilter && list.category !== categoryFilter) return false;
+                
+                // Source filter
                 if (sourceFilter && list.source !== sourceFilter) return false;
-                if (genreFilter && !list.genres.toLowerCase().includes(genreFilter)) return false;
+                
+                // List size filter
+                if (listSizeFilter) {
+                    const albumCount = list.albumCount;
+                    if (listSizeFilter === '<50' && albumCount >= 50) return false;
+                    if (listSizeFilter === '50-100' && (albumCount < 50 || albumCount > 100)) return false;
+                    if (listSizeFilter === '100-500' && (albumCount < 100 || albumCount > 500)) return false;
+                    if (listSizeFilter === '>500' && albumCount <= 500) return false;
+                }
+                
+                // Genre filter - "All Genres" lists always show up
+                if (genreFilter) {
+                    const listGenres = list.genres.toLowerCase();
+                    // If list has "All Genres", it always matches
+                    if (listGenres.includes('all genres')) return true;
+                    // Otherwise, check if the filter matches
+                    if (!listGenres.includes(genreFilter)) return false;
+                }
+                
                 return true;
             });
             
@@ -5430,15 +5462,15 @@
                     <div class="list-albums-grid">
                         ${listAlbums.slice(0, 20).map(album => {
                             const inLibrary = userAlbums.some(a => 
-                                a.albumName?.toLowerCase() === album.name.toLowerCase() &&
-                                a.artist?.toLowerCase() === album.artist.toLowerCase() &&
+                                a.albumName?.toLowerCase() === album.albumName?.toLowerCase() &&
+                                a.artist?.toLowerCase() === album.artist?.toLowerCase() &&
                                 a.sourceLists?.includes(listName)
                             );
                             
                             return `
                                 <div class="list-album-item ${inLibrary ? 'in-library' : 'missing'}">
-                                    <img src="${album.artwork}" alt="${album.name}" class="list-album-artwork" onerror="this.src='https://via.placeholder.com/150?text=No+Image'">
-                                    <div class="list-album-title">${album.name}</div>
+                                    <img src="${album.artworkUrl}" alt="${album.albumName}" class="list-album-artwork" onerror="this.src='https://via.placeholder.com/150?text=No+Image'">
+                                    <div class="list-album-title">${album.albumName}</div>
                                     <div class="list-album-artist">${album.artist}</div>
                                     ${inLibrary ? '<div style="color: #28a745; font-size: 0.8em; margin-top: 5px;">✓ In Library</div>' : ''}
                                 </div>
