@@ -4917,6 +4917,21 @@
                                 ? `${existing.notes}\n\n[From OneDrive]: ${album.notes}`
                                 : album.notes;
                         }
+                        
+                        // Preserve discogsStatus from remote if it's more complete
+                        if (album.discogsStatus) {
+                            // Priority: synced > not_found > not_synced
+                            if (album.discogsStatus === 'synced' || 
+                                (album.discogsStatus === 'not_found' && existing.discogsStatus !== 'synced') ||
+                                !existing.discogsStatus) {
+                                mergedAlbum.discogsStatus = album.discogsStatus;
+                            }
+                        }
+                        
+                        // Preserve other Discogs fields from remote if available
+                        if (album.discogsUrl && !existing.discogsUrl) {
+                            mergedAlbum.discogsUrl = album.discogsUrl;
+                        }
 
                         merged.set(key, mergedAlbum);
                     } else {
@@ -8640,6 +8655,9 @@
         function updateAlbum(event, albumId) {
             event.preventDefault();
 
+            console.log('💾 updateAlbum called');
+            console.log('🔍 editAlbumFromDiscogs flag:', editAlbumFromDiscogs);
+
             const updates = {
                 albumName: document.getElementById('albumName').value,
                 artist: document.getElementById('artist').value,
@@ -8658,6 +8676,9 @@
             // If data came from Discogs, mark as synced
             if (editAlbumFromDiscogs) {
                 updates.discogsStatus = 'synced';
+                console.log('✅ Marking album as synced with Discogs');
+            } else {
+                console.log('⚠️ editAlbumFromDiscogs is false, NOT marking as synced');
             }
 
             db.updateAlbum(albumId, updates);
@@ -8750,6 +8771,8 @@
         async function fetchFromDiscogsUrlForEdit() {
             const url = document.getElementById('editDiscogsUrl').value.trim();
             
+            console.log('🔍 fetchFromDiscogsUrlForEdit called with URL:', url);
+            
             if (!url) {
                 showEditDiscogsStatus('Please enter a Discogs URL.', 'error');
                 return;
@@ -8765,6 +8788,7 @@
             const isMaster = match[1] === 'master';
             const releaseId = match[2];
             
+            console.log('📥 Fetching album details for release ID:', releaseId);
             await fetchAlbumDetailsForEdit(releaseId, isMaster);
         }
 
@@ -8822,6 +8846,7 @@
             
             // Mark that data came from Discogs
             editAlbumFromDiscogs = true;
+            console.log('✅ fillEditFormFromDiscogs: Set editAlbumFromDiscogs = true');
         }
 
         function showEditDiscogsStatus(message, type) {
