@@ -5480,11 +5480,15 @@
                 container.innerHTML = `
                     <div class="list-albums-grid">
                         ${listAlbums.slice(0, 20).map(album => {
-                            const inLibrary = userAlbums.some(a => 
-                                a.albumName?.toLowerCase() === album.albumName?.toLowerCase() &&
-                                a.artist?.toLowerCase() === album.artist?.toLowerCase() &&
-                                a.sourceLists?.includes(listName)
-                            );
+                            const inLibrary = userAlbums.some(a => {
+                                const aAlbumName = (a.albumName || '').toString().toLowerCase();
+                                const aArtist = (a.artist || '').toString().toLowerCase();
+                                const albumName = (album.albumName || '').toString().toLowerCase();
+                                const albumArtist = (album.artist || '').toString().toLowerCase();
+                                const hasSourceList = Array.isArray(a.sourceLists) && a.sourceLists.includes(listName);
+                                
+                                return aAlbumName === albumName && aArtist === albumArtist && hasSourceList;
+                            });
                             
                             return `
                                 <div class="list-album-item ${inLibrary ? 'in-library' : 'missing'}">
