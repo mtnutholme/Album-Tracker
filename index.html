@@ -6891,6 +6891,9 @@
             document.getElementById('artworkUrlInline').value = artworkUrl;
             document.getElementById('discogsUrlInline').value = discogsUrl;
             
+            // Set flag to mark this album as synced when added
+            window.addAlbumFromDiscogs = true;
+            
             // Scroll to form
             document.getElementById('addAlbumFormInline').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
@@ -7199,6 +7202,7 @@
                                 <div><strong>Year:</strong> ${album.year || 'N/A'}</div>
                                 <div><strong>Score:</strong> ${album.score || 'Unrated'}</div>
                                 <div><strong>Genre:</strong> ${album.genre || 'N/A'}</div>
+                                <div><strong>Sync Status:</strong> ${album.discogsStatus === 'synced' ? '✓ Synced' : album.discogsStatus === 'not_found' ? '✗ Not Found' : '⏳ Not Synced'}</div>
                                 ${album.discogsUrl ? `<div><strong>Discogs:</strong> <a href="${album.discogsUrl}" target="_blank">View</a></div>` : ''}
                             </div>
                         </div>
@@ -7282,6 +7286,39 @@
                 decision.deleteIndices.push(...getIndices(unratedAlbums));
                 decision.confidence = 'low';
                 decision.reason = 'Multiple rated versions - manual review needed';
+                return decision;
+            }
+
+            // Rule 2.5: Synced vs Not Synced (when both/neither are rated)
+            // This applies when albums have same rating status but different sync status
+            const syncedAlbums = group.filter(a => a.discogsStatus === 'synced');
+            const notSyncedAlbums = group.filter(a => a.discogsStatus !== 'synced');
+            
+            // If one is synced and others aren't, and they have same rating status
+            if (syncedAlbums.length === 1 && notSyncedAlbums.length > 0) {
+                // Check if they all have same rating status (all rated or all unrated)
+                const allRated = group.every(a => a.score && a.score !== '');
+                const allUnrated = group.every(a => !a.score || a.score === '');
+                
+                if (allRated || allUnrated) {
+                    decision.keepIndices.push(group.indexOf(syncedAlbums[0]));
+                    decision.deleteIndices.push(...getIndices(notSyncedAlbums));
+                    decision.confidence = 'high';
+                    decision.reason = allRated ? 
+                        'Synced version kept (both rated, sync status differs)' : 
+                        'Synced version kept (both unrated, sync status differs)';
+                    return decision;
+                }
+            }
+            
+            // If multiple synced versions, prioritize synced over not synced, then use ID
+            if (syncedAlbums.length > 1 && notSyncedAlbums.length > 0) {
+                const sortedSynced = [...syncedAlbums].sort((a, b) => a.id - b.id);
+                decision.keepIndices.push(group.indexOf(sortedSynced[0]));
+                decision.deleteIndices.push(...getIndices(sortedSynced.slice(1)));
+                decision.deleteIndices.push(...getIndices(notSyncedAlbums));
+                decision.confidence = 'medium';
+                decision.reason = 'Multiple synced versions - kept lowest ID synced version';
                 return decision;
             }
 
@@ -7535,6 +7572,8 @@
         function hideAddAlbumForm() {
             document.getElementById('addAlbumFormContainer').style.display = 'none';
             document.getElementById('addAlbumFormInline').reset();
+            // Reset Discogs flag
+            window.addAlbumFromDiscogs = false;
         }
 
         function addAlbumInline(event) {
@@ -7552,8 +7591,11 @@
                 score: document.getElementById('scoreInline').value || null,
                 dateListened: null,
                 notes: '',
-                discogsStatus: 'not_synced' // Set initial sync status
+                discogsStatus: window.addAlbumFromDiscogs ? 'synced' : 'not_synced' // Mark as synced if from Discogs
             };
+            
+            // Reset the flag
+            window.addAlbumFromDiscogs = false;
 
             if (db.isDuplicate(albumData.albumName, albumData.artist)) {
                 alert('This album already exists in your collection!');
