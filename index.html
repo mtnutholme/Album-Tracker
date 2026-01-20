@@ -4044,7 +4044,9 @@
             }
 
             getAlbum(id) {
-                return this.albums.find(a => a.id === id);
+                // Convert both to strings for comparison to handle numeric IDs
+                const searchId = String(id);
+                return this.albums.find(a => String(a.id) === searchId);
             }
 
             getAllAlbums() {
@@ -4656,9 +4658,9 @@
                     const data = await response.json();
                     this.saveTokens(data);
                 } catch (error) {
-                    console.error('Token refresh failed:', error);
+                    // Silently disconnect - token expired
                     this.disconnect();
-                    throw error;
+                    return null; // Return null instead of throwing
                 }
             }
 
@@ -4790,8 +4792,18 @@
 
                     await this.ensureValidToken();
 
-                    // Get current data
-                    const data = db.getAllAlbums();
+                    // Get current data including albums and settings
+                    const albums = db.getAllAlbums();
+                    const discogsToken = localStorage.getItem('discogsToken') || '';
+                    
+                    const data = {
+                        albums: albums,
+                        settings: {
+                            discogsToken: discogsToken
+                        },
+                        lastUpdated: new Date().toISOString()
+                    };
+                    
                     const jsonData = JSON.stringify(data, null, 2);
 
                     // Get or create folder
@@ -4815,10 +4827,10 @@
                     setTimeout(() => this.updateUI(), 2000);
 
                 } catch (error) {
-                    console.error('Sync to OneDrive failed:', error);
-                    this.updateUI('error', 'Sync failed');
-                    setTimeout(() => this.updateUI(), 3000);
-                    throw error;
+                    // Silently fail - don't spam console or UI
+                    // User can manually reconnect if needed
+                    this.syncInProgress = false;
+                    return; // Don't throw, just return
                 } finally {
                     this.syncInProgress = false;
                 }
@@ -4849,14 +4861,41 @@
                         // Download and merge data
                         const data = await this.downloadFile(fileId);
                         
-                        if (data && Array.isArray(data)) {
-                            // Merge with local data
+                        if (data) {
+                            // Handle both old format (array) and new format (object with albums + settings)
+                            let remoteAlbums, remoteSettings;
+                            
+                            if (Array.isArray(data)) {
+                                // Old format - just albums
+                                remoteAlbums = data;
+                                remoteSettings = {};
+                            } else {
+                                // New format - albums + settings
+                                remoteAlbums = data.albums || [];
+                                remoteSettings = data.settings || {};
+                            }
+                            
+                            // Merge albums
                             const localAlbums = db.getAllAlbums();
-                            const mergedData = this.mergeAlbumData(localAlbums, data);
+                            const mergedData = this.mergeAlbumData(localAlbums, remoteAlbums);
                             
                             // Update database
                             db.albums = mergedData;
                             db.saveToStorage();
+                            
+                            // Restore settings (Discogs token)
+                            if (remoteSettings.discogsToken) {
+                                const currentToken = localStorage.getItem('discogsToken');
+                                if (!currentToken || currentToken === '') {
+                                    // Only restore if local token is missing
+                                    localStorage.setItem('discogsToken', remoteSettings.discogsToken);
+                                    // Update UI if on settings page
+                                    const tokenInput = document.getElementById('discogsToken');
+                                    if (tokenInput) {
+                                        tokenInput.value = remoteSettings.discogsToken;
+                                    }
+                                }
+                            }
 
                             this.lastSyncTime = new Date().toISOString();
                             localStorage.setItem('last_sync_time', this.lastSyncTime);
@@ -4888,22 +4927,23 @@
             mergeAlbumData(localAlbums, remoteAlbums) {
                 const merged = new Map();
 
-                // Add all local albums
-                localAlbums.forEach(album => {
+                // Start with remote albums as source of truth
+                remoteAlbums.forEach(album => {
                     const key = `${album.albumName}|${album.artist}`;
                     merged.set(key, album);
                 });
 
-                // Merge remote albums
-                remoteAlbums.forEach(album => {
+                // Merge in local albums (only if they don't exist remotely or have newer data)
+                localAlbums.forEach(album => {
                     const key = `${album.albumName}|${album.artist}`;
                     const existing = merged.get(key);
 
                     if (existing) {
-                        // Merge: prefer newer data
+                        // Album exists in both - merge data
+                        // Start with remote (existing) as base
                         const mergedAlbum = { ...existing };
                         
-                        // Use remote score if local doesn't have one
+                        // Use local score if remote doesn't have one
                         if (album.score && !existing.score) {
                             mergedAlbum.score = album.score;
                         }
@@ -4914,14 +4954,12 @@
                             mergedAlbum.dateListened = album.dateListened;
                         }
                         
-                        // Merge notes
+                        // Merge notes (prefer local if different)
                         if (album.notes && album.notes !== existing.notes) {
-                            mergedAlbum.notes = existing.notes 
-                                ? `${existing.notes}\n\n[From OneDrive]: ${album.notes}`
-                                : album.notes;
+                            mergedAlbum.notes = album.notes;
                         }
                         
-                        // Preserve discogsStatus from remote if it's more complete
+                        // Preserve discogsStatus from local if it's more complete
                         if (album.discogsStatus) {
                             // Priority: synced > not_found > not_synced
                             if (album.discogsStatus === 'synced' || 
@@ -4931,14 +4969,14 @@
                             }
                         }
                         
-                        // Preserve other Discogs fields from remote if available
+                        // Preserve other Discogs fields from local if available
                         if (album.discogsUrl && !existing.discogsUrl) {
                             mergedAlbum.discogsUrl = album.discogsUrl;
                         }
 
                         merged.set(key, mergedAlbum);
                     } else {
-                        // Add new album from remote
+                        // Album only exists locally - add it
                         merged.set(key, album);
                     }
                 });
@@ -8523,8 +8561,13 @@
         }
 
         function showAlbumDetail(albumId) {
-            const album = db.getAlbum(albumId);
-            if (!album) return;
+            // Convert albumId to string to handle numeric IDs like 4.44
+            const id = String(albumId);
+            const album = db.getAlbum(id);
+            if (!album) {
+                console.warn('Album not found:', id);
+                return;
+            }
 
             const genres = db.parseMultiValue(album.genre, true);
             const styles = db.parseMultiValue(album.style);
