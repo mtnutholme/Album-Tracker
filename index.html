@@ -8628,7 +8628,7 @@
                         
                         <div style="margin-top: 30px;">
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-                                <button class="btn btn-primary" onclick="playAlbum(${album.id}, '${album.albumName.replace(/'/g, "\\'")}', '${album.artist.replace(/'/g, "\\'")}', '${album.artworkUrl}'); closeModal();" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-size: 0.95em; padding: 10px;">🎵 Play This Record</button>
+                                <button class="btn btn-primary" onclick="playAlbum(${album.id}, '${(album.albumName || '').toString().replace(/'/g, "\\'")}', '${(album.artist || '').toString().replace(/'/g, "\\'")}', '${album.artworkUrl || ''}'); closeModal();" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-size: 0.95em; padding: 10px;">🎵 Play This Record</button>
                                 <button class="btn" onclick="scoreAlbum(${album.id})" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-size: 0.95em; padding: 10px;">Score Album</button>
                             </div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -9325,35 +9325,56 @@
                 return;
             }
 
-            // Prepare data for export
-            const exportData = albums.map(album => ({
-                'ID': album.id,
-                'Album Name': album.albumName,
-                'Artist': album.artist,
-                'Artist ID': album.artistId || '',
-                'Year': album.year,
-                'Album Artwork URL': album.artworkUrl,
-                'Discogs URL': album.discogsUrl || '',
-                'Genre': album.genre || '',
-                'Style': album.style || '',
-                'Reason': album.reason || '',
-                'Score': album.score !== null && album.score !== undefined && album.score !== '' ? album.score : '',
-                'Date Listened': album.dateListened || '',
-                'Notes': album.notes || ''
-            }));
+            try {
+                // Prepare data for export - truncate long notes to avoid Excel limits
+                const exportData = albums.map(album => ({
+                    'ID': album.id,
+                    'Album Name': album.albumName,
+                    'Artist': album.artist,
+                    'Artist ID': album.artistId || '',
+                    'Year': album.year,
+                    'Album Artwork URL': album.artworkUrl,
+                    'Discogs URL': album.discogsUrl || '',
+                    'Genre': album.genre || '',
+                    'Style': album.style || '',
+                    'Reason': album.reason || '',
+                    'Score': album.score !== null && album.score !== undefined && album.score !== '' ? album.score : '',
+                    'Date Listened': album.dateListened || '',
+                    'Notes': album.notes ? album.notes.substring(0, 32000) : '' // Truncate to avoid Excel cell limit
+                }));
 
-            // Create worksheet
-            const ws = XLSX.utils.json_to_sheet(exportData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Albums');
+                // Create worksheet
+                const ws = XLSX.utils.json_to_sheet(exportData);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Albums');
 
-            // Generate filename with timestamp
-            const timestamp = new Date().toISOString().split('T')[0];
-            const filename = `album-tracker-${timestamp}.xlsx`;
+                // Generate filename with timestamp
+                const timestamp = new Date().toISOString().split('T')[0];
+                const filename = `album-tracker-${timestamp}.xlsx`;
 
-            // Download
-            XLSX.writeFile(wb, filename);
-            showAlert('success', 'Data exported successfully!');
+                // Download
+                XLSX.writeFile(wb, filename);
+                showAlert('success', `Successfully exported ${albums.length} albums!`);
+            } catch (error) {
+                console.error('Export error:', error);
+                
+                // Fallback: Export as JSON if Excel fails
+                try {
+                    const jsonData = JSON.stringify(albums, null, 2);
+                    const blob = new Blob([jsonData], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `album-tracker-${new Date().toISOString().split('T')[0]}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    showAlert('success', `Exported ${albums.length} albums as JSON (Excel export failed due to data size)`);
+                } catch (jsonError) {
+                    showAlert('error', 'Export failed. Try exporting fewer albums or contact support.');
+                }
+            }
         }
 
         // Statistics
